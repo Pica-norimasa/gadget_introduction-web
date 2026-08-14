@@ -1,4 +1,5 @@
 import type { Work } from "@/app/lib/mock-data";
+import { PlatformBadges } from "./PlatformBadges";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
@@ -34,6 +35,7 @@ export function WorkCard({ work, size = "md" }: { work: Work; size?: "md" | "lg"
         <div className="flex flex-wrap items-center gap-1.5">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
+          <PlatformBadges platforms={work.platforms} />
         </div>
 
         <h3 className="font-[family-name:var(--font-display)] text-[17px] font-bold leading-snug text-[var(--ink)]">

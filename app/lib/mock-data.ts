@@ -10,6 +10,10 @@ export type Category =
   | "拡張機能"
   | "プロトタイプ";
 
+// 対応プラットフォーム。自由記述タグではなく固定語彙にして、
+// 表記ゆれなしにフィルタできるようにする。
+export type Platform = "iOS" | "Android" | "Windows" | "macOS" | "Linux" | "Web" | "拡張機能";
+
 export type Work = {
   id: string;
   title: string;
@@ -17,6 +21,7 @@ export type Work = {
   category: Category;
   stage: Stage;
   tool: AiTool;
+  platforms: Platform[];
   author: string;
   hue: number; // thumbnail accent hue, 0-360
   glyph: string; // 1-2 char thumbnail mark
@@ -40,6 +45,7 @@ export const works: Work[] = [
     category: "Webアプリ",
     stage: "ベータ",
     tool: "Claude",
+    platforms: ["Web"],
     author: "みかん",
     hue: 18,
     glyph: "🍳",
@@ -56,6 +62,7 @@ export const works: Work[] = [
     category: "AI Agent",
     stage: "公開中",
     tool: "ChatGPT",
+    platforms: ["Web"],
     author: "けんと",
     hue: 205,
     glyph: "📝",
@@ -72,6 +79,7 @@ export const works: Work[] = [
     category: "ゲーム",
     stage: "プロトタイプ",
     tool: "Gemini",
+    platforms: ["Windows", "macOS"],
     author: "8bit_ojisan",
     hue: 265,
     glyph: "🎮",
@@ -88,6 +96,7 @@ export const works: Work[] = [
     category: "スマホアプリ",
     stage: "ベータ",
     tool: "Claude",
+    platforms: ["iOS", "Android"],
     author: "yuzu.code",
     hue: 150,
     glyph: "🧾",
@@ -104,6 +113,7 @@ export const works: Work[] = [
     category: "拡張機能",
     stage: "公開中",
     tool: "Cursor",
+    platforms: ["拡張機能"],
     author: "ふじたか",
     hue: 340,
     glyph: "🔇",
@@ -120,6 +130,7 @@ export const works: Work[] = [
     category: "Webアプリ",
     stage: "アイデア",
     tool: null,
+    platforms: ["Web"],
     author: "つきみ",
     hue: 330,
     glyph: "🎂",
@@ -136,6 +147,7 @@ export const works: Work[] = [
     category: "AI Agent",
     stage: "プロトタイプ",
     tool: "ChatGPT",
+    platforms: ["Web"],
     author: "hal",
     hue: 45,
     glyph: "💬",
@@ -152,6 +164,7 @@ export const works: Work[] = [
     category: "プロトタイプ",
     stage: "プロトタイプ",
     tool: "Gemini",
+    platforms: ["iOS", "Android"],
     author: "sora",
     hue: 25,
     glyph: "🐱",
@@ -168,6 +181,7 @@ export const works: Work[] = [
     category: "Webアプリ",
     stage: "ベータ",
     tool: "Claude",
+    platforms: ["Web"],
     author: "まめ",
     hue: 190,
     glyph: "✉️",
@@ -184,6 +198,7 @@ export const works: Work[] = [
     category: "スマホアプリ",
     stage: "公開中",
     tool: "v0",
+    platforms: ["iOS", "Android"],
     author: "taro_maker",
     hue: 95,
     glyph: "🧮",
@@ -200,6 +215,7 @@ export const works: Work[] = [
     category: "拡張機能",
     stage: "プロトタイプ",
     tool: "Bolt",
+    platforms: ["拡張機能"],
     author: "kaede_p",
     hue: 5,
     glyph: "🌡️",
@@ -216,6 +232,7 @@ export const works: Work[] = [
     category: "Webアプリ",
     stage: "ベータ",
     tool: "Claude",
+    platforms: ["Web"],
     author: "りんどう",
     hue: 315,
     glyph: "🎫",
@@ -232,6 +249,7 @@ export const works: Work[] = [
     category: "AIツール",
     stage: "アイデア",
     tool: null,
+    platforms: ["Web"],
     author: "dev_nanashi",
     hue: 260,
     glyph: "🎵",
@@ -248,6 +266,7 @@ export const works: Work[] = [
     category: "PCアプリ",
     stage: "ベータ",
     tool: "Cursor",
+    platforms: ["Windows", "macOS"],
     author: "ao",
     hue: 35,
     glyph: "🐶",
@@ -264,6 +283,7 @@ export const works: Work[] = [
     category: "Webアプリ",
     stage: "公開中",
     tool: "Gemini",
+    platforms: ["Web"],
     author: "komugi",
     hue: 165,
     glyph: "🧳",
@@ -280,6 +300,7 @@ export const works: Work[] = [
     category: "ゲーム",
     stage: "公開中",
     tool: "ChatGPT",
+    platforms: ["Web"],
     author: "nemui_dev",
     hue: 220,
     glyph: "♟️",
