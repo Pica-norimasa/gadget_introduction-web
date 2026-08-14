@@ -4,6 +4,7 @@
 
 - 企画書: [docs/plan.html](docs/plan.html)
 - トップページUIモック: `app/page.tsx`（モックデータのみ、バックエンド連携なし）
+- 今後の技術的な宿題: [docs/todo.md](docs/todo.md)
 
 ## 開発
 
