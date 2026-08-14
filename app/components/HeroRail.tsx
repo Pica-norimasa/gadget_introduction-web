@@ -21,7 +21,7 @@ export function HeroRail({ works }: { works: Work[] }) {
       <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 [scrollbar-width:thin]">
         {works.map((w) => (
           <div key={w.id} className="w-[260px] shrink-0">
-            <WorkCard work={w} size="lg" />
+            <WorkCard work={w} size="lg" showAnchor={false} />
           </div>
         ))}
       </div>

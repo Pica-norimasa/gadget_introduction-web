@@ -108,6 +108,16 @@ a {
   border-radius: 999px;
 }
 
+/* 動画/GIFを添付した投稿の疑似モーションプレビュー(実ファイルの代わり) */
+@keyframes motion-drift {
+  0%, 100% { background-position: 0% 20%; }
+  50% { background-position: 100% 80%; }
+}
+@keyframes motion-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8%) scale(1.08); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

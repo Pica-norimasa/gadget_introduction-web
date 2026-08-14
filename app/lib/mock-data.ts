@@ -26,6 +26,7 @@ export type Work = {
   hue: number; // thumbnail accent hue, 0-360
   glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
   githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する
+  hasMotion?: boolean; // true = 動画/GIFを添付した投稿。ホバー/スクロール時にミュート再生風プレビューを見せる
   reactions: {
     interesting: number;
     useful: number;
@@ -84,6 +85,7 @@ export const works: Work[] = [
     author: "8bit_ojisan",
     hue: 265,
     glyph: "🎮",
+    hasMotion: true,
     reactions: { interesting: 88, useful: 12, idea: 54, wantToTry: 70 },
     comments: 19,
     daysAgo: 2,
@@ -118,6 +120,7 @@ export const works: Work[] = [
     author: "ふじたか",
     hue: 340,
     glyph: "🔇",
+    hasMotion: true,
     reactions: { interesting: 66, useful: 190, idea: 11, wantToTry: 58 },
     comments: 27,
     daysAgo: 12,
@@ -169,6 +172,7 @@ export const works: Work[] = [
     author: "sora",
     hue: 25,
     glyph: "🐱",
+    hasMotion: true,
     reactions: { interesting: 132, useful: 8, idea: 70, wantToTry: 91 },
     comments: 42,
     daysAgo: 1,
@@ -271,6 +275,7 @@ export const works: Work[] = [
     author: "ao",
     hue: 35,
     glyph: "🐶",
+    hasMotion: true,
     reactions: { interesting: 95, useful: 60, idea: 30, wantToTry: 84 },
     comments: 26,
     daysAgo: 3,

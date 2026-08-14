@@ -1,5 +1,6 @@
 import type { Work } from "@/app/lib/mock-data";
 import { GitHubCard } from "./GitHubCard";
+import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
@@ -9,18 +10,32 @@ function isUnderdog(w: Work) {
   return w.followers < 50 && w.trendScore >= 70;
 }
 
-export function WorkCard({ work, size = "md" }: { work: Work; size?: "md" | "lg" }) {
+export function WorkCard({
+  work,
+  size = "md",
+  showAnchor = true,
+}: {
+  work: Work;
+  size?: "md" | "lg";
+  // 同じ作品がヒーローレールとフィードの両方に出ることがあるため、
+  // id="work-xxx" を持つインスタンスは1つ(フィード側)だけにする。
+  // ヒーロー側はshowAnchor={false}で渡し、id重複とアンカー先の
+  // 不定挙動を防ぐ。
+  showAnchor?: boolean;
+}) {
   const totalReactions =
     work.reactions.interesting + work.reactions.useful + work.reactions.idea + work.reactions.wantToTry;
 
   return (
     <article
-      id={`work-${work.id}`}
+      id={showAnchor ? `work-${work.id}` : undefined}
       className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-shadow hover:shadow-[0_6px_20px_var(--shadow)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
     >
       <div className="relative">
         {!work.glyph && work.githubUrl ? (
           <GitHubCard githubUrl={work.githubUrl} size={size} />
+        ) : work.glyph && work.hasMotion ? (
+          <MotionThumb hue={work.hue} glyph={work.glyph} size={size} />
         ) : (
           <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
         )}
