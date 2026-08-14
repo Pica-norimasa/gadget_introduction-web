@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アイデアを、育てながら見せる場所 — 企画書</title>
+<style>
+  :root {
+    --ink: #14181A;
+    --paper: #EEF0E9;
+    --paper-raised: #F8F9F3;
+    --ink-soft: #4B5551;
+    --ink-faint: #7C857E;
+    --rule: #D8DACE;
+    --accent: #B87C15;
+    --accent-2: #2F6E63;
+    --critical: #A23E2E;
+    --critical-bg: #F3E6DF;
+    --shadow: rgba(20, 24, 26, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #EDEAE0;
+      --paper: #101413;
+      --paper-raised: #1B211F;
+      --ink-soft: #ACB3AB;
+      --ink-faint: #7C857E;
+      --rule: #2B322F;
+      --accent: #E3A83B;
+      --accent-2: #5CB0A0;
+      --critical: #E0836F;
+      --critical-bg: #2C1D18;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", "Hoefler Text", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  a { color: var(--accent-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 4.5rem 1.75rem 3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .masthead .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1.1rem;
+  }
+  .masthead h1 {
+    font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+    line-height: 1.18;
+    margin: 0 0 1.1rem;
+    text-wrap: balance;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .masthead .lede {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 1.6rem;
+  }
+  .masthead .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+  .masthead .meta-row span::before {
+    content: "— ";
+    color: var(--rule);
+  }
+
+  /* ---------- Frame: rail + content ---------- */
+  .frame {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 2.5rem;
+    padding: 0 1.75rem;
+  }
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 2.5rem 0 2rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+  }
+  nav.toc .toc-group + .toc-group { margin-top: 1.4rem; }
+  nav.toc .toc-label {
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+    margin-bottom: 0.5rem;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    display: block;
+    padding: 0.28rem 0;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    padding-left: 0.7rem;
+    margin-left: -0.7rem;
+    line-height: 1.4;
+  }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--rule); }
+  nav.toc a .n { color: var(--accent); margin-right: 0.35em; }
+
+  main { min-width: 0; padding: 2.5rem 0 6rem; }
+
+  /* ---------- Sections ---------- */
+  section.item {
+    padding: 2.6rem 0;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 1.5rem;
+  }
+  section.item:first-child { padding-top: 0; }
+  .item-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin: 0 0 1.1rem;
+  }
+  .item-head .num {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 1.05rem;
+    color: var(--accent);
+    font-weight: 600;
+    min-width: 1.6em;
+  }
+  .item-head h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  section.item p { margin: 0 0 0.95rem; max-width: 68ch; }
+  section.item ul, section.item ol.speclist { margin: 0 0 0.95rem; padding-left: 1.3rem; max-width: 66ch; }
+  section.item li { margin: 0 0 0.45rem; }
+  section.item strong { color: var(--ink); font-weight: 600; }
+
+  .subhead {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--accent-2);
+    margin: 1.3rem 0 0.5rem;
+  }
+
+  /* tag pills */
+  .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .pill {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    padding: 0.22rem 0.6rem;
+    border-radius: 3px;
+    background: var(--paper-raised);
+  }
+
+  /* callout */
+  .callout {
+    background: var(--paper-raised);
+    border-left: 3px solid var(--accent-2);
+    padding: 1rem 1.2rem;
+    margin: 1.1rem 0;
+    max-width: 64ch;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .callout-label {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-2);
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+  .callout.critical { border-left-color: var(--critical); background: var(--critical-bg); }
+  .callout.critical .callout-label { color: var(--critical); }
+
+  /* name candidates */
+  .namegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.85rem; margin: 1rem 0; }
+  .namecard { border: 1px solid var(--rule); padding: 0.9rem 1rem; background: var(--paper-raised); border-radius: 4px; }
+  .namecard .nm { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.3rem; }
+  .namecard .nm .jp { color: var(--ink-faint); font-size: 0.85rem; font-weight: 400; }
+  .namecard p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; max-width: none; }
+  .namecard.rec { border-color: var(--accent); }
+  .namecard.rec .nm::after {
+    content: "推奨";
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 0.05rem 0.35rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin: 1rem 0 1.3rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  td.hero-col, th.hero-col { color: var(--accent); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+
+  /* MVP checklist */
+  .mvp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .mvp-cols { grid-template-columns: 1fr; } }
+  .mvp-col h3 {
+    font-family: ui-monospace, monospace; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-faint); margin: 0 0 0.7rem; font-weight: 500;
+  }
+  .mvp-col ul { list-style: none; margin: 0; padding: 0; }
+  .mvp-col li { padding-left: 1.4rem; position: relative; font-size: 0.93rem; margin-bottom: 0.55rem; color: var(--ink-soft); }
+  .mvp-col.now li::before { content: "●"; position: absolute; left: 0; color: var(--accent); font-size: 0.6rem; top: 0.4em; }
+  .mvp-col.later li::before { content: "○"; position: absolute; left: 0; color: var(--ink-faint); font-size: 0.6rem; top: 0.4em; }
+
+  /* mock UI blocks */
+  .mock {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    padding: 1.1rem 1.2rem;
+    margin: 1rem 0 1.3rem;
+    font-size: 0.85rem;
+  }
+  .mock .mock-title { font-family: ui-monospace, monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 0.8rem; }
+  .mock .row { display: flex; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px dashed var(--rule); align-items: baseline; }
+  .mock .row:last-child { border-bottom: none; }
+  .mock .row .k { color: var(--accent-2); min-width: 9em; font-family: ui-monospace, monospace; font-size: 0.76rem; flex-shrink: 0; }
+  .mock .row .v { color: var(--ink-soft); }
+
+  /* closing synth divider */
+  .synth-open {
+    max-width: 920px; margin: 0 auto; padding: 3.5rem 1.75rem 0;
+  }
+  .synth-open .eyebrow {
+    font-family: ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--critical); margin: 0 0 0.8rem;
+  }
+  .synth-open h2 { font-size: 1.9rem; margin: 0 0 0.6rem; text-wrap: balance; }
+  .synth-open .lede { color: var(--ink-soft); max-width: 62ch; margin: 0; }
+
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 3rem 1.75rem 4rem;
+    color: var(--ink-faint); font-size: 0.82rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+  }
+
+  @media (max-width: 760px) {
+    .frame { grid-template-columns: 1fr; }
+    nav.toc {
+      position: static;
+      max-height: none;
+      padding: 1.2rem 0 0;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--rule);
+    }
+    nav.toc .toc-group { display: none; }
+    nav.toc .toc-group.mobile-visible { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">Platform Concept Memo — 2026.08</p>
+  <h1>アイデアを、育てながら見せる場所</h1>
+  <p class="lede">
+    非エンジニアがAIで何かを作れる時代に向けた、作品発表プラットフォームの企画書。
+    完成度ではなく発想を評価し、無名の小さな作品にも発見のチャンスを与える設計を、
+    PM・UX・マーケティング・アーキテクチャの4つの視点から検討する。
+  </p>
+  <div class="meta-row">
+    <span>全20項目の設計 + 総合企画</span>
+    <span>批判的評価つき</span>
+    <span>対象: Web / スマホ / PC / ゲーム / AIツール / 拡張機能 / プロトタイプ</span>
+  </div>
+</header>
+
+<div class="frame">
+  <nav class="toc">
+    <div class="toc-group">
+      <p class="toc-label">Part 1 — 設計</p>
+      <ol>
+        <li><a href="#s1"><span class="n">01</span>核心的価値</a></li>
+        <li><a href="#s2"><span class="n">02</span>PHとの違い</a></li>
+        <li><a href="#s3"><span class="n">03</span>想定ユーザー</a></li>
+        <li><a href="#s4"><span class="n">04</span>作者の体験</a></li>
+        <li><a href="#s5"><span class="n">05</span>閲覧者の体験</a></li>
+        <li><a href="#s6"><span class="n">06</span>投稿フロー</a></li>
+        <li><a href="#s7"><span class="n">07</span>作品ページ情報</a></li>
+        <li><a href="#s8"><span class="n">08</span>Discovery</a></li>
+        <li><a href="#s9"><span class="n">09</span>ランキング</a></li>
+        <li><a href="#s10"><span class="n">10</span>SNS機能</a></li>
+        <li><a href="#s11"><span class="n">11</span>AI分類・推薦</a></li>
+        <li><a href="#s12"><span class="n">12</span>アイデア段階</a></li>
+        <li><a href="#s13"><span class="n">13</span>制作過程</a></li>
+        <li><a href="#s14"><span class="n">14</span>バージョン履歴</a></li>
+        <li><a href="#s15"><span class="n">15</span>コミュニケーション</a></li>
+        <li><a href="#s16"><span class="n">16</span>バイラル</a></li>
+        <li><a href="#s17"><span class="n">17</span>初期ユーザー</a></li>
+        <li><a href="#s18"><span class="n">18</span>マネタイズ</a></li>
+        <li><a href="#s19"><span class="n">19</span>事業拡張</a></li>
+        <li><a href="#s20"><span class="n">20</span>サービス名</a></li>
+      </ol>
+    </div>
+    <div class="toc-group">
+      <p class="toc-label">Part 2 — 総合</p>
+      <ol>
+        <li><a href="#synth"><span class="n">—</span>コンセプト統合</a></li>
+        <li><a href="#tech"><span class="n">—</span>技術構成</a></li>
+        <li><a href="#ui"><span class="n">—</span>画面設計</a></li>
+        <li><a href="#compare"><span class="n">—</span>競合比較</a></li>
+        <li><a href="#critique"><span class="n">—</span>批判的評価</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="item" id="s1">
+      <div class="item-head"><span class="num">01</span><h2>核心的価値</h2></div>
+      <p>
+        既存の作品公開サービスは、暗黙のうちに「作者はすでに技術力と完成品を持っている」ことを前提にしている。
+        AIによって創作のハードルが崩れた今、崩れていないのは<strong>発表と発見のハードル</strong>のほうだ。
+        このプラットフォームの核心的価値は、「誰もが作れる時代」に対応する「誰もが発表し、誰もが発見される」仕組みを提供すること。
+      </p>
+      <p>
+        もう一段深く言えば、プロダクトの完成度を売る場ではなく、<strong>創作サイクル（思いつく→作る→公開する→発見される→フィードバックを受ける→改善する）そのものを毎日回したくなる場</strong>を作ることが価値の中心になる。
+        作品一覧ではなく、作り手の成長ログの集合体を目指す。
+      </p>
+    </section>
+
+    <section class="item" id="s2">
+      <div class="item-head"><span class="num">02</span><h2>Product Huntなど既存サービスとの決定的な違い</h2></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>観点</th><th>Product Hunt</th><th>本プラットフォーム</th></tr></thead>
+          <tbody>
+            <tr><td>時間軸</td><td>ローンチ日1日勝負、翌日には埋もれる</td><td>常時再浮上のチャンス（急上昇率で評価）</td></tr>
+            <tr><td>作品の前提</td><td>基本的に完成品</td><td>アイデア・プロトタイプも正式な投稿形態</td></tr>
+            <tr><td>評価軸</td><td>プロダクトの完成度・実用性</td><td>発想の面白さ・パーソナリティも同等に評価</td></tr>
+            <tr><td>作者との関係</td><td>ワンショットのローンチ告知</td><td>継続的な「制作ログ」による関係構築</td></tr>
+            <tr><td>参加障壁</td><td>英語圏・スタートアップ文化が前提</td><td>非エンジニア・日本語話者を最初から想定</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>最も決定的なのは、PHが「その日に勝負が決まる」構造なのに対し、本プラットフォームは<strong>いつ投稿しても、いつでも発見されうる</strong>構造を持つこと。これがTikTok的な発見体験の土台になる。</p>
+    </section>
+
+    <section class="item" id="s3">
+      <div class="item-head"><span class="num">03</span><h2>想定ユーザー</h2></div>
+      <div class="subhead">作者になりうる層</div>
+      <ul>
+        <li>AIで初めて何かを作った非エンジニア（会社員、学生、主婦・主夫など）</li>
+        <li>個人開発者・ノーコーダー、副業クリエイター</li>
+        <li>プロエンジニアが息抜きに作る実験作・週末プロジェクト</li>
+        <li>学生・ハッカソン参加者</li>
+      </ul>
+      <div class="subhead">閲覧者になりうる層</div>
+      <ul>
+        <li>ガジェット好き・アーリーアダプター（発見自体を楽しむ層）</li>
+        <li>他の作り手（相互に閲覧者兼作者になる、コミュニティの中核）</li>
+        <li>採用担当・投資家・スカウト（才能発掘目的）</li>
+        <li>単純に「便利ツールを探している」実利目的の一般ユーザー</li>
+      </ul>
+      <p>設計上重要なのは、閲覧者の相当数が「まだ作者になっていないだけの予備軍」であるという前提。ROM専からの転換率を上げる導線が事業の成長エンジンになる。</p>
+    </section>
+
+    <section class="item" id="s4">
+      <div class="item-head"><span class="num">04</span><h2>作者側の利用体験</h2></div>
+      <p>
+        オンボーディングでは、使用しているAIツール（Claude / ChatGPT / Gemini / Cursor / Bolt / v0 など）をタグとして選ぶプロフィール設定から始める。
+        最初の投稿は「アイデアメモ」レベルの最小労力から始められ、あとから育てていくUXにする——生成AIのプロダクト自体が「下書きから育つ」体験を提供しているのと同じ発想。
+      </p>
+      <p>
+        作者ダッシュボードでは、各作品のview数・リアクション内訳・コメント・フォロワー転換率などのアナリティクスを提供。
+        「制作ログ」はTwitterのスレッド感覚で気軽に進捗を追記でき、通知は「誰かが試した」「フォークしたいと言っている」など創作意欲を刺激する形にする。
+      </p>
+    </section>
+
+    <section class="item" id="s5">
+      <div class="item-head"><span class="num">05</span><h2>閲覧者側の利用体験</h2></div>
+      <p>
+        メインフィードはTikTok的な「次々に発見する」設計とし、無限スクロール・カテゴリフィルタに加え、
+        <strong>「今すごい勢いで伸びている無名作品」</strong>という専用セクションを常設する。
+        気になった作品はコレクション（保存リスト）に入れられ、そのリスト自体も公開・共有できるようにする。
+      </p>
+      <p>
+        「見るだけ」で終わらせないために、作品ページから実際に試せる導線（埋め込みプレビュー、ワンクリックのデモリンク）を必須に近い形で促し、
+        「試した感想を一言残す」文化をリアクションの一種として組み込む。
+      </p>
+    </section>
+
+    <section class="item" id="s6">
+      <div class="item-head"><span class="num">06</span><h2>作品投稿フロー</h2></div>
+      <ol class="speclist">
+        <li><strong>作品タイプ選択</strong> — Webアプリ / スマホアプリ / PCアプリ / ゲーム / AIツール / AI Agent / 拡張機能 / その他</li>
+        <li><strong>ステージ選択</strong> — アイデア / プロトタイプ / ベータ / 正式リリース / 開発終了</li>
+        <li><strong>基本情報</strong> — タイトル、一言キャッチ、詳細説明、使用AI・ツールのタグ</li>
+        <li><strong>メディア</strong> — スクリーンショット、動画・GIF、ライブデモURL、リポジトリURL</li>
+        <li><strong>カテゴリ・タグ</strong> — 説明文からAIが自動サジェスト、作者が取捨選択</li>
+        <li><strong>公開設定</strong> — 全体公開 / フォロワー限定 / リンク限定（先行フィードバック募集用）</li>
+      </ol>
+      <p>公開後、その投稿は自動的に「制作ログ」の第一エントリになる。投稿を終着点ではなく<strong>継続する記録の起点</strong>として扱うのがポイント。</p>
+    </section>
+
+    <section class="item" id="s7">
+      <div class="item-head"><span class="num">07</span><h2>作品ページに必要な情報</h2></div>
+      <div class="mock">
+        <div class="mock-title">作品ページ構成</div>
+        <div class="row"><span class="k">ヘッダー</span><span class="v">タイトル / 一言キャッチ / ステージバッジ / 使用AIツールバッジ</span></div>
+        <div class="row"><span class="k">メディア</span><span class="v">スクショギャラリー・動画・ライブデモ埋め込み</span></div>
+        <div class="row"><span class="k">試す導線</span><span class="v">Try it / Download / インストール手順</span></div>
+        <div class="row"><span class="k">説明</span><span class="v">なぜ作ったか・誰のためか（"Why"を明示）</span></div>
+        <div class="row"><span class="k">制作過程</span><span class="v">ビルドログのタイムライン、バージョン履歴</span></div>
+        <div class="row"><span class="k">作者情報</span><span class="v">プロフィール・フォローボタン・他の作品</span></div>
+        <div class="row"><span class="k">反応</span><span class="v">複数軸リアクション・コメント・統計（閲覧数/試行数/フォーク数）</span></div>
+        <div class="row"><span class="k">関連</span><span class="v">似た発想の作品、同じAIツールで作られた作品</span></div>
+      </div>
+    </section>
+
+    <section class="item" id="s8">
+      <div class="item-head"><span class="num">08</span><h2>Discovery（作品発見）の仕組み</h2></div>
+      <ul>
+        <li><strong>パーソナライズドフィード</strong> — 閲覧・リアクション履歴に基づくレコメンド</li>
+        <li><strong>今日の掘り出し物</strong> — 人力キュレーション＋アルゴリズムの混成枠。無名作品に意図的にスポットを当てる</li>
+        <li><strong>サイコロ機能</strong> — ランダム表示によるセレンディピティ設計</li>
+        <li><strong>AI自然言語検索</strong> — 「〜みたいなツールない？」で検索できる</li>
+        <li><strong>発想マッチング</strong> — 似たことを考えていた作者・作品同士を結びつける</li>
+      </ul>
+      <p>核心は、フォロー数やランキング上位に依存しない<strong>「知らないものに出会う」経路</strong>を複数用意すること。これがTikTok的な中毒性の源泉になる。</p>
+    </section>
+
+    <section class="item" id="s9">
+      <div class="item-head"><span class="num">09</span><h2>ランキングシステム</h2></div>
+      <p>
+        時間窓は「今日・今週・今月・殿堂入り」を用意しつつ、PH的な「一発勝負」を避けるため、
+        投稿からの経過日数に関わらず<strong>急上昇率（勢い）</strong>を主指標にする。
+      </p>
+      <div class="callout">
+        <span class="callout-label">無名の逆転枠</span>
+        <p>フォロワー数が少ない作者の作品でも、一定のエンゲージメント率（閲覧に対する反応率）を超えると、自動的にブースト枠に入る仕組みを用意する。母数の小さいアカウントから火がつくTikTok的な逆転現象を、意図的にアルゴリズムへ組み込む。</p>
+      </div>
+      <p>ランキングは単一の総合順位ではなく、「アイデア賞」「便利ツール賞」「初心者作品賞（非エンジニア限定）」などジャンル別に分散させ、勝ち筋を複数用意する。</p>
+    </section>
+
+    <section class="item" id="s10">
+      <div class="item-head"><span class="num">10</span><h2>Like・Vote・コメント・FollowなどのSNS機能</h2></div>
+      <div class="pills">
+        <span class="pill">Like（ワンタップ）</span>
+        <span class="pill">複数リアクション（面白い/便利/発想◎/使ってみたい）</span>
+        <span class="pill">Vote（週間投票）</span>
+        <span class="pill">コメント（種別タグ付き）</span>
+        <span class="pill">Follow（作者単位）</span>
+        <span class="pill">Watch（作品の更新通知）</span>
+        <span class="pill">Collection（公開可能な保存リスト）</span>
+      </div>
+      <p>
+        単一の「いいね」だけでなく、技術評価に偏らない複数軸のリアクション（面白い／便利／発想がすごい／使ってみたい）を用意することで、
+        「技術力の高さだけを評価しない」という思想をUIレベルで具現化する。
+      </p>
+    </section>
+
+    <section class="item" id="s11">
+      <div class="item-head"><span class="num">11</span><h2>AIを利用した作品分類・推薦機能</h2></div>
+      <ul>
+        <li>説明文からAIがカテゴリ・技術・対象ユーザーを自動タグ付け</li>
+        <li>類似作品のクラスタリングによる「これが好きなら」の提示</li>
+        <li>スパム・低品質投稿の一次フィルタリング</li>
+        <li>作者が自己申告する「使用AIツール」情報と組み合わせた推薦精度の向上</li>
+      </ul>
+      <p>MVPでは説明文ベースの自動タグ付けと単純な類似度推薦に留め、行動ログを用いた高度なレコメンドは後続フェーズに回すのが現実的（詳細は<a href="#critique">批判的評価</a>で後述）。</p>
+    </section>
+
+    <section class="item" id="s12">
+      <div class="item-head"><span class="num">12</span><h2>Prototype・アイデア段階の作品の扱い</h2></div>
+      <p>
+        「アイデアのみ」を正式な投稿タイプとして用意し、実装がなくても投稿できるようにする。
+        アイデア投稿には「共同開発者募集」「一緒に作りませんか」のCTAを標準搭載し、実際に作品化された際は「このアイデアから生まれた」と系譜をリンクして残す。
+      </p>
+      <p>
+        ステージバッジ（アイデア／プロトタイプ／ベータ／公開中）で期待値を事前に調整し、「未完成だから低評価」という空気を構造的に防ぐ。ただし、これは閲覧体験とのトレードオフでもある（<a href="#critique">後述の批判的評価</a>を参照）。
+      </p>
+    </section>
+
+    <section class="item" id="s13">
+      <div class="item-head"><span class="num">13</span><h2>「制作過程」をコンテンツとして扱う方法</h2></div>
+      <p>
+        ビルドログ機能により、短文＋画像で進捗を都度追加できるようにする（個人開発の実況・開発日誌の感覚）。
+        各ログ単体にもいいね・コメントが可能で、ログが積み上がること自体が「本気で作っている人だ」という信頼のシグナルになる。
+      </p>
+      <p>長期的には、人気作者の制作過程そのものがメイキング動画のように消費されるコンテンツへと育つ。作品よりも先に「その人の作り方」のファンがつく状態が理想形。</p>
+    </section>
+
+    <section class="item" id="s14">
+      <div class="item-head"><span class="num">14</span><h2>バージョンアップ履歴の仕組み</h2></div>
+      <p>
+        GitHub Releases的な構造化されたバージョン履歴（v0.1 → v1.0）を用意し、各バージョンに変更点とスクリーンショット差分を紐付ける。
+        重要なのは、ユーザーからの要望コメントと実装状況を<strong>トレーサビリティのある形で接続</strong>すること——「この機能ほしい」というコメントが、後のバージョンで「実装しました」に変わる体験は、作者と閲覧者の関係を強くする。
+      </p>
+    </section>
+
+    <section class="item" id="s15">
+      <div class="item-head"><span class="num">15</span><h2>作者とユーザーのコミュニケーション方法</h2></div>
+      <ul>
+        <li>公開コメント欄（スレッド形式、作者による返信ピン留め）</li>
+        <li>構造化フィードバックフォーム（バグ報告／機能要望／感想を分離し、作者がステータス管理できるミニIssueトラッカー）</li>
+        <li>作品ごとのQ&Aセクション</li>
+        <li>将来的なDM機能（招待制コミュニティ内での深い交流）</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s16">
+      <div class="item-head"><span class="num">16</span><h2>バイラルする仕組み</h2></div>
+      <ul>
+        <li>シェアするだけで映える自動生成OGP作品カード</li>
+        <li>ブログ・Xに貼れる埋め込みウィジェット</li>
+        <li>週刊ハイライトのニュースレター／SNS投稿による外部露出</li>
+        <li>バッジ獲得・ランクイン通知をシェアしたくなるデザイン</li>
+        <li><strong>Remix機能</strong> — 他人の作品にインスパイアされた派生作品を作れる仕組み。系譜がツリーとして可視化され、それ自体が話題化しやすい</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s17">
+      <div class="item-head"><span class="num">17</span><h2>初期ユーザーを獲得する方法</h2></div>
+      <ol class="speclist">
+        <li>「AIでアプリ作った」系のXコミュニティにいる層を直接シードユーザーとして勧誘する</li>
+        <li>著名な個人開発者・インフルエンサーに先行投稿してもらい、ローンチ時の話題を作る</li>
+        <li>既にX等で発表済みの作品をワンクリックで移植できるインポート導線を用意する</li>
+        <li>ハッカソン・コンテストとのタイアップで作品の初期供給源を確保する</li>
+        <li>「今週のベストアイデア」を運営自身が積極的にメディア・SNSで紹介し外部流入を作る</li>
+      </ol>
+    </section>
+
+    <section class="item" id="s18">
+      <div class="item-head"><span class="num">18</span><h2>マネタイズ方法</h2></div>
+      <ul>
+        <li><strong>フリーミアム</strong> — Pro会員（詳細アナリティクス、優先掲載枠、カスタムドメイン）</li>
+        <li><strong>スポンサーシップ</strong> — 「Claude公式サポーター枠」のようなAIツール企業とのバッジ連携</li>
+        <li><strong>求人・スカウト機能</strong> — 企業が才能を発掘し採用オファーを出す成功報酬制ジョブボード</li>
+        <li><strong>投げ銭</strong> — 作者への直接支援＋手数料</li>
+        <li><strong>将来的なマーケットプレイス</strong> — テンプレート・有料版作品の仲介手数料</li>
+      </ul>
+      <p>Discoveryのメイン面に有料掲載を出すことは避ける。Product Huntの反面教師として、<strong>発見体験の公平性が信頼の根幹</strong>であることを明確にする。</p>
+    </section>
+
+    <section class="item" id="s19">
+      <div class="item-head"><span class="num">19</span><h2>将来的な事業拡張</h2></div>
+      <ul>
+        <li>作品ポートフォリオを履歴書化する人材マッチング・採用プラットフォーム</li>
+        <li>才能あるアイデアへの少額出資を仲介する投資家スカウティング機能</li>
+        <li>人気作者によるAI創作講座などの教育コンテンツ</li>
+        <li>社内イノベーションコンテスト向けのエンタープライズSaaS展開</li>
+        <li>多言語自動翻訳によるグローバル展開</li>
+        <li>人気アイデアのハードウェア化を支援するクラウドファンディング連携</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s20">
+      <div class="item-head"><span class="num">20</span><h2>サービス名候補</h2></div>
+      <div class="namegrid">
+        <div class="namecard rec">
+          <p class="nm">Kizashi <span class="jp">兆し</span></p>
+          <p>「芽生えの兆し」という創作サイクルの初期段階そのものを表す和語。英語圏にも発音しやすく、ドメインの独自性も高い。</p>
+        </div>
+        <div class="namecard rec">
+          <p class="nm">MakeLoop</p>
+          <p>「作る→見つかる→改善する」という循環構造を英語圏にもそのまま伝えられる直接的なネーミング。</p>
+        </div>
+        <div class="namecard">
+          <p class="nm">Hirameki <span class="jp">閃き</span></p>
+          <p>アイデアそのものへの価値づけを最も直接的に表現する語。技術力ではなく発想を評価する思想と一致する。</p>
+        </div>
+        <div class="namecard">
+          <p class="nm">Tsukurun <span class="jp">つくるん</span></p>
+          <p>親しみやすい語感で非エンジニア層への心理的ハードルを下げるネーミング。カジュアルな印象が強み。</p>
+        </div>
+        <div class="namecard">
+          <p class="nm">Sparkbase</p>
+          <p>アイデアの火種（spark）が集まる場所という比喩。スタートアップ的な語感で投資家・企業連携にも馴染みやすい。</p>
+        </div>
+        <div class="namecard">
+          <p class="nm">Nobiru <span class="jp">伸びる</span></p>
+          <p>作品と作者の「伸びしろ」を主役にするコンセプトを直接表す。未完成歓迎の思想と相性が良い。</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="synth-open" id="synth">
+  <p class="eyebrow">Part 2 — 総合企画</p>
+  <h2>コンセプトの統合</h2>
+  <p class="lede">個別項目の設計を踏まえ、事業全体としての骨格・優先順位・技術構成・画面設計・競合比較・そして最大の課題までを一つに束ねる。</p>
+</div>
+
+<div class="frame" style="grid-template-columns: 1fr;">
+  <main style="padding-top: 2rem;">
+
+    <section class="item">
+      <div class="item-head"><h2>サービス全体のコンセプト</h2></div>
+      <p style="font-size: 1.05rem; max-width: 62ch;">
+        「<strong>アイデアを、育てながら見せる場所</strong>」。完成品の展示場ではなく、未完成のまま公開し、反応を受けながら育てていく過程そのものを主役にする創作プラットフォーム。
+      </p>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>最重要機能</h2></div>
+      <ol class="speclist">
+        <li>常時発見フィード＋無名逆転ブースト（TikTok的な発見体験の中核）</li>
+        <li>ビルドログ（制作過程を継続的に発信する機能）</li>
+        <li>ステージ別投稿（アイデア段階からの投稿を正式に許可）</li>
+        <li>複数軸リアクション（技術力だけでなく発想を評価する仕組み）</li>
+      </ol>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>MVPで実装すべき機能 / 将来的な機能</h2></div>
+      <div class="mvp-cols">
+        <div class="mvp-col now">
+          <h3>MVP</h3>
+          <ul>
+            <li>投稿（基本情報＋メディア＋ステージ選択）</li>
+            <li>作品ページ（全項目）＋ビルドログ</li>
+            <li>フィード（新着・週間人気・簡易レコメンド）</li>
+            <li>Like／複数リアクション／コメント／Follow</li>
+            <li>プロフィール＋作者ダッシュボード（簡易版）</li>
+            <li>タグ検索＋説明文ベースの自動分類</li>
+            <li>シェア用OGPカード自動生成</li>
+          </ul>
+        </div>
+        <div class="mvp-col later">
+          <h3>将来</h3>
+          <ul>
+            <li>行動ログベースの高度なレコメンド（TikTok型）</li>
+            <li>採用・投資家マッチング</li>
+            <li>Remix機能と系譜ツリー</li>
+            <li>多言語自動翻訳・グローバル展開</li>
+            <li>マーケットプレイス（有料テンプレート等）</li>
+            <li>DM・招待制コミュニティ機能</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>差別化ポイント／日々の訪問理由／投稿を続ける理由</h2></div>
+      <div class="subhead">差別化ポイント</div>
+      <p>未完成歓迎の投稿思想、常時発見アルゴリズム、無名逆転ブースト、ビルドログ文化、AI利用の可視化バッジ——単体ではなく、これらが組み合わさって初めて「アイデア一発勝負ではない」プラットフォームになる。</p>
+      <div class="subhead">ユーザーが毎日訪れる理由</div>
+      <p>発見フィードが毎日変わる中毒性、フォロー中の作者のビルドログ更新が気になる感覚、自分の投稿への反応通知。</p>
+      <div class="subhead">作者が投稿し続ける理由</div>
+      <p>アナリティクスで成長が可視化される、ビルドログで日々応援される感覚、フォロワーとの直接対話、実績バッジ、将来の採用・投資機会につながる期待。</p>
+    </section>
+
+    <section class="item" id="tech">
+      <div class="item-head"><h2>技術的なシステム構成</h2></div>
+      <div class="mock">
+        <div class="mock-title">構成案</div>
+        <div class="row"><span class="k">フロントエンド</span><span class="v">Next.js（SSR/ISRでSEOと発見性を両立）</span></div>
+        <div class="row"><span class="k">API</span><span class="v">Node.js または Go、REST + 一部GraphQL</span></div>
+        <div class="row"><span class="k">DB</span><span class="v">PostgreSQL（作品・ユーザー・関係グラフ）</span></div>
+        <div class="row"><span class="k">検索</span><span class="v">Meilisearch / Typesense（タグ・自然言語検索）</span></div>
+        <div class="row"><span class="k">レコメンド</span><span class="v">pgvector等によるベクトル類似検索から着手し、後にログベースへ拡張</span></div>
+        <div class="row"><span class="k">メディア</span><span class="v">オブジェクトストレージ＋CDN配信</span></div>
+        <div class="row"><span class="k">フィード生成</span><span class="v">バッチ集計（急上昇率）＋リアルタイム反応のハイブリッド</span></div>
+      </div>
+      <p>初期は「作り込まれたレコメンドエンジン」より「人力キュレーション＋シンプルな急上昇スコア」を優先し、データが貯まってから機械学習ベースに置き換える段階設計にする。</p>
+    </section>
+
+    <section class="item" id="ui">
+      <div class="item-head"><h2>トップページUI ／ 作品ページUI</h2></div>
+      <div class="subhead">トップページ</div>
+      <div class="mock">
+        <div class="row"><span class="k">ヘッダー</span><span class="v">検索バー（自然言語対応）／ 投稿ボタン ／ 通知</span></div>
+        <div class="row"><span class="k">Hero帯</span><span class="v">「今日の掘り出し物」横スクロールカード（無名作品優先枠）</span></div>
+        <div class="row"><span class="k">メインフィード</span><span class="v">パーソナライズド無限スクロール（作品カード：サムネ／一言キャッチ／ステージバッジ／反応数）</span></div>
+        <div class="row"><span class="k">サイドレール</span><span class="v">週間ランキング（複数軸）／ フォロー中の新着ビルドログ</span></div>
+        <div class="row"><span class="k">フッター導線</span><span class="v">サイコロ（ランダム発見）ボタンを常設</span></div>
+      </div>
+      <div class="subhead">作品ページ</div>
+      <p><a href="#s7">項目07</a>の構成に準拠。上部にメディアギャラリーと「試す」導線、中央に説明とビルドログのタイムライン、下部にコメント・関連作品を配置する縦積みレイアウト。</p>
+    </section>
+
+    <section class="item" id="compare">
+      <div class="item-head"><h2>競合との比較</h2></div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th class="hero-col">観点</th><th>Product Hunt</th><th>GitHub</th><th>App Store</th><th>Steam</th><th>本サービス</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>完成度の要求</td><td>高い</td><td>問わない</td><td>高い（審査）</td><td>中〜高</td><td>問わない（アイデア可）</td></tr>
+            <tr><td>評価軸</td><td>投票数</td><td>スター・利用実績</td><td>レビュー評価</td><td>レビュー・売上</td><td>発想＋実用性の複合</td></tr>
+            <tr><td>発見の持続性</td><td>低い（当日勝負）</td><td>低い（検索依存）</td><td>中（ランキング）</td><td>中</td><td>高（常時発見設計）</td></tr>
+            <tr><td>非エンジニア対応</td><td>低い</td><td>非常に低い</td><td>中（利用者として）</td><td>中（利用者として）</td><td>高（作者として）</td></tr>
+            <tr><td>制作過程の扱い</td><td>ほぼなし</td><td>コミット履歴のみ</td><td>なし</td><td>限定的</td><td>一級コンテンツ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>このサービスが成功するための最大の課題</h2></div>
+      <p>
+        鶏と卵問題——閲覧者がいなければ作者は投稿を続けず、面白い作品がなければ閲覧者は定着しない——が最大の壁になる。
+        加えて、「誰でも作れる」ことの裏返しとして、似たようなAI生成物が大量発生し、Discoveryの質が急速に劣化するリスクを抱えている。
+      </p>
+    </section>
+
+  </main>
+</div>
+
+<div class="synth-open" style="border-top: none; padding-top: 1rem;" id="critique">
+  <p class="eyebrow" style="color: var(--critical);">批判的評価</p>
+  <h2>本当にユーザーは集まるのか——厳しく評価する</h2>
+</div>
+
+<div class="frame" style="grid-template-columns: 1fr;">
+  <main style="padding-top: 1.5rem;">
+
+    <section class="item">
+      <div class="callout critical">
+        <span class="callout-label">懸念 1 — ターゲットの母数を過大評価している</span>
+        <p>
+          「非エンジニアでもAIでアプリが作れる時代」は事実だが、実際にBolt・v0・Replit・Claudeなどを使いこなして「公開に値する何か」を作り切れる非エンジニアは、2026年時点でもまだ少数派のアーリーアダプター層に限られる。
+          企画全体が前提とする「作者予備軍の巨大な母数」は、想定より一桁小さい可能性が高い。
+        </p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念 2 — 「未完成歓迎」は閲覧体験を静かに壊す</span>
+        <p>
+          未完成品だらけのプラットフォームは、「試してみたら動かなかった」の連続で閲覧者を消耗させる。
+          Product Huntが完成品前提なのは、閲覧者の時間を尊重するための合理的な設計であり、これを崩すと発見体験そのものの質が下がる。
+          「技術力でなくアイデアを評価する」という思想と「ちゃんと動くものを試したい」という閲覧者ニーズは、放置すると正面から衝突する。
+        </p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念 3 — AI生成物の同質化リスク</span>
+        <p>
+          誰でも簡単に作れるようになった結果、似たようなTodoアプリ、似たようなチャットボットが大量生産され、Discoveryの質が急速に劣化する現象は、AI生成コンテンツを扱う他プラットフォームで既に観測されている。
+          「アイデアの面白さ」を測る仕組みが弱いままだと、差別化ポイントそのものが埋没する。
+        </p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念 4 — 収益化までの距離が長すぎる</span>
+        <p>
+          フリーミアム・スポンサー・求人手数料はいずれも「十分な規模のユーザーベース」を前提とする収益源であり、初期は事実上ゼロ収益が続く。
+          個人開発規模のPMFに数年かかる可能性があり、相応の資金体力が必要になる。
+        </p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念 5 — TikTok的レコメンドはMVPで作れない</span>
+        <p>
+          行動ログ基盤・ベクトル検索・A/Bテスト基盤を要する高度なレコメンドは開発コストが非常に高く、初期に本格実装するのは非現実的。
+          しかし簡易ロジックで妥協すると、「発見の楽しさ」という核心価値そのものが弱くなるジレンマを抱える。
+        </p>
+      </div>
+
+      <div class="subhead" style="margin-top: 2rem;">修正提案</div>
+      <ol class="speclist">
+        <li><strong>完全公開ではなく初期は招待制・審査制にする。</strong>規模より先に、濃く質の高い最初の100作品を作る。</li>
+        <li><strong>「未完成OK」と「動くもの」をゾーニングで分離する。</strong>メインDiscoveryフィードは動作確認済みの作品のみとし、アイデア投稿は "Lab" のような別セクションに隔離して期待値の衝突を防ぐ。</li>
+        <li><strong>評価軸は最初から1つに絞る。</strong>複数軸リアクションや多ジャンルランキングは魅力的だが、初期は「急上昇スコア」単軸に留め、複雑化は後回しにする。</li>
+        <li><strong>レコメンドは背伸びしない。</strong>MVPは人力キュレーション＋単純な急上昇アルゴリズムに徹し、「今日の掘り出し物」を運営が手動で選ぶ体制から始める。</li>
+        <li><strong>最初から広く狙わず、単一ニッチに絞る。</strong>例えば「日本語圏の個人開発者コミュニティ」など特定クラスタに集中し、そこで濃い文化を作ってから拡張する。</li>
+        <li><strong>運営自身がシードコンテンツを用意する。</strong>既存の個人開発者に声をかけ、ローンチ前に50〜100件の作品を先行投稿してもらい、「空っぽの棚」状態を回避する。</li>
+      </ol>
+
+      <p style="margin-top: 1.5rem; max-width: 66ch; color: var(--ink-soft);">
+        結論として、コンセプトの思想（未完成歓迎・発想重視・常時発見）自体は既存サービスの構造的な穴を正しく突いている。
+        ただし「規模」「網羅性」「高度なアルゴリズム」を初期から狙うと、鶏卵問題と品質崩壊の両方に同時に殴られる。
+        最初の一歩は、狭いニッチで「ここでしか得られない発見体験」を作り切ることに尽きる。
+      </p>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Platform Concept Memo — アイデア発表プラットフォーム企画書。PM・UX・マーケティング・アーキテクチャの視点から検討。
+</footer>
+</body>
+</html>
