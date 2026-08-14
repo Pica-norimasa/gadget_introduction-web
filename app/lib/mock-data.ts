@@ -24,7 +24,7 @@ export type Work = {
   platforms: Platform[];
   author: string;
   hue: number; // thumbnail accent hue, 0-360
-  glyph: string; // 1-2 char thumbnail mark
+  glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
   reactions: {
     interesting: number;
     useful: number;
@@ -133,7 +133,7 @@ export const works: Work[] = [
     platforms: ["Web"],
     author: "つきみ",
     hue: 330,
-    glyph: "🎂",
+    glyph: null,
     reactions: { interesting: 54, useful: 20, idea: 61, wantToTry: 48 },
     comments: 15,
     daysAgo: 0,
@@ -184,7 +184,7 @@ export const works: Work[] = [
     platforms: ["Web"],
     author: "まめ",
     hue: 190,
-    glyph: "✉️",
+    glyph: null,
     reactions: { interesting: 60, useful: 74, idea: 22, wantToTry: 39 },
     comments: 14,
     daysAgo: 8,
@@ -252,7 +252,7 @@ export const works: Work[] = [
     platforms: ["Web"],
     author: "dev_nanashi",
     hue: 260,
-    glyph: "🎵",
+    glyph: null,
     reactions: { interesting: 118, useful: 5, idea: 84, wantToTry: 52 },
     comments: 33,
     daysAgo: 0,

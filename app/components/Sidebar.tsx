@@ -9,7 +9,7 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
     >
       <span className="w-5 shrink-0 font-mono text-sm font-bold text-[var(--ink-faint)]">{rank}</span>
       <div className="w-10 shrink-0">
-        <WorkThumb hue={work.hue} glyph={work.glyph} />
+        <WorkThumb hue={work.hue} glyph={work.glyph} compact />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{work.title}</p>
