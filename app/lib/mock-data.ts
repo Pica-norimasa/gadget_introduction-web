@@ -25,6 +25,7 @@ export type Work = {
   author: string;
   hue: number; // thumbnail accent hue, 0-360
   glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
+  githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する
   reactions: {
     interesting: number;
     useful: number;
@@ -309,6 +310,42 @@ export const works: Work[] = [
     daysAgo: 10,
     trendScore: 31,
     followers: 210,
+  },
+  {
+    id: "shuuchuu-log-cli",
+    title: "集中ログ、CLIで淡々と",
+    catch: "使い方はREADME参照。GUIは作ってないです",
+    category: "PCアプリ",
+    stage: "公開中",
+    tool: "Cursor",
+    platforms: ["Windows", "macOS", "Linux"],
+    author: "nanashi_cli",
+    hue: 210,
+    glyph: null,
+    githubUrl: "https://github.com/octocat/Hello-World",
+    reactions: { interesting: 18, useful: 26, idea: 8, wantToTry: 22 },
+    comments: 4,
+    daysAgo: 6,
+    trendScore: 27,
+    followers: 9,
+  },
+  {
+    id: "yowa-rss-bot",
+    title: "夜間だけ動くRSSまとめボット",
+    catch: "深夜の間だけ巡回して、朝イチでまとめを投げてくるだけのbot",
+    category: "AIツール",
+    stage: "プロトタイプ",
+    tool: null,
+    platforms: ["Web"],
+    author: "yowa_dev",
+    hue: 250,
+    glyph: null,
+    githubUrl: "https://github.com/yowa-dev/this-repo-does-not-exist",
+    reactions: { interesting: 12, useful: 9, idea: 15, wantToTry: 10 },
+    comments: 2,
+    daysAgo: 4,
+    trendScore: 19,
+    followers: 4,
   },
 ];
 

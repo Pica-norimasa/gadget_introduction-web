@@ -1,4 +1,5 @@
 import type { Work } from "@/app/lib/mock-data";
+import { GitHubCard } from "./GitHubCard";
 import { PlatformBadges } from "./PlatformBadges";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
@@ -18,7 +19,11 @@ export function WorkCard({ work, size = "md" }: { work: Work; size?: "md" | "lg"
       className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-shadow hover:shadow-[0_6px_20px_var(--shadow)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
     >
       <div className="relative">
-        <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
+        {!work.glyph && work.githubUrl ? (
+          <GitHubCard githubUrl={work.githubUrl} size={size} />
+        ) : (
+          <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
+        )}
         {work.trendScore >= 70 && (
           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--ink)] px-2 py-0.5 text-[11px] font-medium text-[var(--bg)]">
             🔥 急上昇
