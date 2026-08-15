@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Post, Work } from "@/app/lib/mock-data";
+import type { Post, ReactionKey, Work } from "@/app/lib/mock-data";
 import { ImmersiveViewer } from "./ImmersiveViewer";
 
-export function ImmersiveEntry({ works, posts }: { works: Work[]; posts: Post[] }) {
+export function ImmersiveEntry({
+  works,
+  posts,
+  myReactions,
+}: {
+  works: Work[];
+  posts: Post[];
+  myReactions: Record<string, ReactionKey[]>;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -25,7 +33,9 @@ export function ImmersiveEntry({ works, posts }: { works: Work[]; posts: Post[] 
         </span>
       </button>
 
-      {open && <ImmersiveViewer works={works} posts={posts} onClose={() => setOpen(false)} />}
+      {open && (
+        <ImmersiveViewer works={works} posts={posts} myReactions={myReactions} onClose={() => setOpen(false)} />
+      )}
     </div>
   );
 }

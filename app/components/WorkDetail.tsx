@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
@@ -13,7 +13,15 @@ import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
 
-export function WorkDetail({ work, timeline }: { work: Work; timeline: Post[] }) {
+export function WorkDetail({
+  work,
+  timeline,
+  myReactions,
+}: {
+  work: Work;
+  timeline: Post[];
+  myReactions: ReactionKey[];
+}) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
@@ -57,7 +65,7 @@ export function WorkDetail({ work, timeline }: { work: Work; timeline: Post[] })
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
         <div className="mb-6 flex items-center justify-between">
-          <ReactionBar workId={work.id} reactions={work.reactions} />
+          <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
           <span className="font-mono text-[12px] text-[var(--ink-faint)]">
             👁️{formatCount(work.views)} · 💬{work.comments}
           </span>

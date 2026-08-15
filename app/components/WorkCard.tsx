@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
@@ -20,11 +20,13 @@ function isUnderdog(w: Work) {
 export function WorkCard({
   work,
   posts,
+  myReactions,
   size = "md",
   showAnchor = true,
 }: {
   work: Work;
   posts: Post[];
+  myReactions: Record<string, ReactionKey[]>;
   size?: "md" | "lg";
   // 同じ作品がヒーローレールとフィードの両方に出ることがあるため、
   // id="work-xxx" を持つインスタンスは1つ(フィード側)だけにする。
@@ -99,7 +101,7 @@ export function WorkCard({
         )}
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
-          <ReactionBar workId={work.id} reactions={work.reactions} />
+          <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
           <div className="flex items-center justify-between text-[12px] text-[var(--ink-faint)]">
             <Link href={`/work/${work.id}`} className="hover:text-[var(--ink-soft)] hover:underline">
               🔗 詳細・共有

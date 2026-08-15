@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Work } from "@/app/lib/mock-data";
-
-type ReactionKey = keyof Work["reactions"];
+import type { ReactionKey, Work } from "@/app/lib/mock-data";
+import { toggleReaction } from "@/app/lib/reaction-actions";
 
 const REACTION_META: { key: ReactionKey; icon: string; label: string }[] = [
   { key: "interesting", icon: "😲", label: "面白い" },
@@ -15,25 +14,33 @@ const REACTION_META: { key: ReactionKey; icon: string; label: string }[] = [
 export function ReactionBar({
   workId,
   reactions,
+  myReactions,
   variant = "card",
 }: {
   workId: string;
   reactions: Work["reactions"];
+  // このProjectに対してゲストユーザーが既に押しているリアクション種別(DBから)
+  myReactions: ReactionKey[];
   // "card" = 通常のフィードカード内(テーマ変数に追従)
   // "dark" = 没入ビューアの黒スクリム上(常に明色固定)
   variant?: "card" | "dark";
 }) {
+  const initiallyActive = new Set(myReactions);
   const [toggled, setToggled] = useState<Partial<Record<ReactionKey, boolean>>>({});
 
   function toggle(key: ReactionKey) {
-    setToggled((prev) => ({ ...prev, [key]: !prev[key] }));
+    setToggled((prev) => ({ ...prev, [key]: !(prev[key] ?? initiallyActive.has(key)) }));
+    void toggleReaction(workId, key);
   }
 
   return (
     <div className="flex flex-wrap gap-1">
       {REACTION_META.map(({ key, icon, label }) => {
-        const active = !!toggled[key];
-        const count = reactions[key] + (active ? 1 : 0);
+        // reactions[key]は既にDB由来の実カウント(自分の分も含む)なので、
+        // 自分の押下分を引いてから現在のトグル状態を足し戻す(二重カウント防止)。
+        const active = toggled[key] ?? initiallyActive.has(key);
+        const baseCount = reactions[key] - (initiallyActive.has(key) ? 1 : 0);
+        const count = baseCount + (active ? 1 : 0);
         return (
           <button
             key={`${workId}-${key}`}

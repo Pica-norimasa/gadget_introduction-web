@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPosts, getWorkById, getWorks } from "@/app/lib/queries";
+import { getMyReactionsForProject, getPosts, getWorkById, getWorks } from "@/app/lib/queries";
 import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
@@ -44,8 +44,8 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const posts = await getPosts();
+  const [posts, myReactions] = await Promise.all([getPosts(), getMyReactionsForProject(work.id)]);
   const timeline = postsForProject(work.id, posts);
 
-  return <WorkDetail work={work} timeline={timeline} />;
+  return <WorkDetail work={work} timeline={timeline} myReactions={myReactions} />;
 }

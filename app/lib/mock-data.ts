@@ -42,6 +42,8 @@ export type Work = {
   followers: number; // author follower count — small number = "無名"
 };
 
+export type ReactionKey = keyof Work["reactions"];
+
 // このデータはアプリ本体からはもう読まれない。prisma/seed.tsがDBへ投入する
 // ための唯一のソースとしてのみ使われる(実際の表示はapp/lib/queries.ts経由でDBから読む)。
 export const works: Work[] = [

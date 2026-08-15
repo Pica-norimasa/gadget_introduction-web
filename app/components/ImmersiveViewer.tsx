@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
 import { ReactionBar } from "./ReactionBar";
@@ -23,7 +23,17 @@ function formatRelativeHours(hoursAgo: number): string {
   return `${Math.round(hoursAgo / 24)}日前`;
 }
 
-function Slide({ work, posts, onNavigate }: { work: Work; posts: Post[]; onNavigate: () => void }) {
+function Slide({
+  work,
+  posts,
+  myReactions,
+  onNavigate,
+}: {
+  work: Work;
+  posts: Post[];
+  myReactions: Record<string, ReactionKey[]>;
+  onNavigate: () => void;
+}) {
   const latestPost = latestPostFor(work.id, posts);
 
   return (
@@ -62,7 +72,12 @@ function Slide({ work, posts, onNavigate }: { work: Work; posts: Post[]; onNavig
           </p>
         )}
         <div className="mt-1 flex items-center justify-between gap-3">
-          <ReactionBar workId={work.id} reactions={work.reactions} variant="dark" />
+          <ReactionBar
+            workId={work.id}
+            reactions={work.reactions}
+            myReactions={myReactions[work.id] ?? []}
+            variant="dark"
+          />
           <span className="shrink-0 text-[12px] text-white/70">by {work.author}</span>
         </div>
         <a
@@ -80,10 +95,12 @@ function Slide({ work, posts, onNavigate }: { work: Work; posts: Post[]; onNavig
 export function ImmersiveViewer({
   works,
   posts,
+  myReactions,
   onClose,
 }: {
   works: Work[];
   posts: Post[];
+  myReactions: Record<string, ReactionKey[]>;
   onClose: () => void;
 }) {
   const [feed] = useState(() => {
@@ -138,7 +155,7 @@ export function ImmersiveViewer({
 
       <div className="h-full snap-y snap-mandatory overflow-y-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {feed.slice(0, loadedCount).map((w, i) => (
-          <Slide key={`${w.id}-${i}`} work={w} posts={posts} onNavigate={onClose} />
+          <Slide key={`${w.id}-${i}`} work={w} posts={posts} myReactions={myReactions} onNavigate={onClose} />
         ))}
         <div ref={sentinelRef} className="h-1" />
       </div>

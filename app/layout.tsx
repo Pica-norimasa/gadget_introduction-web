@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { getFollowedAuthors } from "@/app/lib/queries";
+import { FollowHydrator } from "@/app/components/FollowHydrator";
 
 export const metadata: Metadata = {
   // 本番ドメインが決まったらNEXT_PUBLIC_SITE_URLで上書きする。
@@ -10,10 +12,15 @@ export const metadata: Metadata = {
     "非エンジニアがAIで作った作品を発表し、発見し合う創作プラットフォームのコンセプトモック。",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const followedAuthors = await getFollowedAuthors();
+
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <FollowHydrator initial={followedAuthors} />
+        {children}
+      </body>
     </html>
   );
 }

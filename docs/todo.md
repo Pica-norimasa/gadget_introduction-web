@@ -53,7 +53,8 @@
    `mock-data.ts`自体は削除せず、`prisma/seed.ts`が読む「シードの元データ」として
    残してある。また`User.followersSeed`を追加し(`Project.commentsSeed`等と同じ
    起点カウント方式)、フォロワー数が0固定になって「無名の逆転枠」判定が
-   壊れるのを防いだ。実フォロー数(Follow行)は認証実装後に加算する設計。
+   壊れるのを防いだ。実フォロー数(Follow行)は下の項目3で実際に加算するように
+   なった。
 2. ~~投稿コンポーザーの実装~~ → 実装済み。`app/components/PostComposer.tsx`
    (Server Action `app/lib/post-actions.ts` 経由で`prisma.post.create()`)。
    投稿は`app/lib/infer-post-type.ts`の簡易ヒューリスティックで種別を自動判定し、
@@ -63,10 +64,30 @@
    ただし**まだログイン機構が無いため、コンポーザーからの投稿は全員
    固定の「あなた」という1アカウント名義になる**(`post-actions.ts`の
    `GUEST_USER_NAME`参照)。認証ができたら実ユーザーに置き換える。
-3. **Follow/Reactionは認証が無いと繋げられない。** テーブルは用意したが
-   「誰がフォローしているか」を表すにはログインユーザーの概念が必要。
-   今の`follow-store.ts`/`ReactionBar`はブラウザ内だけの匿名状態なので、
-   認証機能を先に作らないと実DBには繋げられない。
+3. ~~Follow/Reactionは認証が無いと繋げられない~~ → 認証を待たずに、投稿と
+   同じ`GUEST_USER_NAME`パターンでDB接続した。
+   - `app/lib/reaction-actions.ts`の`toggleReaction`、`app/lib/follow-actions.ts`
+     の`toggleFollowAction`がそれぞれReaction/Follow行をトグル(あれば削除、
+     なければ作成)するServer Action。
+   - `ReactionBar`は表示カウント(`work.reactions`)が既にseed+実カウントの
+     合算になったため、「自分の1票を二重に足さない」よう
+     `baseCount = 表示カウント - 自分が押した分` を引いてから現在のトグル
+     状態を足し戻す形にした。`app/lib/queries.ts`の`getMyReactions`/
+     `getMyReactionsForProject`で「自分が既にどのProjectにどのリアクションを
+     押したか」をDBから取得し、`posts`と同じやり方でWorkCard/WorkDetail/
+     ImmersiveViewerまでpropsで引き回している。
+   - Followは複数枚のカードに同じ作者が出ること(フィードの無限スクロールが
+     shuffleした複製を繰り返す仕様のため)があるので、`follow-store.ts`の
+     クライアント側グローバルストアはそのまま残し、初期値だけをDB由来に
+     差し替えた。`app/layout.tsx`を非同期化して`getFollowedAuthors()`を
+     取得し、`app/components/FollowHydrator.tsx`(マウント時に一度だけ
+     `hydrateFollowed()`を呼ぶだけの非表示コンポーネント)経由でストアに
+     反映する。トグル時はローカルを楽観的に更新しつつ`toggleFollowAction`を
+     バックグラウンドで呼ぶ(失敗時のロールバックは無し、プロトタイプ相応の
+     割り切り)。
+   - フォロワー数(`work.followers`)も`followersSeed + 実Follow数`
+     (`_count.followedBy`)の合算に更新したので、実際にフォローすると
+     「無名の逆転枠」判定や人気順ソートにも反映される。
 4. **本番切り替え時にMySQL用アダプタへ変更。**
    `prisma/schema.prisma`の`datasource.provider`を`"mysql"`に、
    `app/lib/prisma.ts`のアダプタを`@prisma/adapter-mariadb`

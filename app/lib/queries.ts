@@ -1,12 +1,34 @@
 import { prisma } from "@/app/lib/prisma";
-import type { AiTool, Category, Platform, Post, PostType, Stage, Work } from "@/app/lib/mock-data";
+import { GUEST_USER_NAME } from "@/app/lib/guest-user";
+import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
-function toWork(project: Awaited<ReturnType<typeof prisma.project.findMany>>[number] & {
-  author: { name: string; followersSeed: number };
-}): Work {
+type ProjectWithAuthor = {
+  id: string;
+  title: string;
+  catchText: string;
+  category: string;
+  stage: string;
+  tool: string | null;
+  platforms: unknown;
+  hue: number;
+  glyph: string | null;
+  githubUrl: string | null;
+  hasMotion: boolean;
+  views: number;
+  trendScore: number;
+  createdAt: Date;
+  commentsSeed: number;
+  reactionInterestingSeed: number;
+  reactionUsefulSeed: number;
+  reactionIdeaSeed: number;
+  reactionWantToTrySeed: number;
+  author: { name: string; followersSeed: number; _count: { followedBy: number } };
+};
+
+function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
   return {
     id: project.id,
     title: project.title,
@@ -21,34 +43,51 @@ function toWork(project: Awaited<ReturnType<typeof prisma.project.findMany>>[num
     githubUrl: project.githubUrl ?? undefined,
     hasMotion: project.hasMotion,
     reactions: {
-      interesting: project.reactionInterestingSeed,
-      useful: project.reactionUsefulSeed,
-      idea: project.reactionIdeaSeed,
-      wantToTry: project.reactionWantToTrySeed,
+      interesting: project.reactionInterestingSeed + (realReactionCounts?.interesting ?? 0),
+      useful: project.reactionUsefulSeed + (realReactionCounts?.useful ?? 0),
+      idea: project.reactionIdeaSeed + (realReactionCounts?.idea ?? 0),
+      wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
     },
     comments: project.commentsSeed,
     views: project.views,
     daysAgo: Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS)),
     trendScore: project.trendScore,
-    // 実フォロー数(Follow行)は認証実装後に足し合わせる。今は起点カウントのみ。
-    followers: project.author.followersSeed,
+    followers: project.author.followersSeed + project.author._count.followedBy,
   };
 }
 
+const authorInclude = { include: { _count: { select: { followedBy: true } } } } as const;
+
 export async function getWorks(): Promise<Work[]> {
-  const projects = await prisma.project.findMany({
-    include: { author: true },
-    orderBy: { createdAt: "desc" },
-  });
-  return projects.map(toWork);
+  const [projects, reactionRows] = await Promise.all([
+    prisma.project.findMany({
+      include: { author: authorInclude },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.reaction.groupBy({ by: ["projectId", "type"], _count: { _all: true } }),
+  ]);
+
+  const countsByProject = new Map<string, Partial<Record<ReactionKey, number>>>();
+  for (const row of reactionRows) {
+    const entry = countsByProject.get(row.projectId) ?? {};
+    entry[row.type as ReactionKey] = row._count._all;
+    countsByProject.set(row.projectId, entry);
+  }
+
+  return projects.map((p) => toWork(p, countsByProject.get(p.id)));
 }
 
 export async function getWorkById(id: string): Promise<Work | null> {
-  const project = await prisma.project.findUnique({
-    where: { id },
-    include: { author: true },
-  });
-  return project ? toWork(project) : null;
+  const [project, reactionRows] = await Promise.all([
+    prisma.project.findUnique({ where: { id }, include: { author: authorInclude } }),
+    prisma.reaction.groupBy({ where: { projectId: id }, by: ["type"], _count: { _all: true } }),
+  ]);
+  if (!project) return null;
+
+  const realCounts: Partial<Record<ReactionKey, number>> = {};
+  for (const row of reactionRows) realCounts[row.type as ReactionKey] = row._count._all;
+
+  return toWork(project, realCounts);
 }
 
 export async function getPosts(): Promise<Post[]> {
@@ -63,4 +102,51 @@ export async function getPosts(): Promise<Post[]> {
     body: r.body,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
+}
+
+async function getGuestUser() {
+  return prisma.user.findUnique({ where: { name: GUEST_USER_NAME } });
+}
+
+// projectId -> ゲストユーザーが既に押しているリアクション種別。フィード全体を
+// 1回で回すページ(`/`)向け。
+export async function getMyReactions(): Promise<Record<string, ReactionKey[]>> {
+  const user = await getGuestUser();
+  if (!user) return {};
+
+  const rows = await prisma.reaction.findMany({
+    where: { userId: user.id },
+    select: { projectId: true, type: true },
+  });
+
+  const result: Record<string, ReactionKey[]> = {};
+  for (const r of rows) {
+    (result[r.projectId] ??= []).push(r.type as ReactionKey);
+  }
+  return result;
+}
+
+// 単一Project向け(作品詳細ページ)。全件取得するgetMyReactions()より軽い。
+export async function getMyReactionsForProject(projectId: string): Promise<ReactionKey[]> {
+  const user = await getGuestUser();
+  if (!user) return [];
+
+  const rows = await prisma.reaction.findMany({
+    where: { userId: user.id, projectId },
+    select: { type: true },
+  });
+  return rows.map((r) => r.type as ReactionKey);
+}
+
+// ゲストユーザーがフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー
+// 状態をクライアント側ストア(follow-store.ts)に初期反映するために使う。
+export async function getFollowedAuthors(): Promise<string[]> {
+  const user = await getGuestUser();
+  if (!user) return [];
+
+  const follows = await prisma.follow.findMany({
+    where: { followerId: user.id },
+    include: { following: { select: { name: true } } },
+  });
+  return follows.map((f) => f.following.name);
 }
