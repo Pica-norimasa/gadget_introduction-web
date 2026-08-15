@@ -83,20 +83,26 @@ html {
   color-scheme: light dark;
 }
 
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
+/* base層に置くことで、Tailwindのユーティリティクラス(utilities層)側の
+   text-*指定がこれらより確実に優先されるようにする。レイヤー無しの生CSSだと
+   Tailwind v4のカスケードレイヤー順により、詳細度に関わらずutilitiesより
+   常に勝ってしまい、例えば<a>にtext-whiteを付けても効かなくなる。 */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+  }
 }
 
 ::selection {
   background: var(--accent);
   color: var(--accent-ink);
-}
-
-a {
-  color: inherit;
 }
 
 ::-webkit-scrollbar {
