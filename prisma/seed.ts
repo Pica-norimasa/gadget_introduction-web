@@ -50,7 +50,11 @@ async function main() {
     });
   }
 
+  const authorIdByProjectId = new Map(works.map((w) => [w.id, userIdByName.get(w.author)!]));
+
   for (const p of mockPosts) {
+    const authorId = authorIdByProjectId.get(p.projectId);
+    if (!authorId) throw new Error(`project not found for post: ${p.id}`);
     await prisma.post.upsert({
       where: { id: p.id },
       update: {},
@@ -59,6 +63,7 @@ async function main() {
         type: p.type,
         body: p.body,
         projectId: p.projectId,
+        authorId,
         createdAt: new Date(Date.now() - p.hoursAgo * 60 * 60 * 1000),
       },
     });

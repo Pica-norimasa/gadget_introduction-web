@@ -22,6 +22,7 @@ model User {
   createdAt DateTime @default(now())
 
   projects       Project[]
+  posts          Post[]
   reactions      Reaction[]
   following      Follow[]   @relation("Follower")
   followedBy     Follow[]   @relation("Following")
@@ -59,16 +60,22 @@ model Project {
 }
 
 model Post {
-  id        String   @id
+  id        String   @id @default(cuid())
   // idea | making | screenshot | demo | prototype | release | update | question
   type      String
   body      String
   createdAt DateTime @default(now())
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+
+  // 投稿時にProjectと紐付けるのを必須にしない(plan-v2.htmlの方針)。
+  // 紐付けない投稿は「孤立したPost」としてそのまま公開される。
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
+  @@index([authorId])
 }
 
 model Reaction {

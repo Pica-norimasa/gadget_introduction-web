@@ -1,5 +1,7 @@
 import { posts, works } from "@/app/lib/mock-data";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { PostComposer } from "@/app/components/PostComposer";
+import { RecentActivity } from "@/app/components/RecentActivity";
 import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { ImmersiveEntry } from "@/app/components/ImmersiveEntry";
 import { HeroRail } from "@/app/components/HeroRail";
@@ -16,6 +18,8 @@ export default function Home() {
       <SiteHeader />
 
       <main className="flex-1">
+        <PostComposer />
+        <RecentActivity />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} />
         <HeroRail works={heroWorks} />

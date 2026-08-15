@@ -42,12 +42,19 @@
 
 残っているのは以下:
 
-1. **コンポーネント側をPrisma経由に切り替える。** 今は`page.tsx`はじめ
-   全コンポーネントが`app/lib/mock-data.ts`を直接importしている。
+1. **コンポーネント側をPrisma経由に切り替える。** 今も`page.tsx`はじめ
+   ほとんどのコンポーネントが`app/lib/mock-data.ts`を直接importしている
+   (投稿コンポーザー/最新の創作活動一覧だけが例外でPrisma経由)。
    `app/lib/prisma.ts`のクライアント経由でDBから読むように順次置き換える。
-2. **投稿コンポーザーの実装。** Post作成はDB基盤ができたことで初めて
-   意味を持つ機能。`prisma.post.create()` + Server Actionで実装するのが
-   Next.js App Routerとして素直。
+2. ~~投稿コンポーザーの実装~~ → 実装済み。`app/components/PostComposer.tsx`
+   (Server Action `app/lib/post-actions.ts` 経由で`prisma.post.create()`)。
+   投稿は`app/lib/infer-post-type.ts`の簡易ヒューリスティックで種別を自動判定し、
+   Projectへの紐付けは必須にしていない(孤立したPostとしてそのまま公開される、
+   plan-v2.htmlの方針どおり)。`app/components/RecentActivity.tsx`でDBから
+   直接クエリして「最新の創作活動」として表示し、投稿→即反映を確認済み。
+   ただし**まだログイン機構が無いため、コンポーザーからの投稿は全員
+   固定の「あなた」という1アカウント名義になる**(`post-actions.ts`の
+   `GUEST_USER_NAME`参照)。認証ができたら実ユーザーに置き換える。
 3. **Follow/Reactionは認証が無いと繋げられない。** テーブルは用意したが
    「誰がフォローしているか」を表すにはログインユーザーの概念が必要。
    今の`follow-store.ts`/`ReactionBar`はブラウザ内だけの匿名状態なので、
@@ -56,6 +63,9 @@
    `prisma/schema.prisma`の`datasource.provider`を`"mysql"`に、
    `app/lib/prisma.ts`のアダプタを`@prisma/adapter-mariadb`
    (またはPrisma公式のMySQL用ドライバアダプタ)に差し替える。
+5. **投稿からのProject自動生成(plan-v2.html項目09)は未実装。** 今の
+   コンポーザーは常に孤立したPostを作るだけで、「これは新しいProjectですか?」
+   という提案フローは無い。次にコンポーザーを拡張するならここ。
 
 ### このマシン固有のメモ(開発環境の制約)
 
