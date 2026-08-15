@@ -1,5 +1,6 @@
 import { buildLogFeed, works } from "@/app/lib/mock-data";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { HeroRail } from "@/app/components/HeroRail";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
@@ -14,6 +15,7 @@ export default function Home() {
       <SiteHeader />
 
       <main className="flex-1">
+        <StoriesStrip buildLogs={buildLogFeed} works={works} />
         <HeroRail works={heroWorks} />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">

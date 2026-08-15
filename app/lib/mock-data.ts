@@ -396,4 +396,20 @@ export const buildLogFeed: BuildLogEntry[] = [
     note: "犬のセリフを50パターン追加。同じ怒られ方に飽きなくなった",
     hoursAgo: 20,
   },
+  {
+    id: "log-5",
+    workTitle: "献立まかせて",
+    workId: "kondate-makasete",
+    author: "みかん",
+    note: "苦手食材を除外できるオプションを追加。要望くれた人ありがとう",
+    hoursAgo: 26,
+  },
+  {
+    id: "log-6",
+    workTitle: "猫の鳴き声、翻訳してみた",
+    workId: "neko-honyaku",
+    author: "sora",
+    note: "「遊んで」の検出だけ精度が低い…録音データ提供してくれる人募集中",
+    hoursAgo: 30,
+  },
 ];
