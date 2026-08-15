@@ -19,8 +19,8 @@ export function FollowButton({
       aria-pressed={following}
       className={`shrink-0 rounded-full border font-medium transition-colors ${padding} ${
         following
-          ? "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          : "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)] hover:opacity-90"
+          ? "border-transparent bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-80"
+          : "border-[var(--accent)] bg-transparent text-[var(--accent)] hover:bg-[var(--accent-soft)]"
       }`}
     >
       {following ? "フォロー中" : "フォローする"}
