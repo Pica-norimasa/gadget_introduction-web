@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { works } from "@/app/lib/mock-data";
+import { getWorkById } from "@/app/lib/queries";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -11,7 +11,7 @@ export const contentType = "image/png";
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const work = works.find((w) => w.id === id);
+  const work = await getWorkById(id);
 
   if (!work) {
     return new ImageResponse(

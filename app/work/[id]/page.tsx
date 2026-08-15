@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { works } from "@/app/lib/mock-data";
+import { getPosts, getWorkById, getWorks } from "@/app/lib/queries";
+import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const works = await getWorks();
   return works.map((w) => ({ id: w.id }));
-}
-
-function findWork(id: string) {
-  return works.find((w) => w.id === id);
 }
 
 export async function generateMetadata({
@@ -17,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const work = findWork(id);
+  const work = await getWorkById(id);
   if (!work) {
     return { title: "作品が見つかりません | きざし" };
   }
@@ -43,8 +41,11 @@ export async function generateMetadata({
 
 export default async function WorkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const work = findWork(id);
+  const work = await getWorkById(id);
   if (!work) notFound();
 
-  return <WorkDetail work={work} />;
+  const posts = await getPosts();
+  const timeline = postsForProject(work.id, posts);
+
+  return <WorkDetail work={work} timeline={timeline} />;
 }

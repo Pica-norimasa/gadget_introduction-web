@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Platform, Work } from "@/app/lib/mock-data";
+import type { Platform, Post, Work } from "@/app/lib/mock-data";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { WorkCard } from "./WorkCard";
 
@@ -25,7 +25,7 @@ function shuffled<T>(arr: T[]): T[] {
   return copy;
 }
 
-export function FeedSection({ works }: { works: Work[] }) {
+export function FeedSection({ works, posts }: { works: Work[]; posts: Post[] }) {
   const [tab, setTab] = useState<Tab>("trend");
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
@@ -166,7 +166,7 @@ export function FeedSection({ works }: { works: Work[] }) {
             {shown.map((w, i) => {
               const isFirst = !seenIds.has(w.id);
               seenIds.add(w.id);
-              return <WorkCard key={`${w.id}-${i}`} work={w} showAnchor={isFirst} />;
+              return <WorkCard key={`${w.id}-${i}`} work={w} posts={posts} showAnchor={isFirst} />;
             })}
           </div>
 

@@ -21,6 +21,11 @@ model User {
   name      String   @unique
   createdAt DateTime @default(now())
 
+  // 表示用の起点フォロワー数。実フォローはFollow行として積み上がる想定だが、
+  // 認証が無くFollow行がまだ実際には作られないため、Project.commentsSeed等と
+  // 同じ考え方でこの起点カウントを用意している(表示は起点 + 実Follow数の合算)。
+  followersSeed  Int        @default(0)
+
   projects       Project[]
   posts          Post[]
   reactions      Reaction[]

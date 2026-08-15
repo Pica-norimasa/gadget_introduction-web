@@ -1,4 +1,4 @@
-import { posts, works } from "@/app/lib/mock-data";
+import { getPosts, getWorks } from "@/app/lib/queries";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposer } from "@/app/components/PostComposer";
 import { RecentActivity } from "@/app/components/RecentActivity";
@@ -9,7 +9,8 @@ import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
-export default function Home() {
+export default async function Home() {
+  const [works, posts] = await Promise.all([getWorks(), getPosts()]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
 
@@ -21,17 +22,17 @@ export default function Home() {
         <PostComposer />
         <RecentActivity />
         <StoriesStrip posts={posts} works={works} />
-        <ImmersiveEntry works={works} />
-        <HeroRail works={heroWorks} />
+        <ImmersiveEntry works={works} posts={posts} />
+        <HeroRail works={heroWorks} posts={posts} />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
-          <FeedSection works={works} />
+          <FeedSection works={works} posts={posts} />
           <Sidebar ranking={rankingWorks} posts={posts} works={works} />
         </div>
       </main>
 
       <footer className="border-t border-[var(--line)] px-4 py-8 text-center text-[12px] text-[var(--ink-faint)] sm:px-6">
-        きざし — アイデアを、育てながら見せる場所。掲載中のデータはすべてモックです。
+        きざし — アイデアを、育てながら見せる場所。開発中のプロトタイプです。
       </footer>
 
       <DiceButton works={works} />

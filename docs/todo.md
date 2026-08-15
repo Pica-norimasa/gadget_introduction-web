@@ -42,10 +42,18 @@
 
 残っているのは以下:
 
-1. **コンポーネント側をPrisma経由に切り替える。** 今も`page.tsx`はじめ
-   ほとんどのコンポーネントが`app/lib/mock-data.ts`を直接importしている
-   (投稿コンポーザー/最新の創作活動一覧だけが例外でPrisma経由)。
-   `app/lib/prisma.ts`のクライアント経由でDBから読むように順次置き換える。
+1. ~~コンポーネント側をPrisma経由に切り替える~~ → 実装済み。`app/lib/queries.ts`
+   (`getWorks`/`getWorkById`/`getPosts`)がDBの行を既存の`Work`/`Post`型に変換して返す
+   アダプタ層になっており、`page.tsx`・`work/[id]/page.tsx`・`opengraph-image.tsx`は
+   これ経由でDBから読むように切り替えた。`WorkCard`/`FeedSection`/`HeroRail`/
+   `WorkDetail`/`ImmersiveEntry`/`ImmersiveViewer`など下流の表示コンポーネントは
+   型が同じなので変更不要、`posts`をpropsで受け取る形にしただけ。`latestPostFor`/
+   `postsForProject`は`app/lib/post-helpers.ts`に移動し、posts配列を引数で受け取る
+   純粋関数にした(元は`mock-data.ts`のモジュール変数を直接参照していたため)。
+   `mock-data.ts`自体は削除せず、`prisma/seed.ts`が読む「シードの元データ」として
+   残してある。また`User.followersSeed`を追加し(`Project.commentsSeed`等と同じ
+   起点カウント方式)、フォロワー数が0固定になって「無名の逆転枠」判定が
+   壊れるのを防いだ。実フォロー数(Follow行)は認証実装後に加算する設計。
 2. ~~投稿コンポーザーの実装~~ → 実装済み。`app/components/PostComposer.tsx`
    (Server Action `app/lib/post-actions.ts` 経由で`prisma.post.create()`)。
    投稿は`app/lib/infer-post-type.ts`の簡易ヒューリスティックで種別を自動判定し、

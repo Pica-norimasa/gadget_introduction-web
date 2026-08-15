@@ -1,7 +1,7 @@
-import type { Work } from "@/app/lib/mock-data";
+import type { Post, Work } from "@/app/lib/mock-data";
 import { WorkCard } from "./WorkCard";
 
-export function HeroRail({ works }: { works: Work[] }) {
+export function HeroRail({ works, posts }: { works: Work[]; posts: Post[] }) {
   return (
     <section className="mx-auto max-w-[1180px] px-4 pt-8 sm:px-6">
       <div className="mb-3 flex items-end justify-between">
@@ -21,7 +21,7 @@ export function HeroRail({ works }: { works: Work[] }) {
       <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 [scrollbar-width:thin]">
         {works.map((w) => (
           <div key={w.id} className="w-[260px] shrink-0">
-            <WorkCard work={w} size="lg" showAnchor={false} />
+            <WorkCard work={w} posts={posts} size="lg" showAnchor={false} />
           </div>
         ))}
       </div>

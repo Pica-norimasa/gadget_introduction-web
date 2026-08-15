@@ -42,6 +42,8 @@ export type Work = {
   followers: number; // author follower count — small number = "無名"
 };
 
+// このデータはアプリ本体からはもう読まれない。prisma/seed.tsがDBへ投入する
+// ための唯一のソースとしてのみ使われる(実際の表示はapp/lib/queries.ts経由でDBから読む)。
 export const works: Work[] = [
   {
     id: "kondate-makasete",
@@ -491,16 +493,3 @@ export const posts: Post[] = [
   { id: "yowa-rss-bot-idea", projectId: "yowa-rss-bot", type: "idea", body: "深夜だけ巡回してまとめを作ってくれるRSSボットが欲しい", hoursAgo: 144 },
   { id: "yowa-rss-bot-stage", projectId: "yowa-rss-bot", type: "making", body: "巡回スケジュールだけは動くようになった", hoursAgo: 116 },
 ];
-
-// Projectの全投稿を古い順(タイムライン表示用)に返す
-export function postsForProject(projectId: string): Post[] {
-  return posts.filter((p) => p.projectId === projectId).sort((a, b) => b.hoursAgo - a.hoursAgo);
-}
-
-// カードに「いつ・何を投稿したか」をひと目で出すため、最新の投稿を1件返す。
-// 全Projectが最低1件(idea)は持つため、通常はnullにならない。
-export function latestPostFor(projectId: string): Post | null {
-  const entries = posts.filter((p) => p.projectId === projectId);
-  if (entries.length === 0) return null;
-  return entries.reduce((latest, p) => (p.hoursAgo < latest.hoursAgo ? p : latest));
-}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { latestPostFor, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
+import { latestPostFor } from "@/app/lib/post-helpers";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
 import { ReactionBar } from "./ReactionBar";
 
@@ -22,8 +23,8 @@ function formatRelativeHours(hoursAgo: number): string {
   return `${Math.round(hoursAgo / 24)}日前`;
 }
 
-function Slide({ work, onNavigate }: { work: Work; onNavigate: () => void }) {
-  const latestPost = latestPostFor(work.id);
+function Slide({ work, posts, onNavigate }: { work: Work; posts: Post[]; onNavigate: () => void }) {
+  const latestPost = latestPostFor(work.id, posts);
 
   return (
     <section className="relative h-full w-full snap-start overflow-hidden">
@@ -76,7 +77,15 @@ function Slide({ work, onNavigate }: { work: Work; onNavigate: () => void }) {
   );
 }
 
-export function ImmersiveViewer({ works, onClose }: { works: Work[]; onClose: () => void }) {
+export function ImmersiveViewer({
+  works,
+  posts,
+  onClose,
+}: {
+  works: Work[];
+  posts: Post[];
+  onClose: () => void;
+}) {
   const [feed] = useState(() => {
     const list: Work[] = [];
     while (list.length < MAX_ITEMS) list.push(...shuffled(works));
@@ -129,7 +138,7 @@ export function ImmersiveViewer({ works, onClose }: { works: Work[]; onClose: ()
 
       <div className="h-full snap-y snap-mandatory overflow-y-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {feed.slice(0, loadedCount).map((w, i) => (
-          <Slide key={`${w.id}-${i}`} work={w} onNavigate={onClose} />
+          <Slide key={`${w.id}-${i}`} work={w} posts={posts} onNavigate={onClose} />
         ))}
         <div ref={sentinelRef} className="h-1" />
       </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { latestPostFor, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
+import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { ExpandableText } from "./ExpandableText";
@@ -18,10 +19,12 @@ function isUnderdog(w: Work) {
 
 export function WorkCard({
   work,
+  posts,
   size = "md",
   showAnchor = true,
 }: {
   work: Work;
+  posts: Post[];
   size?: "md" | "lg";
   // 同じ作品がヒーローレールとフィードの両方に出ることがあるため、
   // id="work-xxx" を持つインスタンスは1つ(フィード側)だけにする。
@@ -29,7 +32,7 @@ export function WorkCard({
   // 不定挙動を防ぐ。
   showAnchor?: boolean;
 }) {
-  const latestPost = latestPostFor(work.id);
+  const latestPost = latestPostFor(work.id, posts);
 
   return (
     <article

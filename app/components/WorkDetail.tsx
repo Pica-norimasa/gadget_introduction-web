@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { postsForProject, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
@@ -13,9 +13,7 @@ import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
 
-export function WorkDetail({ work }: { work: Work }) {
-  const timeline = postsForProject(work.id);
-
+export function WorkDetail({ work, timeline }: { work: Work; timeline: Post[] }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />

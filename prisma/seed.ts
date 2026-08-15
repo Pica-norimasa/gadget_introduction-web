@@ -11,10 +11,11 @@ async function main() {
   const authorNames = [...new Set(works.map((w) => w.author))];
   const userIdByName = new Map<string, string>();
   for (const name of authorNames) {
+    const followersSeed = works.find((w) => w.author === name)?.followers ?? 0;
     const user = await prisma.user.upsert({
       where: { name },
-      update: {},
-      create: { name },
+      update: { followersSeed },
+      create: { name, followersSeed },
     });
     userIdByName.set(name, user.id);
   }
