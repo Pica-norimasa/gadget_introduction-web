@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
@@ -11,16 +12,6 @@ import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
-
-function formatPostedAgo(daysAgo: number): string {
-  if (daysAgo === 0) return "今日";
-  return `${daysAgo}日前`;
-}
-
-function formatRelativeHours(hoursAgo: number): string {
-  if (hoursAgo < 24) return `${hoursAgo}時間前`;
-  return `${Math.round(hoursAgo / 24)}日前`;
-}
 
 export function WorkDetail({ work }: { work: Work }) {
   const update = latestUpdateFor(work.id);
@@ -86,7 +77,9 @@ export function WorkDetail({ work }: { work: Work }) {
 
         <div className="mb-6 flex items-center justify-between">
           <ReactionBar workId={work.id} reactions={work.reactions} />
-          <span className="font-mono text-[12px] text-[var(--ink-faint)]">💬{work.comments}</span>
+          <span className="font-mono text-[12px] text-[var(--ink-faint)]">
+            👁️{formatCount(work.views)} · 💬{work.comments}
+          </span>
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">

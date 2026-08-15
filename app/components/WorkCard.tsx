@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { ExpandableText } from "./ExpandableText";
 import { FollowButton } from "./FollowButton";
@@ -13,16 +14,6 @@ import { WorkThumb } from "./WorkThumb";
 
 function isUnderdog(w: Work) {
   return w.followers < 50 && w.trendScore >= 70;
-}
-
-function formatRelativeHours(hoursAgo: number): string {
-  if (hoursAgo < 24) return `${hoursAgo}時間前`;
-  return `${Math.round(hoursAgo / 24)}日前`;
-}
-
-function formatPostedAgo(daysAgo: number): string {
-  if (daysAgo === 0) return "今日";
-  return `${daysAgo}日前`;
 }
 
 export function WorkCard({
@@ -68,7 +59,7 @@ export function WorkCard({
           </span>
         )}
         {isUnderdog(work) && (
-          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-medium text-[var(--accent-ink)]">
+          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
             無名の逆転枠
           </span>
         )}
@@ -109,7 +100,9 @@ export function WorkCard({
             <Link href={`/work/${work.id}`} className="hover:text-[var(--ink-soft)] hover:underline">
               🔗 詳細・共有
             </Link>
-            <span className="font-mono">💬{work.comments}</span>
+            <span className="font-mono">
+              👁️{formatCount(work.views)} · 💬{work.comments}
+            </span>
           </div>
         </div>
       </div>
