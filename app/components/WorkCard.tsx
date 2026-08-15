@@ -2,6 +2,7 @@ import type { Work } from "@/app/lib/mock-data";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
+import { ReactionBar } from "./ReactionBar";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
@@ -23,9 +24,6 @@ export function WorkCard({
   // 不定挙動を防ぐ。
   showAnchor?: boolean;
 }) {
-  const totalReactions =
-    work.reactions.interesting + work.reactions.useful + work.reactions.idea + work.reactions.wantToTry;
-
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
@@ -63,13 +61,14 @@ export function WorkCard({
         </h3>
         <p className="line-clamp-2 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
-        <div className="mt-auto flex items-center justify-between pt-2 text-[12px] text-[var(--ink-faint)]">
-          <span>
-            by <span className="text-[var(--ink-soft)]">{work.author}</span>
-          </span>
-          <span className="font-mono">
-            💛{totalReactions} · 💬{work.comments}
-          </span>
+        <div className="mt-auto flex flex-col gap-2 pt-2">
+          <ReactionBar workId={work.id} reactions={work.reactions} />
+          <div className="flex items-center justify-between text-[12px] text-[var(--ink-faint)]">
+            <span>
+              by <span className="text-[var(--ink-soft)]">{work.author}</span>
+            </span>
+            <span className="font-mono">💬{work.comments}</span>
+          </div>
         </div>
       </div>
     </article>
