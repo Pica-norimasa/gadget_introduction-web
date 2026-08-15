@@ -31,6 +31,16 @@ export function FeedSection({ works }: { works: Work[] }) {
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Math.random()を使うshuffleは、サーバー側の初回レンダリングと
+  // クライアントのハイドレーション時とで結果が食い違い、ハイドレーション
+  // 不整合を起こす。マウント前は決定的な(シャッフルしない)順序で揃え、
+  // マウント後にだけシャッフルを効かせる。
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 上記の理由でマウント後にのみtrueにする必要がある
+    setMounted(true);
+  }, []);
+
   function togglePlatform(p: Platform) {
     setPlatformFilter((prev) => {
       const next = new Set(prev);
@@ -60,10 +70,10 @@ export function FeedSection({ works }: { works: Work[] }) {
     if (visible.length === 0) return [];
     const list: Work[] = [];
     while (list.length < MAX_ITEMS) {
-      list.push(...shuffled(visible));
+      list.push(...(mounted ? shuffled(visible) : visible));
     }
     return list.slice(0, MAX_ITEMS);
-  }, [visible]);
+  }, [visible, mounted]);
 
   function selectTab(t: Tab) {
     setTab(t);
