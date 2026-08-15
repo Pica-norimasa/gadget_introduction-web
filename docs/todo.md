@@ -71,9 +71,21 @@
    `prisma/schema.prisma`の`datasource.provider`を`"mysql"`に、
    `app/lib/prisma.ts`のアダプタを`@prisma/adapter-mariadb`
    (またはPrisma公式のMySQL用ドライバアダプタ)に差し替える。
-5. **投稿からのProject自動生成(plan-v2.html項目09)は未実装。** 今の
-   コンポーザーは常に孤立したPostを作るだけで、「これは新しいProjectですか?」
-   という提案フローは無い。次にコンポーザーを拡張するならここ。
+5. ~~投稿からのProject自動生成(plan-v2.html項目09)~~ → 実装済み。
+   `app/components/PostComposer.tsx`に投稿先セレクタを追加し、
+   「🆕 新しいプロジェクトとして」「単独の投稿」「📁 自分の既存Project」
+   から選べるようにした。「新しいプロジェクトとして」選択時のみ、任意の
+   プロジェクト名入力欄が出る(空欄なら投稿本文の先頭24文字から自動生成)。
+   `app/lib/post-actions.ts`の`createPost`が、選択に応じてProjectを新規作成
+   するか(`category`は暫定で"プロトタイプ"固定、`stage`は投稿の推定タイプから
+   決める初期値、`platforms`は["Web"]固定、`hue`はランダム)、既存Projectに
+   紐付けるか(所有者が自分のProjectであることをDB側で検証してから紐付け、
+   改ざん対策)を判定する。「自分のProject」は`GUEST_USER_NAME`で絞り込むため、
+   この定数を`app/lib/guest-user.ts`に切り出した("use server"ファイルは
+   async関数以外をexportできないため、post-actions.tsから直接exportできない)。
+   新規Projectのidは日本語タイトルをそのままローマ字slug化するのが難しいため、
+   `p-`+ランダムhexのopaqueなidにしている(mock-data.ts由来の既存Projectだけが
+   読みやすいslugを持つ)。カテゴリ変更・画像追加などのProject編集UIはまだ無い。
 
 ### このマシン固有のメモ(開発環境の制約)
 

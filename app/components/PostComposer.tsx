@@ -1,21 +1,23 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { POST_TYPE_META } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 
 const initialState: CreatePostState = {};
 
-export function PostComposer() {
+export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
+  const [projectTarget, setProjectTarget] = useState("new");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.success) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
       setBody("");
+      setProjectTarget("new");
       formRef.current?.reset();
     }
   }, [state.success]);
@@ -39,6 +41,31 @@ export function PostComposer() {
           maxLength={280}
           className="w-full resize-none border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <select
+            name="projectTarget"
+            value={projectTarget}
+            onChange={(e) => setProjectTarget(e.target.value)}
+            className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] focus:outline-none"
+          >
+            <option value="new">🆕 新しいプロジェクトとして</option>
+            <option value="">単独の投稿(プロジェクトに紐付けない)</option>
+            {myProjects.map((p) => (
+              <option key={p.id} value={p.id}>
+                📁 {p.title}
+              </option>
+            ))}
+          </select>
+          {projectTarget === "new" && (
+            <input
+              type="text"
+              name="newProjectTitle"
+              placeholder="プロジェクト名(空欄なら投稿内容から自動生成)"
+              maxLength={40}
+              className="min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 py-1 text-[12px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+            />
+          )}
+        </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <span
             className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${

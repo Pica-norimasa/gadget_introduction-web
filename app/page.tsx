@@ -1,4 +1,5 @@
 import { getPosts, getWorks } from "@/app/lib/queries";
+import { GUEST_USER_NAME } from "@/app/lib/guest-user";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposer } from "@/app/components/PostComposer";
 import { RecentActivity } from "@/app/components/RecentActivity";
@@ -13,13 +14,14 @@ export default async function Home() {
   const [works, posts] = await Promise.all([getWorks(), getPosts()]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
+  const myProjects = works.filter((w) => w.author === GUEST_USER_NAME);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
       <main className="flex-1">
-        <PostComposer />
+        <PostComposer myProjects={myProjects} />
         <RecentActivity />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} />
