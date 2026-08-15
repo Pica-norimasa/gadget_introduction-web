@@ -1,0 +1,98 @@
+// このスキーマは開発中はSQLite、本番はAWS RDS(MySQL)を想定している。
+// 切り替え時は下のdatasource providerを"mysql"に変え、DATABASE_URLをRDSの
+// 接続文字列に差し替えるだけで動く設計にしてある(enumを使わずString+アプリ側の
+// union型で表現しているのも、SQLiteがネイティブenumを持たないための互換対応)。
+//
+// Follow/Reactionは「誰が」を表すuserIdを必須にしているが、今のアプリにはまだ
+// ログイン機構が無い(follow-store.tsはブラウザ内だけで完結する匿名の状態)。
+// このテーブル自体は用意しておくが、実際に繋ぎ込むには認証機能が別途必要。
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  projects       Project[]
+  reactions      Reaction[]
+  following      Follow[]   @relation("Follower")
+  followedBy     Follow[]   @relation("Following")
+}
+
+model Project {
+  id          String   @id
+  title       String
+  catchText   String
+  category    String
+  stage       String
+  tool        String?
+  platforms   Json // Platform[]をそのまま格納(例: ["Web","iOS"])
+  hue         Int
+  glyph       String?
+  githubUrl   String?
+  hasMotion   Boolean  @default(false)
+  views       Int      @default(0)
+  trendScore  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  // 表示用の起点カウント。実際のリアクションはReaction行として積み上がる想定だが、
+  // 種類ごとに数百件のダミー行を作る必要が出るため、シード時点ではこの起点カウント
+  // (+ 実際のReaction行数)を合算して表示する設計にしている。
+  commentsSeed            Int @default(0)
+  reactionInterestingSeed Int @default(0)
+  reactionUsefulSeed      Int @default(0)
+  reactionIdeaSeed        Int @default(0)
+  reactionWantToTrySeed   Int @default(0)
+
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  posts       Post[]
+  reactions   Reaction[]
+}
+
+model Post {
+  id        String   @id
+  // idea | making | screenshot | demo | prototype | release | update | question
+  type      String
+  body      String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  // interesting | useful | idea | wantToTry
+  type      String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId, type])
+}
+
+model Follow {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  followerId  String
+  follower    User @relation("Follower", fields: [followerId], references: [id])
+  followingId String
+  following   User @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
