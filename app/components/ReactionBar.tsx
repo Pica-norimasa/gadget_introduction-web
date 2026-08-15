@@ -12,7 +12,17 @@ const REACTION_META: { key: ReactionKey; icon: string; label: string }[] = [
   { key: "wantToTry", icon: "🙋", label: "使ってみたい" },
 ];
 
-export function ReactionBar({ workId, reactions }: { workId: string; reactions: Work["reactions"] }) {
+export function ReactionBar({
+  workId,
+  reactions,
+  variant = "card",
+}: {
+  workId: string;
+  reactions: Work["reactions"];
+  // "card" = 通常のフィードカード内(テーマ変数に追従)
+  // "dark" = 没入ビューアの黒スクリム上(常に明色固定)
+  variant?: "card" | "dark";
+}) {
   const [toggled, setToggled] = useState<Partial<Record<ReactionKey, boolean>>>({});
 
   function toggle(key: ReactionKey) {
@@ -33,9 +43,13 @@ export function ReactionBar({ workId, reactions }: { workId: string; reactions: 
             title={label}
             onClick={() => toggle(key)}
             className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 font-mono text-[11px] transition-all active:scale-90 ${
-              active
-                ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              variant === "dark"
+                ? active
+                  ? "border-white bg-white/90 text-black"
+                  : "border-white/40 bg-black/25 text-white backdrop-blur-sm hover:border-white/70"
+                : active
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
             }`}
           >
             <span aria-hidden>{icon}</span>
