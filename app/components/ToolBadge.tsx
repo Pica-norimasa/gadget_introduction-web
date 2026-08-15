@@ -8,6 +8,14 @@ export function ToolBadge({ tool }: { tool: AiTool }) {
       </span>
     );
   }
+  if (tool === "self") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-0.5 text-[11px] font-mono text-[var(--ink-soft)]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[var(--ink-faint)]" aria-hidden />
+        AIを使わず自作
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-0.5 text-[11px] font-mono text-[var(--ink-soft)]">
       <span className="h-1.5 w-1.5 rounded-full bg-[var(--teal)]" aria-hidden />

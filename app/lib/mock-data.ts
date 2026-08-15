@@ -1,5 +1,7 @@
 export type Stage = "アイデア" | "プロトタイプ" | "ベータ" | "公開中";
-export type AiTool = "Claude" | "ChatGPT" | "Gemini" | "Bolt" | "v0" | "Cursor" | null;
+// "self" = AIツールを使わず自作。null = アイデア段階でまだ何も作っていない(ツール未定)。
+// この2つは意味が違うので明確に分ける。
+export type AiTool = "Claude" | "ChatGPT" | "Gemini" | "Bolt" | "v0" | "Cursor" | "self" | null;
 export type Category =
   | "Webアプリ"
   | "スマホアプリ"
@@ -252,7 +254,7 @@ export const works: Work[] = [
     catch: "遠征の交通費・宿泊費をメンバーでフェアに割り勘計算する",
     category: "Webアプリ",
     stage: "ベータ",
-    tool: "Claude",
+    tool: "self",
     platforms: ["Web"],
     author: "りんどう",
     hue: 315,

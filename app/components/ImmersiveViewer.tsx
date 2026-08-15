@@ -47,7 +47,8 @@ function Slide({ work, onNavigate }: { work: Work; onNavigate: () => void }) {
 
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-5 pb-8 pt-28 text-white">
         <p className="text-[12px] text-white/70">
-          {work.stage} ・ {work.tool ? `${work.tool}で制作` : "アイデアのみ"} ・{" "}
+          {work.stage} ・{" "}
+          {work.tool === "self" ? "AIを使わず自作" : work.tool ? `${work.tool}で制作` : "アイデアのみ"} ・{" "}
           {work.platforms.map((p) => PLATFORM_META[p].icon).join(" ")}
         </p>
         <h2 className="text-xl font-bold leading-snug">{work.title}</h2>
