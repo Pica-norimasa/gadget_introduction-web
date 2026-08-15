@@ -1,4 +1,5 @@
 import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { ExpandableText } from "./ExpandableText";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
@@ -66,7 +67,7 @@ export function WorkCard({
         <h3 className="font-[family-name:var(--font-display)] text-[17px] font-bold leading-snug text-[var(--ink)]">
           {work.title}
         </h3>
-        <p className="line-clamp-2 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+        <ExpandableText text={work.catch} />
 
         {update && (
           <div
