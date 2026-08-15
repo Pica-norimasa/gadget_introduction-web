@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { ExpandableText } from "./ExpandableText";
@@ -100,7 +101,10 @@ export function WorkCard({
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
           <ReactionBar workId={work.id} reactions={work.reactions} />
-          <div className="flex items-center justify-end text-[12px] text-[var(--ink-faint)]">
+          <div className="flex items-center justify-between text-[12px] text-[var(--ink-faint)]">
+            <Link href={`/work/${work.id}`} className="hover:text-[var(--ink-soft)] hover:underline">
+              🔗 詳細・共有
+            </Link>
             <span className="font-mono">💬{work.comments}</span>
           </div>
         </div>

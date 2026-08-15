@@ -1,0 +1,62 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+export function ShareButtons({ title }: { title: string }) {
+  const [url, setUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    // 共有URLは実行中のオリジンからでないと組み立てられない(サーバー側では
+    // 値を持てない)。SSR時の出力とは一致させたまま、マウント後にここで
+    // 実際のURLへ更新する、ハイドレーション不整合を避けるための意図的なパターン。
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 上記の理由でマウント後の設定が必要
+    setUrl(window.location.href);
+  }, []);
+
+  const lineHref = url
+    ? `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+    : undefined;
+  const xHref = url
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+    : undefined;
+
+  async function copyLink() {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // クリップボードAPIが使えない環境では何もしない(アドレスバーから手動コピー可能)
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <a
+        href={lineHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 rounded-full bg-[#06C755] px-3 py-1.5 text-[12.5px] font-medium text-white"
+      >
+        LINEで送る
+      </a>
+      <a
+        href={xHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--bg)]"
+      >
+        Xでポスト
+      </a>
+      <button
+        type="button"
+        onClick={copyLink}
+        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+      >
+        {copied ? "コピーしました" : "🔗 リンクをコピー"}
+      </button>
+    </div>
+  );
+}
