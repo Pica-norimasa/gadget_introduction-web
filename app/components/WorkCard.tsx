@@ -1,4 +1,4 @@
-import type { Work } from "@/app/lib/mock-data";
+import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
@@ -9,6 +9,11 @@ import { WorkThumb } from "./WorkThumb";
 
 function isUnderdog(w: Work) {
   return w.followers < 50 && w.trendScore >= 70;
+}
+
+function formatRelativeHours(hoursAgo: number): string {
+  if (hoursAgo < 24) return `${hoursAgo}時間前`;
+  return `${Math.round(hoursAgo / 24)}日前`;
 }
 
 export function WorkCard({
@@ -24,6 +29,8 @@ export function WorkCard({
   // 不定挙動を防ぐ。
   showAnchor?: boolean;
 }) {
+  const update = latestUpdateFor(work.id);
+
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
@@ -60,6 +67,23 @@ export function WorkCard({
           {work.title}
         </h3>
         <p className="line-clamp-2 text-[13.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+
+        {update && (
+          <div
+            className={`flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] leading-snug ${
+              update.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
+            }`}
+          >
+            <span
+              className={`shrink-0 font-mono font-medium ${
+                update.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
+              }`}
+            >
+              🔄{formatRelativeHours(update.hoursAgo)}更新
+            </span>
+            <span className="line-clamp-1 text-[var(--ink-soft)]">{update.note}</span>
+          </div>
+        )}
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
           <ReactionBar workId={work.id} reactions={work.reactions} />

@@ -413,3 +413,11 @@ export const buildLogFeed: BuildLogEntry[] = [
     hoursAgo: 30,
   },
 ];
+
+// 作品カードに「いつ・何を更新したか」をひと目で出すため、
+// その作品の最新ビルドログを1件だけ返す。無ければnull(=投稿後まだ更新なし)。
+export function latestUpdateFor(workId: string): BuildLogEntry | null {
+  const entries = buildLogFeed.filter((e) => e.workId === workId);
+  if (entries.length === 0) return null;
+  return entries.reduce((latest, e) => (e.hoursAgo < latest.hoursAgo ? e : latest));
+}
