@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { latestPostFor, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { ExpandableText } from "./ExpandableText";
@@ -29,7 +29,7 @@ export function WorkCard({
   // 不定挙動を防ぐ。
   showAnchor?: boolean;
 }) {
-  const update = latestUpdateFor(work.id);
+  const latestPost = latestPostFor(work.id);
 
   return (
     <article
@@ -77,20 +77,21 @@ export function WorkCard({
         </h3>
         <ExpandableText text={work.catch} />
 
-        {update && (
+        {latestPost && (
           <div
             className={`flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] leading-snug ${
-              update.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
+              latestPost.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
             }`}
           >
             <span
               className={`shrink-0 font-mono font-medium ${
-                update.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
+                latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
               }`}
             >
-              🔄{formatRelativeHours(update.hoursAgo)}更新
+              {POST_TYPE_META[latestPost.type].icon}
+              {formatRelativeHours(latestPost.hoursAgo)}・{POST_TYPE_META[latestPost.type].label}
             </span>
-            <span className="line-clamp-1 text-[var(--ink-soft)]">{update.note}</span>
+            <span className="line-clamp-1 text-[var(--ink-soft)]">{latestPost.body}</span>
           </div>
         )}
 

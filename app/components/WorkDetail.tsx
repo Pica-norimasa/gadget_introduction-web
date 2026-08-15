@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { postsForProject, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
@@ -14,7 +14,7 @@ import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
 
 export function WorkDetail({ work }: { work: Work }) {
-  const update = latestUpdateFor(work.id);
+  const timeline = postsForProject(work.id);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -58,28 +58,33 @@ export function WorkDetail({ work }: { work: Work }) {
         </h1>
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
-        {update && (
-          <div
-            className={`mb-4 flex items-start gap-1.5 rounded-lg px-3 py-2 text-[12.5px] leading-snug ${
-              update.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
-            }`}
-          >
-            <span
-              className={`shrink-0 font-mono font-medium ${
-                update.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
-              }`}
-            >
-              🔄{formatRelativeHours(update.hoursAgo)}更新
-            </span>
-            <span className="text-[var(--ink-soft)]">{update.note}</span>
-          </div>
-        )}
-
         <div className="mb-6 flex items-center justify-between">
           <ReactionBar workId={work.id} reactions={work.reactions} />
           <span className="font-mono text-[12px] text-[var(--ink-faint)]">
             👁️{formatCount(work.views)} · 💬{work.comments}
           </span>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+            制作タイムライン
+          </h2>
+          <ol className="relative ml-2 border-l-2 border-[var(--line)] pl-5">
+            {timeline.map((post) => (
+              <li key={post.id} className="relative mb-5 last:mb-0">
+                <span
+                  aria-hidden
+                  className="absolute -left-[22px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
+                  style={{ background: post.hoursAgo < 24 ? "var(--teal)" : "var(--ink-faint)" }}
+                />
+                <p className="mb-0.5 font-mono text-[11px] font-medium text-[var(--ink-faint)]">
+                  {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
+                  {formatRelativeHours(post.hoursAgo)}
+                </p>
+                <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">

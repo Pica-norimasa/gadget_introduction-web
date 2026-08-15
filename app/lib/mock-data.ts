@@ -378,70 +378,127 @@ export const works: Work[] = [
   },
 ];
 
-export type BuildLogEntry = {
+// 「作品」ではなく「創作活動」を投稿の最小単位にする再設計(docs/plan-v2.html)を
+// データ構造に反映したもの。Work(=Project)は依然としてフィード表示用の集約情報を
+// 持つが、実際の中身は時系列のPostの積み重ねとして表現する。
+// 「Ideaを他人が拾って作る」導線(WANTEDなど)はv2企画書の批判的評価に基づき
+// フェーズ2送りにしたため、Postの作者は常にそのProjectの作者と同一(セルフ循環)。
+export type PostType =
+  | "idea"
+  | "making"
+  | "screenshot"
+  | "demo"
+  | "prototype"
+  | "release"
+  | "update"
+  | "question";
+
+export const POST_TYPE_META: Record<PostType, { icon: string; label: string }> = {
+  idea: { icon: "💡", label: "アイデア" },
+  making: { icon: "🛠", label: "制作中" },
+  screenshot: { icon: "📷", label: "スクショ" },
+  demo: { icon: "🎥", label: "デモ" },
+  prototype: { icon: "🚀", label: "プロトタイプ公開" },
+  release: { icon: "✨", label: "リリース" },
+  update: { icon: "🔧", label: "アップデート" },
+  question: { icon: "💬", label: "質問" },
+};
+
+export type Post = {
   id: string;
-  workTitle: string;
-  workId: string;
-  author: string;
-  note: string;
+  projectId: string;
+  type: PostType;
+  body: string;
   hoursAgo: number;
 };
 
-export const buildLogFeed: BuildLogEntry[] = [
-  {
-    id: "log-1",
-    workTitle: "献立まかせて",
-    workId: "kondate-makasete",
-    author: "みかん",
-    note: "写真の認識精度を上げて、冷蔵庫の奥の調味料も拾えるようにした",
-    hoursAgo: 3,
-  },
-  {
-    id: "log-2",
-    workTitle: "猫の鳴き声、翻訳してみた",
-    workId: "neko-honyaku",
-    author: "sora",
-    note: "「お腹すいた」の的中率が体感5割に。学習データ募集中",
-    hoursAgo: 7,
-  },
-  {
-    id: "log-3",
-    workTitle: "議論の温度計",
-    workId: "ronsou-ondokei",
-    author: "kaede_p",
-    note: "誤検知が多かったので閾値を調整。次はミュート機能をつけたい",
-    hoursAgo: 11,
-  },
-  {
-    id: "log-4",
-    workTitle: "ポモドーロ、犬に叱られる",
-    workId: "pomodoro-inu",
-    author: "ao",
-    note: "犬のセリフを50パターン追加。同じ怒られ方に飽きなくなった",
-    hoursAgo: 20,
-  },
-  {
-    id: "log-5",
-    workTitle: "献立まかせて",
-    workId: "kondate-makasete",
-    author: "みかん",
-    note: "苦手食材を除外できるオプションを追加。要望くれた人ありがとう",
-    hoursAgo: 26,
-  },
-  {
-    id: "log-6",
-    workTitle: "猫の鳴き声、翻訳してみた",
-    workId: "neko-honyaku",
-    author: "sora",
-    note: "「遊んで」の検出だけ精度が低い…録音データ提供してくれる人募集中",
-    hoursAgo: 30,
-  },
+export const posts: Post[] = [
+  // 献立まかせて
+  { id: "kondate-makasete-idea", projectId: "kondate-makasete", type: "idea", body: "冷蔵庫の中身を撮ったら献立を考えてくれるアプリ、誰か作ってないかな", hoursAgo: 72 },
+  { id: "kondate-makasete-stage", projectId: "kondate-makasete", type: "prototype", body: "とりあえずチャットで献立を聞けるだけのプロトタイプができた", hoursAgo: 44 },
+  { id: "log-5", projectId: "kondate-makasete", type: "update", body: "苦手食材を除外できるオプションを追加。要望くれた人ありがとう", hoursAgo: 26 },
+  { id: "log-1", projectId: "kondate-makasete", type: "update", body: "写真の認識精度を上げて、冷蔵庫の奥の調味料も拾えるようにした", hoursAgo: 3 },
+
+  // 議事録イラナイ
+  { id: "giji-iranai-idea", projectId: "giji-iranai", type: "idea", body: "会議の音声から決定事項だけ抜き出してSlackに送ってくれたら助かるのに", hoursAgo: 192 },
+  { id: "giji-iranai-stage", projectId: "giji-iranai", type: "release", body: "社内で使ってもらえる形になったので公開しました", hoursAgo: 164 },
+
+  // 積みゲー供養
+  { id: "tsumige-kuyou-idea", projectId: "tsumige-kuyou", type: "idea", body: "積みゲーが多すぎて、今日やるべき1本をAIに決めてほしい", hoursAgo: 96 },
+  { id: "tsumige-kuyou-stage", projectId: "tsumige-kuyou", type: "making", body: "Steamのライブラリを読み込むところまでできた", hoursAgo: 68 },
+
+  // 領収書、喋るだけ
+  { id: "ryoushuusho-shaberu-idea", projectId: "ryoushuusho-shaberu", type: "idea", body: "経費精算、レシート見ながら喋るだけで終わらせたい", hoursAgo: 144 },
+  { id: "ryoushuusho-shaberu-stage", projectId: "ryoushuusho-shaberu", type: "prototype", body: "喋った内容がフォームに反映されるところまで動いた", hoursAgo: 116 },
+
+  // 静かにしてブラウザ拡張
+  { id: "shizuka-ext-idea", projectId: "shizuka-ext", type: "idea", body: "ニュースサイトの自動再生動画、いい加減黙らせたい", hoursAgo: 336 },
+  { id: "shizuka-ext-stage", projectId: "shizuka-ext", type: "release", body: "誤検知もほぼ無くなったので公開します", hoursAgo: 308 },
+
+  // 推しの誕生日、忘れない(アイデア段階、まだこれだけ)
+  { id: "oshi-birthday-idea", projectId: "oshi-birthday", type: "idea", body: "推しキャラの誕生日、前日にLINEで教えてくれるアプリが欲しい", hoursAgo: 48 },
+
+  // 雑談、練習しませんか
+  { id: "zatsudan-renshuu-idea", projectId: "zatsudan-renshuu", type: "idea", body: "雑談が苦手すぎて、練習相手になってくれるAIが欲しい", hoursAgo: 120 },
+  { id: "zatsudan-renshuu-stage", projectId: "zatsudan-renshuu", type: "making", body: "雑談っぽい受け答えをするAIの土台ができてきた", hoursAgo: 92 },
+
+  // 猫の鳴き声、翻訳してみた
+  { id: "neko-honyaku-idea", projectId: "neko-honyaku", type: "idea", body: "うちの猫が何を訴えてるのか、鳴き声から知りたい", hoursAgo: 72 },
+  { id: "neko-honyaku-stage", projectId: "neko-honyaku", type: "making", body: "感情推定モデルを繋いでみた。まだ精度はお察し", hoursAgo: 44 },
+  { id: "log-6", projectId: "neko-honyaku", type: "update", body: "「遊んで」の検出だけ精度が低い…録音データ提供してくれる人募集中", hoursAgo: 30 },
+  { id: "log-2", projectId: "neko-honyaku", type: "update", body: "「お腹すいた」の的中率が体感5割に。学習データ募集中", hoursAgo: 7 },
+
+  // 円満退職の伝え方メーカー
+  { id: "taishoku-daikou-idea", projectId: "taishoku-daikou", type: "idea", body: "退職の伝え方が分からなくて一週間悩んだので、AIに考えてもらいたい", hoursAgo: 240 },
+  { id: "taishoku-daikou-stage", projectId: "taishoku-daikou", type: "prototype", body: "シーン別に文章を生成するところまでできた", hoursAgo: 212 },
+
+  // 家計簿、撮るだけ
+  { id: "kakeibo-satsu-idea", projectId: "kakeibo-satsu", type: "idea", body: "レシートを撮るだけで家計簿がつく仕組みが欲しい", hoursAgo: 528 },
+  { id: "kakeibo-satsu-stage", projectId: "kakeibo-satsu", type: "release", body: "仕分け精度が安定してきたので正式公開しました", hoursAgo: 500 },
+
+  // 議論の温度計
+  { id: "ronsou-ondokei-idea", projectId: "ronsou-ondokei", type: "idea", body: "リプライ欄が荒れてるかどうか、開く前に知りたい", hoursAgo: 96 },
+  { id: "ronsou-ondokei-stage", projectId: "ronsou-ondokei", type: "making", body: "炎上度を判定してアイコンの色を変える機能ができた", hoursAgo: 68 },
+  { id: "log-3", projectId: "ronsou-ondokei", type: "update", body: "誤検知が多かったので閾値を調整。次はミュート機能をつけたい", hoursAgo: 11 },
+
+  // 推し活遠征、割り勘ツール
+  { id: "oshikatsu-warikan-idea", projectId: "oshikatsu-warikan", type: "idea", body: "遠征費の割り勘計算、毎回揉めるので自動化したい", hoursAgo: 168 },
+  { id: "oshikatsu-warikan-stage", projectId: "oshikatsu-warikan", type: "prototype", body: "交通費と宿泊費を分けて計算できるようになった", hoursAgo: 140 },
+
+  // 退屈な会議のBGM生成機(アイデア段階)
+  { id: "kaigi-bgm-idea", projectId: "kaigi-bgm", type: "idea", body: "退屈な会議の空気を読んで、それっぽいBGMを流すbotが欲しい", hoursAgo: 48 },
+
+  // ポモドーロ、犬に叱られる
+  { id: "pomodoro-inu-idea", projectId: "pomodoro-inu", type: "idea", body: "普通のポモドーロだと結局サボるので、罪悪感を煽ってくるタイマーが欲しい", hoursAgo: 120 },
+  { id: "pomodoro-inu-stage", projectId: "pomodoro-inu", type: "prototype", body: "犬が怒るアニメーションを組み込めた", hoursAgo: 92 },
+  { id: "log-4", projectId: "pomodoro-inu", type: "update", body: "犬のセリフを50パターン追加。同じ怒られ方に飽きなくなった", hoursAgo: 20 },
+
+  // 旅のしおり、丸投げ
+  { id: "tabi-shiori-idea", projectId: "tabi-shiori", type: "idea", body: "行き先と日数を伝えるだけでしおりを作ってくれるツールが欲しい", hoursAgo: 408 },
+  { id: "tabi-shiori-stage", projectId: "tabi-shiori", type: "release", body: "テンプレートも増やして公開しました", hoursAgo: 380 },
+
+  // AIと将棋の感想戦
+  { id: "shougi-kansousen-idea", projectId: "shougi-kansousen", type: "idea", body: "棋譜を貼るだけで感想戦に付き合ってくれるAIが欲しい", hoursAgo: 288 },
+  { id: "shougi-kansousen-stage", projectId: "shougi-kansousen", type: "release", body: "定跡データを増強して公開しました", hoursAgo: 260 },
+
+  // 集中ログ、CLIで淡々と
+  { id: "shuuchuu-log-cli-idea", projectId: "shuuchuu-log-cli", type: "idea", body: "GUIはいらないから、CLIで完結する集中ログツールが欲しい", hoursAgo: 192 },
+  { id: "shuuchuu-log-cli-stage", projectId: "shuuchuu-log-cli", type: "release", body: "READMEを整備して公開しました", hoursAgo: 164 },
+
+  // 夜間だけ動くRSSまとめボット
+  { id: "yowa-rss-bot-idea", projectId: "yowa-rss-bot", type: "idea", body: "深夜だけ巡回してまとめを作ってくれるRSSボットが欲しい", hoursAgo: 144 },
+  { id: "yowa-rss-bot-stage", projectId: "yowa-rss-bot", type: "making", body: "巡回スケジュールだけは動くようになった", hoursAgo: 116 },
 ];
 
-// 作品カードに「いつ・何を更新したか」をひと目で出すため、
-// その作品の最新ビルドログを1件だけ返す。無ければnull(=投稿後まだ更新なし)。
-export function latestUpdateFor(workId: string): BuildLogEntry | null {
-  const entries = buildLogFeed.filter((e) => e.workId === workId);
+// Projectの全投稿を古い順(タイムライン表示用)に返す
+export function postsForProject(projectId: string): Post[] {
+  return posts.filter((p) => p.projectId === projectId).sort((a, b) => b.hoursAgo - a.hoursAgo);
+}
+
+// カードに「いつ・何を投稿したか」をひと目で出すため、最新の投稿を1件返す。
+// 全Projectが最低1件(idea)は持つため、通常はnullにならない。
+export function latestPostFor(projectId: string): Post | null {
+  const entries = posts.filter((p) => p.projectId === projectId);
   if (entries.length === 0) return null;
-  return entries.reduce((latest, e) => (e.hoursAgo < latest.hoursAgo ? e : latest));
+  return entries.reduce((latest, p) => (p.hoursAgo < latest.hoursAgo ? p : latest));
 }

@@ -1,44 +1,39 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { BuildLogEntry, Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 
-type AuthorStory = {
-  author: string;
-  hue: number;
-  glyph: string;
-  entries: BuildLogEntry[];
-};
+type StoryEntry = { post: Post; projectTitle: string };
+type AuthorStory = { author: string; hue: number; glyph: string; entries: StoryEntry[] };
 
-function groupByAuthor(buildLogs: BuildLogEntry[], works: Work[]): AuthorStory[] {
+function groupByAuthor(postsList: Post[], works: Work[]): AuthorStory[] {
   const order: string[] = [];
   const map = new Map<string, AuthorStory>();
-  for (const entry of buildLogs) {
-    const work = works.find((w) => w.id === entry.workId);
-    if (!map.has(entry.author)) {
-      map.set(entry.author, {
-        author: entry.author,
-        hue: work?.hue ?? 200,
-        glyph: work?.glyph ?? "📝",
-        entries: [],
-      });
-      order.push(entry.author);
+  for (const post of postsList) {
+    const work = works.find((w) => w.id === post.projectId);
+    if (!work) continue;
+    if (!map.has(work.author)) {
+      map.set(work.author, { author: work.author, hue: work.hue, glyph: work.glyph ?? "📝", entries: [] });
+      order.push(work.author);
     }
-    map.get(entry.author)!.entries.push(entry);
+    map.get(work.author)!.entries.push({ post, projectTitle: work.title });
   }
   return order.map((author) => map.get(author)!);
 }
 
 const STORY_MS = 4500;
 
-export function StoriesStrip({ buildLogs, works }: { buildLogs: BuildLogEntry[]; works: Work[] }) {
+export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] }) {
   const followedAuthors = useFollowedAuthors();
-  // フォロー中の作者のビルドログだけを「ストーリーズ」として並べる
-  const stories = useMemo(
-    () => groupByAuthor(buildLogs.filter((entry) => followedAuthors.has(entry.author)), works),
-    [buildLogs, works, followedAuthors],
-  );
+  // フォロー中の作者の投稿だけを「ストーリーズ」として並べる
+  const stories = useMemo(() => {
+    const followedPosts = posts.filter((p) => {
+      const work = works.find((w) => w.id === p.projectId);
+      return !!work && followedAuthors.has(work.author);
+    });
+    return groupByAuthor(followedPosts, works);
+  }, [posts, works, followedAuthors]);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [entryIndex, setEntryIndex] = useState(0);
   const [seen, setSeen] = useState<Set<string>>(new Set());
@@ -218,11 +213,14 @@ export function StoriesStrip({ buildLogs, works }: { buildLogs: BuildLogEntry[];
               </span>
               <div className="rounded-xl bg-[var(--bg)]/90 p-3 backdrop-blur-sm">
                 <p className="mb-1 text-[11px] text-[var(--ink-faint)]">
-                  {currentEntry.hoursAgo}時間前・{currentEntry.workTitle}
+                  {POST_TYPE_META[currentEntry.post.type].icon} {currentEntry.post.hoursAgo}時間前・
+                  {POST_TYPE_META[currentEntry.post.type].label}・{currentEntry.projectTitle}
                 </p>
-                <p className="text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">{currentEntry.note}</p>
+                <p className="text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
+                  {currentEntry.post.body}
+                </p>
                 <a
-                  href={`#work-${currentEntry.workId}`}
+                  href={`#work-${currentEntry.post.projectId}`}
                   onClick={close}
                   className="mt-2 inline-flex items-center gap-1 rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12px] font-medium text-[var(--bg)]"
                 >

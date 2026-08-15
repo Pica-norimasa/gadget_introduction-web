@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
+import { latestPostFor, POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
 import { ReactionBar } from "./ReactionBar";
 
@@ -23,7 +23,7 @@ function formatRelativeHours(hoursAgo: number): string {
 }
 
 function Slide({ work, onNavigate }: { work: Work; onNavigate: () => void }) {
-  const update = latestUpdateFor(work.id);
+  const latestPost = latestPostFor(work.id);
 
   return (
     <section className="relative h-full w-full snap-start overflow-hidden">
@@ -52,9 +52,11 @@ function Slide({ work, onNavigate }: { work: Work; onNavigate: () => void }) {
         </p>
         <h2 className="text-xl font-bold leading-snug">{work.title}</h2>
         <p className="text-[14px] leading-relaxed text-white/85">{work.catch}</p>
-        {update && (
+        {latestPost && (
           <p className="text-[12px] text-white/60">
-            🔄{formatRelativeHours(update.hoursAgo)}更新・{update.note}
+            {POST_TYPE_META[latestPost.type].icon}
+            {formatRelativeHours(latestPost.hoursAgo)}・{POST_TYPE_META[latestPost.type].label}・
+            {latestPost.body}
           </p>
         )}
         <div className="mt-1 flex items-center justify-between gap-3">
