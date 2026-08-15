@@ -2,6 +2,7 @@ import Link from "next/link";
 import { latestUpdateFor, type Work } from "@/app/lib/mock-data";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { ExpandableText } from "./ExpandableText";
+import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
@@ -46,8 +47,11 @@ export function WorkCard({
     >
       <div className="mb-2 flex items-center gap-2">
         <AuthorAvatar name={work.author} />
-        <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-[var(--ink)]">{work.author}</p>
-        <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-semibold text-[var(--ink)]">{work.author}</p>
+          <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
+        </div>
+        <FollowButton author={work.author} />
       </div>
 
       <div className="relative">

@@ -1,4 +1,7 @@
+"use client";
+
 import type { BuildLogEntry, Work } from "@/app/lib/mock-data";
+import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { WorkThumb } from "./WorkThumb";
 
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
@@ -40,6 +43,9 @@ export function Sidebar({
   ranking: Work[];
   buildLogs: BuildLogEntry[];
 }) {
+  const followedAuthors = useFollowedAuthors();
+  const followedLogs = buildLogs.filter((entry) => followedAuthors.has(entry.author));
+
   return (
     <aside className="flex flex-col gap-6">
       <div id="ranking" className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24">
@@ -57,11 +63,17 @@ export function Sidebar({
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
           フォロー中のビルドログ
         </h3>
-        <div className="flex flex-col divide-y divide-[var(--line)]">
-          {buildLogs.map((entry) => (
-            <BuildLogRow key={entry.id} entry={entry} />
-          ))}
-        </div>
+        {followedLogs.length === 0 ? (
+          <p className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
+            気になる作者をフォローすると、ここに更新が届きます
+          </p>
+        ) : (
+          <div className="flex flex-col divide-y divide-[var(--line)]">
+            {followedLogs.map((entry) => (
+              <BuildLogRow key={entry.id} entry={entry} />
+            ))}
+          </div>
+        )}
       </div>
     </aside>
   );

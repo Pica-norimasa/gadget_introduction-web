@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { BuildLogEntry, Work } from "@/app/lib/mock-data";
+import { useFollowedAuthors } from "@/app/lib/follow-store";
 
 type AuthorStory = {
   author: string;
@@ -32,7 +33,12 @@ function groupByAuthor(buildLogs: BuildLogEntry[], works: Work[]): AuthorStory[]
 const STORY_MS = 4500;
 
 export function StoriesStrip({ buildLogs, works }: { buildLogs: BuildLogEntry[]; works: Work[] }) {
-  const [stories] = useState(() => groupByAuthor(buildLogs, works));
+  const followedAuthors = useFollowedAuthors();
+  // フォロー中の作者のビルドログだけを「ストーリーズ」として並べる
+  const stories = useMemo(
+    () => groupByAuthor(buildLogs.filter((entry) => followedAuthors.has(entry.author)), works),
+    [buildLogs, works, followedAuthors],
+  );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [entryIndex, setEntryIndex] = useState(0);
   const [seen, setSeen] = useState<Set<string>>(new Set());
