@@ -1,5 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
-import { GUEST_USER_NAME } from "@/app/lib/guest-user";
+import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -20,6 +20,7 @@ type ProjectWithAuthor = {
   views: number;
   trendScore: number;
   createdAt: Date;
+  authorId: string;
   commentsSeed: number;
   reactionInterestingSeed: number;
   reactionUsefulSeed: number;
@@ -38,6 +39,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     tool: project.tool as AiTool,
     platforms: project.platforms as unknown as Platform[],
     author: project.author.name,
+    authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
     githubUrl: project.githubUrl ?? undefined,
@@ -104,14 +106,10 @@ export async function getPosts(): Promise<Post[]> {
   }));
 }
 
-async function getGuestUser() {
-  return prisma.user.findUnique({ where: { name: GUEST_USER_NAME } });
-}
-
-// projectId -> ゲストユーザーが既に押しているリアクション種別。フィード全体を
+// projectId -> 自分が既に押しているリアクション種別。フィード全体を
 // 1回で回すページ(`/`)向け。
 export async function getMyReactions(): Promise<Record<string, ReactionKey[]>> {
-  const user = await getGuestUser();
+  const user = await getCurrentUser();
   if (!user) return {};
 
   const rows = await prisma.reaction.findMany({
@@ -128,7 +126,7 @@ export async function getMyReactions(): Promise<Record<string, ReactionKey[]>> {
 
 // 単一Project向け(作品詳細ページ)。全件取得するgetMyReactions()より軽い。
 export async function getMyReactionsForProject(projectId: string): Promise<ReactionKey[]> {
-  const user = await getGuestUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   const rows = await prisma.reaction.findMany({
@@ -138,10 +136,10 @@ export async function getMyReactionsForProject(projectId: string): Promise<React
   return rows.map((r) => r.type as ReactionKey);
 }
 
-// ゲストユーザーがフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー
+// 自分がフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー
 // 状態をクライアント側ストア(follow-store.ts)に初期反映するために使う。
 export async function getFollowedAuthors(): Promise<string[]> {
-  const user = await getGuestUser();
+  const user = await getCurrentUser();
   if (!user) return [];
 
   const follows = await prisma.follow.findMany({

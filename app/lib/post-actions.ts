@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import { inferPostType } from "@/app/lib/infer-post-type";
-import { GUEST_USER_NAME } from "@/app/lib/guest-user";
+import { getOrCreateCurrentUser } from "@/app/lib/session";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
@@ -36,11 +36,7 @@ export async function createPost(
     return { error: "280文字以内で入力してください" };
   }
 
-  const author = await prisma.user.upsert({
-    where: { name: GUEST_USER_NAME },
-    update: {},
-    create: { name: GUEST_USER_NAME },
-  });
+  const author = await getOrCreateCurrentUser();
 
   const type = inferPostType(body);
   let projectId: string | null = null;

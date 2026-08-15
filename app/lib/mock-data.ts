@@ -25,6 +25,9 @@ export type Work = {
   tool: AiTool;
   platforms: Platform[];
   author: string;
+  // 「自分のProject一覧」を絞り込むためのUser.id。mock-data.ts由来のシード
+  // Workには無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
+  authorId?: string;
   hue: number; // thumbnail accent hue, 0-360
   glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
   githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する

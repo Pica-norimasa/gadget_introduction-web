@@ -107,6 +107,47 @@
    新規Projectのidは日本語タイトルをそのままローマ字slug化するのが難しいため、
    `p-`+ランダムhexのopaqueなidにしている(mock-data.ts由来の既存Projectだけが
    読みやすいslugを持つ)。カテゴリ変更・画像追加などのProject編集UIはまだ無い。
+   ※この項目中の`GUEST_USER_NAME`/`app/lib/guest-user.ts`は下の項目6で
+   軽量セッションに置き換えられ、どちらも削除済み。
+6. ~~軽量セッション(認証の代わり)~~ → 実装済み。項目2・3・5がすべて依存していた
+   「投稿は全員固定の『あなた』1アカウント名義」を解消した。本格的なOAuth認証は
+   まだ作らず、訪問者ごとにCookieで別のUser行を持たせるだけの割り切った実装。
+   - `proxy.ts`(プロジェクトルート。Next.js 16では`middleware.ts`ではなく
+     `proxy.ts`が正式名称 — ビルド時に非推奨警告が出たので合わせて改名した)が
+     edge runtimeで動き、`kizashi_session`という名前のopaqueなCookie(UUID、
+     httpOnly)を初回アクセス時に発行するだけ。DBには一切触れない
+     (Prismaのネイティブアダプタはedge runtimeで動かせないため)。
+   - `app/lib/session.ts`の`getCurrentUser()`(表示用、読み取り専用。まだ何も
+     していない訪問者はUser行が無いのでnull)と`getOrCreateCurrentUser()`
+     (書き込み系Server Action専用。初回の投稿/リアクション/フォロー時に
+     「ゲストXXXX」名でUser行を遅延生成)の2つがエントリポイント。
+     `app/lib/guest-user.ts`(`GUEST_USER_NAME`定数)は完全に削除し、
+     post-actions.ts/reaction-actions.ts/follow-actions.ts/queries.ts/page.tsx
+     の参照をすべてこの2関数に置き換えた。
+   - `app/components/IdentityBadge.tsx`(`SiteHeader`から表示)で表示名を
+     いつでも変更できる。名前の重複は`User.name`のunique制約で弾かれ、
+     「その名前は既に使われています」を表示する。
+   - `Work.authorId`をmock-data.tsとqueries.tsに追加し、`page.tsx`の
+     「自分のProject一覧」(投稿コンポーザーの紐付け先セレクタ)を
+     表示名ではなくidで絞り込むようにした(表示名は訪問者ごとに変わる
+     動的な値になったため、文字列一致では判定できない)。
+   - **既知の割り切り**: `follow-store.ts`(クライアント側の楽観的更新
+     ストア)は「自分自身をフォローできない」ガードを外した。表示名が
+     動的になり、クライアント側で安く「自分かどうか」を判定できないため。
+     実際の永続化は`follow-actions.ts`側でid比較して防いでいるので、
+     自分のカードで誤ってフォローボタンを押しても見た目が一瞬変わる
+     だけでDBには残らない(次のリロードで元に戻る)。
+   - **既知の副作用**: `cookies()`はNext.jsの「動的API」に該当するため、
+     `/`と`/work/[id]`は静的プリレンダリング(SSG)ではなく毎リクエスト
+     サーバーレンダリング(dynamic)に切り替わった。訪問者ごとに表示内容
+     (自分の名前・リアクション・フォロー状態)が変わる以上これは正しい
+     挙動だが、将来アクセス数が増えてパフォーマンスが気になる場合は
+     Partial Prerendering(PPR)で個人化された部分だけSuspense境界の
+     内側に切り出す余地がある。
+   - 本格的なOAuth認証(Googleログイン等)への移行は依然として未着手。
+     移行時は`getOrCreateCurrentUser()`の中身をセッションCookie参照から
+     実際の認証プロバイダのユーザー解決に差し替えるだけで、呼び出し側
+     (Server Action群)は変更不要になるよう設計してある。
 
 ### このマシン固有のメモ(開発環境の制約)
 

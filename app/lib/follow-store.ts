@@ -8,7 +8,6 @@
 // (follow-actions.ts)でバックグラウンド永続化する。
 
 import { useSyncExternalStore } from "react";
-import { GUEST_USER_NAME } from "@/app/lib/guest-user";
 import { toggleFollowAction } from "@/app/lib/follow-actions";
 
 type Listener = () => void;
@@ -29,9 +28,11 @@ export function hydrateFollowed(names: string[]) {
   emitChange();
 }
 
+// 自分自身のフォローはfollow-actions.ts側でid比較して弾く(このモジュールは
+// 表示名が動的になったため「自分の名前」を安く判定できず、クライアント側では
+// 素通しにしている。自分のカードで押した場合、見た目だけ一瞬「フォロー中」に
+// なり次回リロードで戻る)。
 export function toggleFollow(author: string) {
-  if (author === GUEST_USER_NAME) return; // 自分自身はフォローできない
-
   const next = new Set(followed);
   if (next.has(author)) next.delete(author);
   else next.add(author);

@@ -1,24 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { GUEST_USER_NAME } from "@/app/lib/guest-user";
+import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 
 // トグル: 既にフォローしていればFollow行を消し、していなければ作る。
 // authorNameは常に実在するProjectの作者名(=既存User)のはずだが、念のため
-// 見つからなければ何もしない。自分自身のフォローも無視する。
+// 見つからなければ何もしない。自分自身のフォローも無視する
+// (表示名は訪問者ごとに変わるため、名前ではなくidで比較する)。
 export async function toggleFollowAction(authorName: string) {
-  if (authorName === GUEST_USER_NAME) return;
-
   const [follower, following] = await Promise.all([
-    prisma.user.upsert({
-      where: { name: GUEST_USER_NAME },
-      update: {},
-      create: { name: GUEST_USER_NAME },
-    }),
+    getOrCreateCurrentUser(),
     prisma.user.findUnique({ where: { name: authorName } }),
   ]);
-  if (!following) return;
+  if (!following || following.id === follower.id) return;
 
   const existing = await prisma.follow.findUnique({
     where: { followerId_followingId: { followerId: follower.id, followingId: following.id } },

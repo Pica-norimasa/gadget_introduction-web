@@ -1,4 +1,9 @@
-export function SiteHeader() {
+import { getCurrentUser } from "@/app/lib/session";
+import { IdentityBadge } from "./IdentityBadge";
+
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
@@ -39,6 +44,7 @@ export function SiteHeader() {
           >
             🔔
           </button>
+          <IdentityBadge name={user?.name ?? null} />
           <button
             type="button"
             className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:opacity-90"

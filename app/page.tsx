@@ -1,5 +1,5 @@
 import { getMyReactions, getPosts, getWorks } from "@/app/lib/queries";
-import { GUEST_USER_NAME } from "@/app/lib/guest-user";
+import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposer } from "@/app/components/PostComposer";
 import { RecentActivity } from "@/app/components/RecentActivity";
@@ -11,10 +11,15 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
-  const [works, posts, myReactions] = await Promise.all([getWorks(), getPosts(), getMyReactions()]);
+  const [works, posts, myReactions, currentUser] = await Promise.all([
+    getWorks(),
+    getPosts(),
+    getMyReactions(),
+    getCurrentUser(),
+  ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
-  const myProjects = works.filter((w) => w.author === GUEST_USER_NAME);
+  const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
