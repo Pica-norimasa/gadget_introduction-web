@@ -23,9 +23,17 @@ model User {
   bio       String?
   createdAt DateTime @default(now())
 
-  // 軽量セッション(middleware.tsがCookieで発行するopaqueなID)との紐付け。
-  // mock-data.ts由来のシードUserはセッションを持たないためnull許容にしている。
+  // 軽量セッション(proxy.tsがCookieで発行するopaqueなID)との紐付け。
+  // ログインしていない匿名ゲスト向け。GitHubログイン済みのUserや
+  // mock-data.ts由来のシードUserはセッションを持たないためnull許容。
   sessionId String?  @unique
+
+  // Auth.js(GitHubログイン)向け。匿名ゲストのUserはnullのまま。
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
 
   // 表示用の起点フォロワー数。実フォローはFollow行として積み上がる想定だが、
   // 認証が無くFollow行がまだ実際には作られないため、Project.commentsSeed等と
@@ -50,6 +58,47 @@ model User {
   mutedBy   Mute[] @relation("Muted")
   blocking  Block[] @relation("Blocker")
   blockedBy Block[] @relation("Blocked")
+}
+
+// 以下3モデルは@auth/prisma-adapterが要求する標準スキーマ(GitHubログインの
+// トークン保管用)。SessionはJWTセッション戦略を使うため実際には使わない
+// (adapterのcreateSession等が呼ばれない)が、将来DBセッション方式や
+// メールログインに切り替える可能性もあるため標準構成のまま用意しておく。
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  // 本番のMySQL移行時は、id_token等が長くなり得るので@db.Textの付与を検討する
+  // (SQLiteにはこの注釈が無く、TEXT型として扱われるため今は不要)。
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Project {

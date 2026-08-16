@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth, signIn, signOut } from "@/auth";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { ComposerButton } from "./ComposerButton";
@@ -7,7 +8,12 @@ import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
 
 export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
-  const [user, { notifications, unreadCount }] = await Promise.all([getCurrentUser(), getNotificationData()]);
+  const [user, { notifications, unreadCount }, session] = await Promise.all([
+    getCurrentUser(),
+    getNotificationData(),
+    auth(),
+  ]);
+  const authed = !!session?.user;
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
@@ -46,7 +52,36 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           </Link>
           <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
-          <IdentityBadge name={user?.name ?? null} />
+          <IdentityBadge name={user?.name ?? null} image={user?.image} />
+          {authed ? (
+            <form
+              action={async () => {
+                "use server";
+                await signOut();
+              }}
+            >
+              <button
+                type="submit"
+                className="rounded-full px-2.5 py-1.5 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] sm:px-3 sm:py-2"
+              >
+                ログアウト
+              </button>
+            </form>
+          ) : (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("github");
+              }}
+            >
+              <button
+                type="submit"
+                className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+              >
+                GitHubでログイン
+              </button>
+            </form>
+          )}
           <ComposerButton />
         </nav>
       </div>

@@ -5,7 +5,7 @@ import { updateDisplayName, type UpdateNameState } from "@/app/lib/session-actio
 
 const initialState: UpdateNameState = {};
 
-export function IdentityBadge({ name }: { name: string | null }) {
+export function IdentityBadge({ name, image }: { name: string | null; image?: string | null }) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(updateDisplayName, initialState);
 
@@ -24,7 +24,12 @@ export function IdentityBadge({ name }: { name: string | null }) {
         title="表示名を変更"
         className="flex items-center gap-1.5 rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
       >
-        <span aria-hidden>👤</span>
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element -- GitHubのアバター画像、next/imageのドメイン設定不要な簡易表示
+          <img src={image} alt="" className="h-4 w-4 rounded-full" />
+        ) : (
+          <span aria-hidden>👤</span>
+        )}
         {/* モバイル幅ではアイコンだけにして、ヘッダーの横幅を圧迫しないようにする */}
         <span className="hidden sm:inline">{name ?? "ゲスト"}</span>
       </button>
