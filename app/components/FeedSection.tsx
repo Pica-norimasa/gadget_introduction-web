@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
+import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { WorkCard } from "./WorkCard";
 
 type Tab = "trend" | "new" | "recommend";
@@ -25,6 +26,24 @@ function shuffled<T>(arr: T[]): T[] {
   return copy;
 }
 
+// 「あなたへ」タブの簡易パーソナライズ。本物のレコメンドAIの代わりに、
+// 手元にある2つのシグナル(フォロー中の作者・過去にリアクションした作品の
+// カテゴリ/ツール)から素点を作る。どちらのシグナルも無い(未フォロー・
+// 未リアクション)ユーザーには、従来通り小さな作者を少し優遇して発見の
+// 余地を残す。
+function personalizedScore(
+  w: Work,
+  followedAuthors: ReadonlySet<string>,
+  affinity: { categories: Set<string>; tools: Set<string> },
+): number {
+  let score = 0;
+  if (followedAuthors.has(w.author)) score += 100;
+  if (affinity.categories.has(w.category)) score += 20;
+  if (w.tool && affinity.tools.has(w.tool)) score += 10;
+  score += Math.max(0, 30 - w.followers) * 0.5;
+  return score;
+}
+
 export function FeedSection({
   works,
   posts,
@@ -40,6 +59,7 @@ export function FeedSection({
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const followedAuthors = useFollowedAuthors();
 
   // Math.random()を使うshuffleは、サーバー側の初回レンダリングと
   // クライアントのハイドレーション時とで結果が食い違い、ハイドレーション
@@ -65,9 +85,16 @@ export function FeedSection({
     const copy = [...works];
     if (tab === "trend") return copy.sort((a, b) => b.trendScore - a.trendScore);
     if (tab === "new") return copy.sort((a, b) => a.daysAgo - b.daysAgo);
-    // recommend: a stand-in for personalization — favors variety of small creators
-    return copy.sort((a, b) => a.followers - b.followers);
-  }, [tab, works]);
+
+    const reactedWorks = works.filter((w) => (myReactions[w.id]?.length ?? 0) > 0);
+    const affinity = {
+      categories: new Set(reactedWorks.map((w) => w.category)),
+      tools: new Set(reactedWorks.map((w) => w.tool).filter((t): t is Exclude<Work["tool"], null> => t !== null)),
+    };
+    return copy.sort(
+      (a, b) => personalizedScore(b, followedAuthors, affinity) - personalizedScore(a, followedAuthors, affinity),
+    );
+  }, [tab, works, myReactions, followedAuthors]);
 
   const visible = useMemo(() => {
     if (platformFilter.size === 0) return sorted;
