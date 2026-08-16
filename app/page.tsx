@@ -1,8 +1,7 @@
-import { getMyReactions, getPosts, getWorks } from "@/app/lib/queries";
+import { getMyReactions, getPosts, getRecentActivity, getWorks } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposer } from "@/app/components/PostComposer";
-import { RecentActivity } from "@/app/components/RecentActivity";
 import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { ImmersiveEntry } from "@/app/components/ImmersiveEntry";
 import { HeroRail } from "@/app/components/HeroRail";
@@ -11,11 +10,12 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
-  const [works, posts, myReactions, currentUser] = await Promise.all([
+  const [works, posts, myReactions, currentUser, activity] = await Promise.all([
     getWorks(),
     getPosts(),
     getMyReactions(),
     getCurrentUser(),
+    getRecentActivity(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -27,14 +27,13 @@ export default async function Home() {
 
       <main className="flex-1">
         <PostComposer myProjects={myProjects} />
-        <RecentActivity />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
         <HeroRail works={heroWorks} posts={posts} myReactions={myReactions} />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
           <FeedSection works={works} posts={posts} myReactions={myReactions} />
-          <Sidebar ranking={rankingWorks} posts={posts} works={works} />
+          <Sidebar ranking={rankingWorks} posts={posts} works={works} activity={activity} />
         </div>
       </main>
 

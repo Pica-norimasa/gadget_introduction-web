@@ -139,6 +139,36 @@ export async function getPosts(): Promise<Post[]> {
   }));
 }
 
+export type ActivityView = {
+  id: string;
+  type: PostType;
+  body: string;
+  authorName: string;
+  projectId: string | null;
+  projectTitle: string | null;
+  hoursAgo: number;
+};
+
+// プラットフォーム全体の最新の投稿(孤立したPostも含む)。サイドバーの
+// 「最新の創作活動」向け。プロジェクト単位のタイムラインではないので
+// getPosts()(projectId必須)とは別に、全件を対象にする。
+export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
+  const rows = await prisma.post.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { author: { select: { name: true } }, project: { select: { id: true, title: true } } },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    type: r.type as PostType,
+    body: r.body,
+    authorName: r.author.name,
+    projectId: r.project?.id ?? null,
+    projectTitle: r.project?.title ?? null,
+    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+  }));
+}
+
 // projectId -> 自分が既に押しているリアクション種別。フィード全体を
 // 1回で回すページ(`/`)向け。
 export async function getMyReactions(): Promise<Record<string, ReactionKey[]>> {
