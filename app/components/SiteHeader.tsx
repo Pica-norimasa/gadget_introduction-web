@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/app/lib/session";
 import { IdentityBadge } from "./IdentityBadge";
 
-export async function SiteHeader() {
+export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
   const user = await getCurrentUser();
 
   return (
@@ -16,13 +16,15 @@ export async function SiteHeader() {
           </span>
         </a>
 
-        <div className="relative hidden flex-1 max-w-md sm:block">
+        <form action="/search" method="GET" className="relative hidden flex-1 max-w-md sm:block">
           <input
             type="text"
+            name="q"
+            defaultValue={defaultQuery}
             placeholder="「〜みたいなツールない?」で探す"
             className="w-full rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] outline-none focus:border-[var(--accent)]"
           />
-        </div>
+        </form>
 
         <nav className="ml-auto flex items-center gap-2 sm:gap-3">
           <a

@@ -1,3 +1,4 @@
+import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
@@ -61,9 +62,10 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
 
 const authorInclude = { include: { _count: { select: { followedBy: true } } } } as const;
 
-export async function getWorks(): Promise<Work[]> {
+async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> {
   const [projects, reactionRows] = await Promise.all([
     prisma.project.findMany({
+      where,
       include: { author: authorInclude, _count: { select: { comments: true } } },
       orderBy: { createdAt: "desc" },
     }),
@@ -78,6 +80,22 @@ export async function getWorks(): Promise<Work[]> {
   }
 
   return projects.map((p) => toWork(p, countsByProject.get(p.id)));
+}
+
+export async function getWorks(): Promise<Work[]> {
+  return getWorksWhere();
+}
+
+// タイトル・キャッチコピー・作者名のいずれかに一致するProjectを検索する。
+// SQLiteのLIKEはASCII文字を大文字小文字区別なく比較するため、日本語主体の
+// このアプリでは追加のcase-insensitive設定は不要。
+export async function searchWorks(query: string): Promise<Work[]> {
+  const q = query.trim();
+  if (!q) return [];
+
+  return getWorksWhere({
+    OR: [{ title: { contains: q } }, { catchText: { contains: q } }, { author: { name: { contains: q } } }],
+  });
 }
 
 export async function getWorkById(id: string): Promise<Work | null> {
