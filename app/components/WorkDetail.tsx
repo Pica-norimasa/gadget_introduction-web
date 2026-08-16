@@ -16,6 +16,7 @@ import { RepostButton } from "./RepostButton";
 import { ShareButtons } from "./ShareButtons";
 import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
+import { StandalonePostCard } from "./StandalonePostCard";
 import { TimelinePostForm } from "./TimelinePostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkCard } from "./WorkCard";
@@ -240,22 +241,7 @@ export function WorkDetail({
                     showAnchor={false}
                   />
                 ) : (
-                  <Link
-                    key={`post-${item.post.id}`}
-                    href={`/post/${item.post.id}`}
-                    className="flex items-start gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 hover:border-[var(--accent)]"
-                  >
-                    <AuthorAvatar name={item.post.authorName} size={28} />
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
-                        <span className="font-medium text-[var(--ink-soft)]">{item.post.authorName}</span> ・{" "}
-                        {formatRelativeHours(item.post.hoursAgo)}
-                      </p>
-                      {item.post.body && (
-                        <p className="text-[13px] leading-relaxed text-[var(--ink)]">{item.post.body}</p>
-                      )}
-                    </div>
-                  </Link>
+                  <StandalonePostCard key={`post-${item.post.id}`} post={item.post} />
                 ),
               )}
             </div>

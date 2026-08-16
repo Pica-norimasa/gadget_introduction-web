@@ -329,18 +329,19 @@ export type StandalonePostView = {
   likesCount: number;
 };
 
-// プロジェクトに紐付けない「気軽な単独投稿」限定。トップページの
-// MurmurStrip向け。以前はサイドバーの「最新の創作活動」に他の投稿と
-// 一緒に埋もれていたため、専用の目立つ枠に切り出した。
-export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePostView[]> {
+async function loadStandalonePosts(
+  extraWhere: Prisma.PostWhereInput,
+  limit?: number,
+): Promise<StandalonePostView[]> {
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.post.findMany({
     where: {
       projectId: null,
+      ...extraWhere,
       ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
     },
     orderBy: { createdAt: "desc" },
-    take: limit,
+    ...(limit ? { take: limit } : {}),
     include: { author: { select: { name: true } }, _count: { select: { comments: true, reactions: true } } },
   });
   return rows.map((r) => ({
@@ -352,6 +353,22 @@ export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePo
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
   }));
+}
+
+// プロジェクトに紐付けない「気軽な単独投稿」限定。トップページの
+// MurmurStrip向け。以前はサイドバーの「最新の創作活動」に他の投稿と
+// 一緒に埋もれていたため、専用の目立つ枠に切り出した。
+export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePostView[]> {
+  return loadStandalonePosts({}, limit);
+}
+
+// /search専用。検索がsearchWorks()(Project限定)しか無く、単独投稿
+// (つぶやき)がどうやっても検索に出てこない非対称を埋めるためのもの。
+// searchWorks()と同じく本文+作者名の部分一致。
+export async function searchStandalonePosts(query: string): Promise<StandalonePostView[]> {
+  const q = query.trim();
+  if (!q) return [];
+  return loadStandalonePosts({ OR: [{ body: { contains: q } }, { author: { name: { contains: q } } }] });
 }
 
 export type RepostView = {

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { getMyReactions, getPosts, searchWorks } from "@/app/lib/queries";
+import { getMyReactions, getPosts, searchStandalonePosts, searchWorks } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
 
 export async function generateMetadata({
@@ -22,12 +23,14 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
-  const [results, posts, myReactions, currentUser] = await Promise.all([
+  const [works, standalonePosts, posts, myReactions, currentUser] = await Promise.all([
     searchWorks(query),
+    searchStandalonePosts(query),
     getPosts(),
     getMyReactions(),
     getCurrentUser(),
   ]);
+  const totalCount = works.length + standalonePosts.length;
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -39,7 +42,7 @@ export default async function SearchPage({
             <h1 className="mb-1 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
               「{query}」の検索結果
             </h1>
-            <p className="mb-6 text-[13px] text-[var(--ink-faint)]">{results.length}件見つかりました</p>
+            <p className="mb-6 text-[13px] text-[var(--ink-faint)]">{totalCount}件見つかりました</p>
           </>
         ) : (
           <h1 className="mb-6 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
@@ -51,22 +54,44 @@ export default async function SearchPage({
           <p className="rounded-2xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink-faint)]">
             キーワードを入力して作品を探してみてください
           </p>
-        ) : results.length === 0 ? (
+        ) : totalCount === 0 ? (
           <p className="rounded-2xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink-faint)]">
-            「{query}」に一致する作品は見つかりませんでした
+            「{query}」に一致する結果は見つかりませんでした
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {results.map((w) => (
-              <WorkCard
-                key={w.id}
-                work={w}
-                posts={posts}
-                myReactions={myReactions}
-                currentUserId={currentUser?.id ?? null}
-                showAnchor={false}
-              />
-            ))}
+          <div className="flex flex-col gap-8">
+            {works.length > 0 && (
+              <div>
+                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+                  作品({works.length})
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {works.map((w) => (
+                    <WorkCard
+                      key={w.id}
+                      work={w}
+                      posts={posts}
+                      myReactions={myReactions}
+                      currentUserId={currentUser?.id ?? null}
+                      showAnchor={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {standalonePosts.length > 0 && (
+              <div>
+                <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+                  つぶやき({standalonePosts.length})
+                </h2>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {standalonePosts.map((p) => (
+                    <StandalonePostCard key={p.id} post={p} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
