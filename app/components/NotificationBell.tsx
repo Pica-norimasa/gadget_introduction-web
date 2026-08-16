@@ -79,6 +79,26 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     );
   }
 
+  // コメントへの返信。「comment」と同じくpostId/projectIdのどちらかで
+  // ルーティングする(返信は作品向け/単独投稿向けコメントのどちらにも
+  // 付けられるため)。
+  if (n.type === "reply") {
+    const targetHref = n.postId ? `/post/${n.postId}` : n.projectId ? `/work/${n.projectId}` : null;
+    const message = "があなたのコメントに返信しました";
+    return (
+      <>
+        {actor}
+        {targetHref ? (
+          <Link href={targetHref} onClick={onNavigate} className="hover:underline">
+            {message}
+          </Link>
+        ) : (
+          message
+        )}
+      </>
+    );
+  }
+
   // インスパイア元(sourceProjectId)と、生成された新しい投稿/Project
   // (projectId/postIdのどちらか)の2つのリンクを含む唯一の通知種別。
   if (n.type === "inspired" && n.sourceProjectId) {

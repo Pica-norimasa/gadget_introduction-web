@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/app/lib/session";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { CommentForm } from "@/app/components/CommentForm";
-import { DeleteCommentButton } from "@/app/components/DeleteCommentButton";
+import { CommentThread } from "@/app/components/CommentThread";
 import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { SiteHeader } from "@/app/components/SiteHeader";
@@ -60,6 +60,12 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               <p className="text-[12px] text-[var(--ink-faint)]">{formatRelativeHours(post.hoursAgo)}</p>
             </div>
           </Link>
+          {post.authorId !== currentUser?.id && (
+            <MoreActionsMenu
+              reportTarget={{ type: "post", id: post.id }}
+              author={{ id: post.authorId, name: post.authorName }}
+            />
+          )}
         </div>
 
         {post.inspiredByProjectId && post.inspiredByProjectTitle && (
@@ -89,50 +95,19 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
         <div className="mb-6">
           <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            コメント({comments.length})
+            コメント({comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})
           </h2>
           <div className="mb-4 flex flex-col gap-3">
             {comments.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
             ) : (
               comments.map((c) => (
-                <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
-                  <div className="flex items-start gap-2">
-                    <Link href={`/u/${encodeURIComponent(c.authorName)}`} className="shrink-0">
-                      <AuthorAvatar name={c.authorName} size={28} />
-                    </Link>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <p className="text-[12px] text-[var(--ink-faint)]">
-                          <Link
-                            href={`/u/${encodeURIComponent(c.authorName)}`}
-                            className="font-medium text-[var(--ink-soft)] hover:underline"
-                          >
-                            {c.authorName}
-                          </Link>{" "}
-                          ・ {formatRelativeHours(c.hoursAgo)}
-                        </p>
-                        {c.authorId === currentUser?.id ? (
-                          <DeleteCommentButton commentId={c.id} />
-                        ) : (
-                          <MoreActionsMenu
-                            reportTarget={{ type: "comment", id: c.id }}
-                            author={{ id: c.authorId, name: c.authorName }}
-                          />
-                        )}
-                      </div>
-                      {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
-                      {c.imageUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-                        <img
-                          src={c.imageUrl}
-                          alt=""
-                          className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <CommentThread
+                  key={c.id}
+                  thread={c}
+                  target={{ type: "post", id: post.id }}
+                  currentUserId={currentUser?.id ?? null}
+                />
               ))
             )}
           </div>

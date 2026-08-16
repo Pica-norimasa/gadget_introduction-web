@@ -914,6 +914,48 @@
     (2)作者名をタップすると`/u/[author]`へ正しく遷移すること、を
     実際にsoraをフォローして確認した後、テスト用のフォロー関係は
     解除して原状回復した。lint/build clean。
+47. ~~コメントへの返信(スレッド化)~~ → 実装済み。`Comment.parentId`
+    (自己参照、nullable)を追加し、Xと同じ1階層のみのフラットな
+    スレッドにした(「返信への返信」はデータ上は可能だがUI側で
+    ボタンを出さないことで防いでいる)。`getCommentsForProject`/
+    `getCommentsForPost`は共通ヘルパー`loadCommentThreads()`に統合し、
+    トップレベルコメント+その`replies: CommentView[]`という
+    `CommentThread`型を返すように変更(以前はコメントを平坦な配列で
+    返していた)。新設`CommentThread.tsx`(クライアントコンポーネント)
+    が1スレッド分(本体+「返信する」トグル+返信一覧+返信フォーム)を
+    まとめて描画し、`WorkDetail.tsx`/`app/post/[id]/page.tsx`両方の
+    インラインなコメント描画をこれに置き換えた。`CommentForm.tsx`に
+    `parentId`/`onDone`propsを追加(返信フォームは自動フォーカス+
+    送信成功で自動的に畳まれる)。通知は新設`type: "reply"`で、
+    返信先コメントの作者に送る(project/post所有者への既存の
+    `comment`通知とは別人の場合のみ。同一人物なら二重通知しない)。
+    **ハマった点**: コメント一覧を平坦配列からスレッド構造に変えた際、
+    見出しの`コメント({comments.length})`が トップレベル件数だけを
+    数えるようになり、返信を追加しても件数表示が増えない不具合を
+    実装直後に発見・修正(`comments.reduce((sum, c) => sum + 1 +
+    c.replies.length, 0)`で返信も含めた総数に変更)。ブラウザで、
+    (1)トップレベルコメントに返信→スレッド内に正しくネストして
+    表示、(2)返信先(project/post所有者と別人)に`reply`通知が
+    正しく飛ぶこと、(3)返信先が所有者と同一人物のケースでは二重
+    通知にならないこと、(4)返信コメントには「返信する」ボタンが
+    出ない(1階層制限)こと、をすべて確認した後、テスト用のコメント・
+    通知はすべて削除して原状回復した。lint/build clean。
+48. ~~単独投稿(つぶやき)自体への通報機能~~ → 実装済み。既存の
+    `Report`(project/comment/userの3種)に`postId`を追加し
+    `targetType`に`"post"`を追加(`ReportTargetType`/
+    `report-actions.ts`)。`/post/[id]`ページの作者行に、自分の投稿
+    以外の場合だけ`MoreActionsMenu`(⋯→通報する)を新設(これまで
+    投稿本体には通報導線が無く、投稿へのコメントしか通報できない
+    非対称な状態だった)。管理画面(`/admin/reports`)の
+    `AdminReportView`にも`"post"`種別を追加し、「対象の投稿: 本文
+    冒頭60文字 → /post/[id]」の形でリンク表示するようにした。
+    ブラウザで、(1)実際に他ユーザー(山中)の投稿を通報→
+    `targetType: "post"`・`postId`のみが埋まったReport行が
+    正しく作られることを確認、(2)`ADMIN_KEY`を一時的に設定して
+    `/admin/reports`にログインし、「対象の投稿」リンクが正しい
+    `/post/[id]`を指すことを確認、(3)確認後`ADMIN_KEY`は元の空文字
+    (誰もログインできない安全側のデフォルト)に戻し、テスト用の
+    Report行も削除して原状回復した。lint/build clean。
 
 **開発環境の注意点(このセッション中に発生した実例)**: `next dev`を
 長時間動かしたまま`npm run build`を何度も実行すると、両方が同じ

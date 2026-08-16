@@ -17,6 +17,7 @@ export async function createComment(
   const targetType = String(formData.get("targetType") ?? "");
   const targetId = String(formData.get("targetId") ?? "");
   const body = String(formData.get("body") ?? "").trim();
+  const parentIdRaw = String(formData.get("parentId") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
   if (targetType !== "project" && targetType !== "post") return { error: "投稿先が不明です" };
@@ -40,6 +41,23 @@ export async function createComment(
     recipientId = post.authorId;
   }
 
+  // 返信先(あれば)は今回のtarget(project/post)と同じスレッドに属して
+  // いる場合のみ信用する(改ざん対策)。「返信への返信」はUIがボタンを
+  // 出さないだけで、データ上は弾いていない(親を辿らせる複雑さを避ける
+  // ため、フラットな1階層として扱う)。
+  let parentId: string | null = null;
+  let replyRecipientId: string | null = null;
+  if (parentIdRaw) {
+    const parent = await prisma.comment.findUnique({
+      where: { id: parentIdRaw },
+      select: { id: true, authorId: true, projectId: true, postId: true },
+    });
+    if (parent && parent.projectId === projectId && parent.postId === postId) {
+      parentId = parent.id;
+      replyRecipientId = parent.authorId;
+    }
+  }
+
   let imageUrl: string | null = null;
   if (imageFile) {
     try {
@@ -52,12 +70,19 @@ export async function createComment(
   const author = await getOrCreateCurrentUser();
 
   await prisma.comment.create({
-    data: { projectId, postId, body, imageUrl, authorId: author.id },
+    data: { projectId, postId, parentId, body, imageUrl, authorId: author.id },
   });
 
   if (recipientId !== author.id) {
     await prisma.notification.create({
       data: { type: "comment", recipientId, actorId: author.id, projectId, postId },
+    });
+  }
+  // 返信先の作者にも通知する(project/post所有者への上の通知とは別人の
+  // 場合のみ。同一人物への二重通知は避ける)。
+  if (parentId && replyRecipientId && replyRecipientId !== author.id && replyRecipientId !== recipientId) {
+    await prisma.notification.create({
+      data: { type: "reply", recipientId: replyRecipientId, actorId: author.id, projectId, postId },
     });
   }
 

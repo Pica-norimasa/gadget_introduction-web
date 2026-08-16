@@ -6,7 +6,18 @@ import { ImagePickerButton } from "./ImagePickerButton";
 
 const initialState: CreateCommentState = {};
 
-export function CommentForm({ target }: { target: { type: "project" | "post"; id: string } }) {
+export function CommentForm({
+  target,
+  parentId,
+  onDone,
+}: {
+  target: { type: "project" | "post"; id: string };
+  // 指定するとその返信として投稿する(CommentThread.tsxが「返信する」
+  // から開くフォームで使う)。
+  parentId?: string;
+  // 送信成功時に呼ばれる(返信フォームを自動で畳むために使う)。
+  onDone?: () => void;
+}) {
   const [state, formAction, pending] = useActionState(createComment, initialState);
   const [body, setBody] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -35,7 +46,9 @@ export function CommentForm({ target }: { target: { type: "project" | "post"; id
       setBody("");
       formRef.current?.reset();
       clearImage();
+      onDone?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onDoneは呼び出し元で毎回新しい関数になり得るため依存に含めない
   }, [state.success]);
 
   const trimmed = body.trim();
@@ -44,13 +57,15 @@ export function CommentForm({ target }: { target: { type: "project" | "post"; id
     <form ref={formRef} action={formAction} encType="multipart/form-data" className="flex flex-col gap-2">
       <input type="hidden" name="targetType" value={target.type} />
       <input type="hidden" name="targetId" value={target.id} />
+      {parentId && <input type="hidden" name="parentId" value={parentId} />}
       <textarea
         name="body"
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="コメントを書く…"
+        placeholder={parentId ? "返信を書く…" : "コメントを書く…"}
         rows={2}
         maxLength={500}
+        autoFocus={!!parentId}
         className="w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
       />
       <ImagePickerButton
@@ -66,7 +81,7 @@ export function CommentForm({ target }: { target: { type: "project" | "post"; id
           disabled={(!trimmed && !imagePreview) || pending}
           className="shrink-0 rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
         >
-          {pending ? "送信中…" : "コメントする"}
+          {pending ? "送信中…" : parentId ? "返信する" : "コメントする"}
         </button>
       </div>
     </form>

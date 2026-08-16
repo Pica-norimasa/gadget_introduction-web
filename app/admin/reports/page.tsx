@@ -72,6 +72,11 @@ export default async function AdminReportsPage() {
                       対象のユーザー: {r.target.name} →
                     </Link>
                   )}
+                  {r.target.kind === "post" && (
+                    <Link href={`/post/${r.target.id}`} className="text-[var(--accent)] hover:underline">
+                      対象の投稿: {r.target.body.slice(0, 60)} →
+                    </Link>
+                  )}
                   {r.target.kind === "unknown" && (
                     <span className="text-[var(--ink-faint)]">(対象が見つかりません。削除済みの可能性があります)</span>
                   )}

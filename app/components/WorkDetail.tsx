@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
-import type { CommentView, InspiredItem } from "@/app/lib/queries";
+import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
+import { CommentThread } from "./CommentThread";
 import { CoverImage } from "./CoverImage";
-import { DeleteCommentButton } from "./DeleteCommentButton";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
@@ -34,7 +34,7 @@ export function WorkDetail({
   work: Work;
   timeline: Post[];
   myReactions: ReactionKey[];
-  comments: CommentView[];
+  comments: CommentThreadType[];
   currentUserId: string | null;
   inspiredItems: InspiredItem[];
   // 「この作品からインスパイアされた投稿」でProjectカード(WorkCard)を
@@ -183,50 +183,19 @@ export function WorkDetail({
 
         <div className="mb-6">
           <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            コメント({comments.length})
+            コメント({comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})
           </h2>
           <div className="mb-4 flex flex-col gap-3">
             {comments.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
             ) : (
               comments.map((c) => (
-                <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
-                  <div className="flex items-start gap-2">
-                    <Link href={`/u/${encodeURIComponent(c.authorName)}`} className="shrink-0">
-                      <AuthorAvatar name={c.authorName} size={28} />
-                    </Link>
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <p className="text-[12px] text-[var(--ink-faint)]">
-                          <Link
-                            href={`/u/${encodeURIComponent(c.authorName)}`}
-                            className="font-medium text-[var(--ink-soft)] hover:underline"
-                          >
-                            {c.authorName}
-                          </Link>{" "}
-                          ・ {formatRelativeHours(c.hoursAgo)}
-                        </p>
-                        {c.authorId === currentUserId ? (
-                          <DeleteCommentButton commentId={c.id} />
-                        ) : (
-                          <MoreActionsMenu
-                            reportTarget={{ type: "comment", id: c.id }}
-                            author={{ id: c.authorId, name: c.authorName }}
-                          />
-                        )}
-                      </div>
-                      {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
-                      {c.imageUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-                        <img
-                          src={c.imageUrl}
-                          alt=""
-                          className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <CommentThread
+                  key={c.id}
+                  thread={c}
+                  target={{ type: "project", id: work.id }}
+                  currentUserId={currentUserId}
+                />
               ))
             )}
           </div>

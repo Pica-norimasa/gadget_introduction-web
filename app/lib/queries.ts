@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
-export type NotificationType = "reaction" | "comment" | "follow" | "repost" | "inspired";
+export type NotificationType = "reaction" | "comment" | "follow" | "repost" | "inspired" | "reply";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -448,39 +448,47 @@ export type CommentView = {
   hoursAgo: number;
 };
 
-export async function getCommentsForProject(projectId: string): Promise<CommentView[]> {
+// トップレベルのコメント+その返信一覧(1階層のみ、Comment.parentIdの
+// コメント参照)。
+export type CommentThread = CommentView & { replies: CommentView[] };
+
+async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<CommentThread[]> {
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.comment.findMany({
-    where: { projectId, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
+    where: { ...where, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
     include: { author: { select: { name: true } } },
     orderBy: { createdAt: "asc" },
   });
-  return rows.map((r) => ({
+
+  const toView = (r: (typeof rows)[number]): CommentView => ({
     id: r.id,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     authorId: r.authorId,
     authorName: r.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
-  }));
+  });
+
+  const repliesByParent = new Map<string, CommentView[]>();
+  for (const r of rows) {
+    if (!r.parentId) continue;
+    const list = repliesByParent.get(r.parentId) ?? [];
+    list.push(toView(r));
+    repliesByParent.set(r.parentId, list);
+  }
+
+  return rows
+    .filter((r) => !r.parentId)
+    .map((r) => ({ ...toView(r), replies: repliesByParent.get(r.id) ?? [] }));
+}
+
+export async function getCommentsForProject(projectId: string): Promise<CommentThread[]> {
+  return loadCommentThreads({ projectId });
 }
 
 // /post/[id]専用。単独投稿(プロジェクトに紐づかないPost)へのコメント一覧。
-export async function getCommentsForPost(postId: string): Promise<CommentView[]> {
-  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
-  const rows = await prisma.comment.findMany({
-    where: { postId, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
-    include: { author: { select: { name: true } } },
-    orderBy: { createdAt: "asc" },
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    body: r.body,
-    imageUrl: r.imageUrl ?? undefined,
-    authorId: r.authorId,
-    authorName: r.author.name,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
-  }));
+export async function getCommentsForPost(postId: string): Promise<CommentThread[]> {
+  return loadCommentThreads({ postId });
 }
 
 export type PostDetailView = {
@@ -762,6 +770,7 @@ export type AdminReportView = {
     | { kind: "project"; id: string; title: string }
     | { kind: "comment"; id: string; body: string; projectId: string | null; postId: string | null }
     | { kind: "user"; id: string; name: string }
+    | { kind: "post"; id: string; body: string }
     | { kind: "unknown" };
 };
 
@@ -777,6 +786,7 @@ export async function getAllReports(): Promise<AdminReportView[]> {
       project: { select: { id: true, title: true } },
       comment: { select: { id: true, body: true, projectId: true, postId: true } },
       reportedUser: { select: { id: true, name: true } },
+      post: { select: { id: true, body: true } },
     },
   });
 
@@ -794,6 +804,8 @@ export async function getAllReports(): Promise<AdminReportView[]> {
       };
     } else if (r.targetType === "user" && r.reportedUser) {
       target = { kind: "user", id: r.reportedUser.id, name: r.reportedUser.name };
+    } else if (r.targetType === "post" && r.post) {
+      target = { kind: "post", id: r.post.id, body: r.post.body };
     }
 
     return {

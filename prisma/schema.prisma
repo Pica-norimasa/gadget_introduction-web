@@ -125,6 +125,7 @@ model Post {
   comments      Comment[]
   reactions     Reaction[]
   notifications Notification[]
+  reports       Report[]
 
   @@index([projectId])
   @@index([authorId])
@@ -170,6 +171,13 @@ model Comment {
   postId    String?
   post      Post?    @relation(fields: [postId], references: [id])
 
+  // コメントへの返信(Xと同じ1階層のみのフラットなスレッド)。「返信への
+  // さらなる返信」はUI側でボタンを出さないことで防いでいる(データ上は
+  // 深く辿ろうと思えば辿れるが、想定していない)。
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
   authorId  String
   author    User    @relation(fields: [authorId], references: [id])
   reports   Report[]
@@ -177,6 +185,7 @@ model Comment {
   @@index([projectId])
   @@index([postId])
   @@index([authorId])
+  @@index([parentId])
 }
 
 model Repost {
@@ -201,7 +210,7 @@ model Repost {
 
 model Notification {
   id        String    @id @default(cuid())
-  // reaction | comment | follow | repost | inspired
+  // reaction | comment | follow | repost | inspired | reply
   type      String
   createdAt DateTime  @default(now())
   readAt    DateTime?
@@ -282,9 +291,9 @@ model Report {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  // project | comment | user。対象に応じて下のprojectId/commentId/
-  // reportedUserIdのどれか1つだけが埋まる(モデレーション画面はまだ無く、
-  // 現状はPrisma Studio等で直接確認する前提の記録専用テーブル)。
+  // project | comment | user | post。対象に応じて下のprojectId/commentId/
+  // postId/reportedUserIdのどれか1つだけが埋まる。閲覧は/admin/reports
+  // (ADMIN_KEY必須)。
   targetType String
   // spam | inappropriate | impersonation | other
   reason     String
@@ -297,6 +306,8 @@ model Report {
   project   Project? @relation(fields: [projectId], references: [id])
   commentId String?
   comment   Comment? @relation(fields: [commentId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
 
   reportedUserId String?
   reportedUser   User?   @relation("ReportsReceived", fields: [reportedUserId], references: [id])

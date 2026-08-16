@@ -3,8 +3,8 @@
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 
-export type ReportTargetType = "project" | "comment" | "user";
-const TARGET_TYPES: ReportTargetType[] = ["project", "comment", "user"];
+export type ReportTargetType = "project" | "comment" | "user" | "post";
+const TARGET_TYPES: ReportTargetType[] = ["project", "comment", "user", "post"];
 
 export type ReportReason = "spam" | "inappropriate" | "impersonation" | "other";
 const REASONS: ReportReason[] = ["spam", "inappropriate", "impersonation", "other"];
@@ -42,6 +42,13 @@ export async function submitReport(
     if (comment.authorId === user.id) return { error: "自分のコメントは通報できません" };
     await prisma.report.create({
       data: { targetType, reason, detail: detail || null, reporterId: user.id, commentId: targetId },
+    });
+  } else if (targetType === "post") {
+    const post = await prisma.post.findUnique({ where: { id: targetId }, select: { authorId: true } });
+    if (!post) return { error: "対象が見つかりません" };
+    if (post.authorId === user.id) return { error: "自分の投稿は通報できません" };
+    await prisma.report.create({
+      data: { targetType, reason, detail: detail || null, reporterId: user.id, postId: targetId },
     });
   } else {
     if (targetId === user.id) return { error: "自分自身は通報できません" };
