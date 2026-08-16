@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/app/lib/session";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { BioEditor } from "@/app/components/BioEditor";
 import { FollowButton } from "@/app/components/FollowButton";
+import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
 
@@ -56,7 +57,15 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               )
             )}
           </div>
-          {!isOwnProfile && <FollowButton author={profile.name} size="md" />}
+          {!isOwnProfile && (
+            <div className="flex items-center gap-1">
+              <FollowButton author={profile.name} size="md" />
+              <MoreActionsMenu
+                reportTarget={{ type: "user", id: profile.id }}
+                author={{ id: profile.id, name: profile.name }}
+              />
+            </div>
+          )}
         </div>
 
         <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">

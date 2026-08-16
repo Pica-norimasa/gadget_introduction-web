@@ -8,6 +8,21 @@ export type NotificationType = "reaction" | "comment" | "follow" | "repost";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
+// フィード/検索/コメント欄など、能動的に発見される場所から、自分が
+// ミュート・ブロックしたUserのコンテンツを取り除くために使う。特定の
+// プロフィールページやWork詳細ページなど、URLで直接たどり着いた先までは
+// 隠さない(能動的な閲覧までは妨げない、という一方向の非表示に留める)。
+async function getMutedOrBlockedAuthorIds(): Promise<string[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const [mutes, blocks] = await Promise.all([
+    prisma.mute.findMany({ where: { muterId: user.id }, select: { mutedId: true } }),
+    prisma.block.findMany({ where: { blockerId: user.id }, select: { blockedId: true } }),
+  ]);
+  return [...mutes.map((m) => m.mutedId), ...blocks.map((b) => b.blockedId)];
+}
+
 type ProjectWithAuthor = {
   id: string;
   title: string;
@@ -88,7 +103,19 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
 }
 
 export async function getWorks(): Promise<Work[]> {
-  return getWorksWhere();
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  return getWorksWhere(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined);
+}
+
+// generateStaticParams専用の軽量版。ビルド時はリクエストコンテキストが無く
+// cookies()を呼べない(=getCurrentUser()経由のミュート/ブロックフィルタが
+// 使えない)ため、getWorks()とは別に、フィルタ無しでID一覧だけを返す。
+// 静的パラメータの生成は「存在する全ページ」を対象にすべきで、特定の
+// 閲覧者のミュート/ブロック状態とは無関係なので、フィルタが無いこと自体は
+// 正しい挙動でもある。
+export async function getAllProjectIds(): Promise<string[]> {
+  const projects = await prisma.project.findMany({ select: { id: true } });
+  return projects.map((p) => p.id);
 }
 
 // タイトル・キャッチコピー・作者名のいずれかに一致するProjectを検索する。
@@ -98,8 +125,10 @@ export async function searchWorks(query: string): Promise<Work[]> {
   const q = query.trim();
   if (!q) return [];
 
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   return getWorksWhere({
     OR: [{ title: { contains: q } }, { catchText: { contains: q } }, { author: { name: { contains: q } } }],
+    ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
   });
 }
 
@@ -188,7 +217,9 @@ export type ActivityView = {
 // 「最新の創作活動」向け。プロジェクト単位のタイムラインではないので
 // getPosts()(projectId必須)とは別に、全件を対象にする。
 export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.post.findMany({
+    where: excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined,
     orderBy: { createdAt: "desc" },
     take: limit,
     include: { author: { select: { name: true } }, project: { select: { id: true, title: true } } },
@@ -217,7 +248,9 @@ export type RepostView = {
 // 通常の投稿と時系列でマージし、リポストしたユーザーがフォロー対象なら表示する
 // (=フォロワーへの再配布の仕組み)。
 export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.repost.findMany({
+    where: excludeAuthorIds.length > 0 ? { userId: { notIn: excludeAuthorIds } } : undefined,
     orderBy: { createdAt: "desc" },
     take: limit,
     include: { user: { select: { name: true } }, project: { select: { id: true, title: true } } },
@@ -272,8 +305,9 @@ export type CommentView = {
 };
 
 export async function getCommentsForProject(projectId: string): Promise<CommentView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.comment.findMany({
-    where: { projectId },
+    where: { projectId, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
     include: { author: { select: { name: true } } },
     orderBy: { createdAt: "asc" },
   });
@@ -388,10 +422,17 @@ export type SuggestedAuthor = {
 export async function getSuggestedAuthors(limit = 5): Promise<SuggestedAuthor[]> {
   const currentUser = await getCurrentUser();
 
-  const following = currentUser
-    ? await prisma.follow.findMany({ where: { followerId: currentUser.id }, select: { followingId: true } })
-    : [];
-  const excludeIds = [...following.map((f) => f.followingId), ...(currentUser ? [currentUser.id] : [])];
+  const [following, mutedOrBlockedIds] = await Promise.all([
+    currentUser
+      ? prisma.follow.findMany({ where: { followerId: currentUser.id }, select: { followingId: true } })
+      : Promise.resolve([]),
+    getMutedOrBlockedAuthorIds(),
+  ]);
+  const excludeIds = [
+    ...following.map((f) => f.followingId),
+    ...mutedOrBlockedIds,
+    ...(currentUser ? [currentUser.id] : []),
+  ];
 
   const users = await prisma.user.findMany({
     where: { id: { notIn: excludeIds }, projects: { some: {} } },
@@ -428,4 +469,24 @@ export async function getRepostedProjectIds(): Promise<string[]> {
     select: { projectId: true },
   });
   return reposts.map((r) => r.projectId);
+}
+
+// 自分がミュート中のUserId一覧。app/layout.tsxがアプリ全体のミュート
+// 状態をクライアント側ストア(mute-store.ts)に初期反映するために使う。
+export async function getMutedUserIds(): Promise<string[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const mutes = await prisma.mute.findMany({ where: { muterId: user.id }, select: { mutedId: true } });
+  return mutes.map((m) => m.mutedId);
+}
+
+// 自分がブロック中のUserId一覧。app/layout.tsxがアプリ全体のブロック
+// 状態をクライアント側ストア(block-store.ts)に初期反映するために使う。
+export async function getBlockedUserIds(): Promise<string[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const blocks = await prisma.block.findMany({ where: { blockerId: user.id }, select: { blockedId: true } });
+  return blocks.map((b) => b.blockedId);
 }

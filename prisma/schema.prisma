@@ -42,6 +42,14 @@ model User {
 
   notificationsReceived Notification[] @relation("NotificationRecipient")
   notificationsSent     Notification[] @relation("NotificationActor")
+
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsReceived Report[] @relation("ReportsReceived")
+
+  muting    Mute[] @relation("Muter")
+  mutedBy   Mute[] @relation("Muted")
+  blocking  Block[] @relation("Blocker")
+  blockedBy Block[] @relation("Blocked")
 }
 
 model Project {
@@ -79,6 +87,7 @@ model Project {
   comments    Comment[]
   reposts     Repost[]
   notifications Notification[]
+  reports     Report[]
 }
 
 model Post {
@@ -126,6 +135,7 @@ model Comment {
   project   Project @relation(fields: [projectId], references: [id])
   authorId  String
   author    User    @relation(fields: [authorId], references: [id])
+  reports   Report[]
 
   @@index([projectId])
   @@index([authorId])
@@ -186,4 +196,61 @@ model Follow {
   following   User @relation("Following", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
+}
+
+model Mute {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // 一方通行。ミュートした側のフィード/検索/コメント欄からミュート対象の
+  // コンテンツを取り除くだけで、相手には何も伝わらないし相手からは
+  // 今まで通り見える・絡める(Xのミュートと同じ非対称な扱い)。
+  muterId String
+  muter   User   @relation("Muter", fields: [muterId], references: [id])
+  mutedId String
+  muted   User   @relation("Muted", fields: [mutedId], references: [id])
+
+  @@unique([muterId, mutedId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // ミュートと同じコンテンツ非表示に加えて、ブロック開始時点の相互フォロー
+  // を解消する(block-actions.tsのtoggleBlock)。認証が無いプロトタイプ
+  // なので「ブロックされた側の書き込みそのものを拒否する」ような強制力は
+  // 今回は持たせていない(表示上取り除くところまでが今回のスコープ)。
+  blockerId String
+  blocker   User   @relation("Blocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User   @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // project | comment | user。対象に応じて下のprojectId/commentId/
+  // reportedUserIdのどれか1つだけが埋まる(モデレーション画面はまだ無く、
+  // 現状はPrisma Studio等で直接確認する前提の記録専用テーブル)。
+  targetType String
+  // spam | inappropriate | impersonation | other
+  reason     String
+  detail     String?
+
+  reporterId String
+  reporter   User   @relation("ReportsFiled", fields: [reporterId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+
+  reportedUserId String?
+  reportedUser   User?   @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+
+  @@index([targetType])
 }

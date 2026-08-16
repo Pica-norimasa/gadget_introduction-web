@@ -10,6 +10,7 @@ import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
+import { MoreActionsMenu } from "./MoreActionsMenu";
 import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
 import { ShareButtons } from "./ShareButtons";
@@ -44,7 +45,7 @@ export function WorkDetail({
           >
             ← 発見に戻る
           </Link>
-          {work.authorId === currentUserId && (
+          {work.authorId === currentUserId ? (
             <div className="flex items-center gap-2">
               <Link
                 href="/guide"
@@ -59,6 +60,11 @@ export function WorkDetail({
                 ✎ 編集する
               </Link>
             </div>
+          ) : (
+            <MoreActionsMenu
+              reportTarget={{ type: "project", id: work.id }}
+              author={{ id: work.authorId ?? "", name: work.author }}
+            />
           )}
         </div>
 
@@ -166,7 +172,14 @@ export function WorkDetail({
                           </Link>{" "}
                           ・ {formatRelativeHours(c.hoursAgo)}
                         </p>
-                        {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
+                        {c.authorId === currentUserId ? (
+                          <DeleteCommentButton commentId={c.id} />
+                        ) : (
+                          <MoreActionsMenu
+                            reportTarget={{ type: "comment", id: c.id }}
+                            author={{ id: c.authorId, name: c.authorName }}
+                          />
+                        )}
                       </div>
                       {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
                       {c.imageUrl && (

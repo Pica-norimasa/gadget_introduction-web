@@ -426,6 +426,61 @@
     育てるための導線という位置づけが伝わるように、あえて隣接させた。
     ブラウザで実際に1人フォロー→そのユーザーが候補から消え、別の
     候補が繰り上がることを確認した。
+26. ~~通報機能が無い~~ → 実装済み。新しい`Report`モデルを追加
+    (migration: `20260816114631_add_report`)。`targetType`
+    (project/comment/user)に応じて`projectId`/`commentId`/
+    `reportedUserId`のどれか1つだけが埋まるポリモーフィックな形
+    (`Notification.projectId`と同じ考え方)。「⋯」ボタン→「🚩 通報する」
+    →理由(スパム/不適切な内容/なりすまし・詐称/その他)選択+詳細
+    (任意)のフォーム、という段階をNotificationBellと同じクリック
+    外側で閉じるドロップダウンパターンで実装(項目27でこのメニュー
+    自体は`MoreActionsMenu.tsx`に拡張・改名)。`WorkDetail.tsx`
+    (作品自体、他人の作品のときだけ表示)・コメント行(他人のコメント
+    のときだけ、DeleteCommentButtonと排他)・`/u/[name]`(ユーザー自体、
+    他人のプロフィールのときだけ)の3箇所に設置。自分の作品/コメント/
+    自分自身への通報はUIの導線を出さないだけでなく、`submitReport()`
+    (`report-actions.ts`)側でも弾く(defense in depth)。**やらな
+    かったこと**: モデレーション画面(通報一覧を確認する管理者向け
+    UI)は無く、現状はPrisma Studio等で`Report`テーブルを直接見る
+    運用が前提。ブラウザで、作品・コメント・ユーザーそれぞれへの通報が
+    正しく`Report`行として記録されること、自分の作品/プロフィールには
+    通報導線が出ないことを確認した。
+27. ~~ブロック・ミュートが無い~~ → 実装済み。`Mute`(一方通行、相手には
+    何も伝わらずコンテンツを非表示にするだけ)と`Block`
+    (同じ非表示に加えてブロック開始時点の相互フォローを解消する)を
+    それぞれ追加(migration: `20260816115628_add_mute_block`)。
+    `toggleMute`/`toggleBlock`(それぞれ`mute-actions.ts`/
+    `block-actions.ts`)+`mute-store.ts`/`block-store.ts`
+    (`useSyncExternalStore`のクライアント側キャッシュ)+
+    `MuteHydrator.tsx`/`BlockHydrator.tsx`(`app/layout.tsx`でDBの
+    状態を初回反映)という、Follow/Repostと全く同じ3点セットの設計。
+    項目26の`ReportMenu.tsx`を`MoreActionsMenu.tsx`に拡張・改名し、
+    「⋯」メニューに「🔇/🔊 ミュート」「🚫 ブロック」「🚩 通報する」の
+    3項目を並べた(ミュート/ブロックは対象コンテンツではなく常に
+    その「作者」に対する操作なので、呼び出し側は`reportTarget`とは
+    別に`author: { id, name }`も渡す)。**コンテンツ非表示の実装**:
+    `getMutedOrBlockedAuthorIds()`という共通ヘルパーを作り、能動的な
+    発見導線(`getWorks()`・`searchWorks()`・`getRecentActivity()`・
+    `getRecentReposts()`・`getSuggestedAuthors()`・
+    `getCommentsForProject()`)にだけ適用した。特定のプロフィール
+    ページやWork詳細ページなど、URLで直接たどり着いた先までは
+    意図的に隠していない(能動的な閲覧までは妨げない、という一方向の
+    非表示という設計判断)。**ハマった点**: `getWorks()`が
+    `getCurrentUser()`(=`cookies()`)を呼ぶようになったことで、
+    ビルド時にリクエストコンテキストを持たない`generateStaticParams`
+    (`app/work/[id]/page.tsx`)がクラッシュした。`generateStaticParams`
+    は特定閲覧者のミュート/ブロック状態と無関係に「存在する全ページ」
+    を対象にすべきなので、フィルタ無しでID一覧だけを返す軽量版
+    `getAllProjectIds()`を別途用意して置き換えた(ついでにreaction
+    集計等の不要なデータ取得も無くなり効率化にもなった)。**やら
+    なかったこと**: 認証が無いプロトタイプなので、ブロックされた側の
+    書き込み(コメント・リアクション・リポスト・フォロー)そのものを
+    サーバー側で拒否する強制力は持たせていない(表示上取り除くところ
+    までがスコープ)。双方向の非表示(ブロックした側のコンテンツを
+    ブロックされた側からも隠す)も無し、一方向のみ。ブラウザで、
+    ミュート→対象作者の作品が新着/急上昇/最新の創作活動/おすすめの
+    作者から消える→解除で復帰、ブロック→同じ非表示+事前に張っていた
+    相互フォローが実際に解消されることまで確認した。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  getAllProjectIds,
   getCommentsForProject,
   getMyReactionsForProject,
   getPosts,
   getWorkById,
-  getWorks,
   incrementViews,
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
@@ -13,8 +13,8 @@ import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
 export async function generateStaticParams() {
-  const works = await getWorks();
-  return works.map((w) => ({ id: w.id }));
+  const ids = await getAllProjectIds();
+  return ids.map((id) => ({ id }));
 }
 
 export async function generateMetadata({

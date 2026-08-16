@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { getFollowedAuthors, getRepostedProjectIds } from "@/app/lib/queries";
+import {
+  getBlockedUserIds,
+  getFollowedAuthors,
+  getMutedUserIds,
+  getRepostedProjectIds,
+} from "@/app/lib/queries";
+import { BlockHydrator } from "@/app/components/BlockHydrator";
 import { FollowHydrator } from "@/app/components/FollowHydrator";
+import { MuteHydrator } from "@/app/components/MuteHydrator";
 import { RepostHydrator } from "@/app/components/RepostHydrator";
 
 export const metadata: Metadata = {
@@ -14,13 +21,20 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [followedAuthors, repostedProjectIds] = await Promise.all([getFollowedAuthors(), getRepostedProjectIds()]);
+  const [followedAuthors, repostedProjectIds, mutedUserIds, blockedUserIds] = await Promise.all([
+    getFollowedAuthors(),
+    getRepostedProjectIds(),
+    getMutedUserIds(),
+    getBlockedUserIds(),
+  ]);
 
   return (
     <html lang="ja" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <FollowHydrator initial={followedAuthors} />
         <RepostHydrator initial={repostedProjectIds} />
+        <MuteHydrator initial={mutedUserIds} />
+        <BlockHydrator initial={blockedUserIds} />
         {children}
       </body>
     </html>
