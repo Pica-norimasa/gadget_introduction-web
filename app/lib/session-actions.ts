@@ -28,3 +28,21 @@ export async function updateDisplayName(
   revalidatePath("/", "layout");
   return { success: true };
 }
+
+export type UpdateBioState = { error?: string; success?: boolean };
+
+export async function updateBio(
+  _prevState: UpdateBioState,
+  formData: FormData,
+): Promise<UpdateBioState> {
+  const bio = String(formData.get("bio") ?? "").trim();
+  if (bio.length > 160) return { error: "160文字以内で入力してください" };
+
+  const user = await getOrCreateCurrentUser();
+  await prisma.user.update({ where: { id: user.id }, data: { bio: bio || null } });
+
+  // 自己紹介はプロフィールページでしか表示しないため、layout全体ではなく
+  // そのページだけ無効化すればよい。
+  revalidatePath(`/u/${encodeURIComponent(user.name)}`);
+  return { success: true };
+}

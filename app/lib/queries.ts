@@ -103,6 +103,7 @@ export async function searchWorks(query: string): Promise<Work[]> {
 export type UserProfile = {
   id: string;
   name: string;
+  bio: string | null;
   followers: number;
   following: number;
   works: Work[];
@@ -123,6 +124,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   return {
     id: user.id,
     name: user.name,
+    bio: user.bio,
     followers: user.followersSeed + user._count.followedBy,
     following: user._count.following,
     works,

@@ -19,6 +19,8 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   name      String   @unique
+  // Xのプロフィール文のようなフリーテキストの自己紹介。未設定はnull。
+  bio       String?
   createdAt DateTime @default(now())
 
   // 軽量セッション(middleware.tsがCookieで発行するopaqueなID)との紐付け。

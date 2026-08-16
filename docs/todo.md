@@ -269,6 +269,20 @@
     リンクを追加。**未着手**: サイドバーの活動ログや通知ベルの投稿者名、
     `StoriesStrip`のストーリー内の作者名はまだリンクしていない(同じ
     パターンで機械的に追加できるはずだが、今回のスコープからは外した)。
+17. ~~ユーザー情報の更新が表示名変更だけ~~ → 実装済み。`User.bio
+    String?`を追加(migration: `20260816094059_add_user_bio`)。
+    プロフィールページ(`/u/[name]`)に`BioEditor.tsx`を置き、
+    `IdentityBadge.tsx`と同じ表示⇔編集トグルパターンで自分の自己紹介
+    (160文字まで)を書ける。他人のプロフィールでは編集UIは出さず、
+    テキストがあればそのまま表示、無ければ何も出さない(自分の場合だけ
+    「自己紹介はまだありません」というプレースホルダを見せて編集を促す)。
+    `session-actions.ts`に`updateBio()`を追加、更新後は`/u/[name]`
+    だけを`revalidatePath`(自己紹介はそのページにしか出ないため、
+    `updateDisplayName`のようにlayout全体を無効化する必要はない)。
+    スキーマ変更後、常駐していた`next dev`プロセスが古いPrisma
+    Clientをメモリに保持したままだったため`Unknown argument bio`
+    エラーになった。プロセス再起動で解消(`prisma generate`後は
+    実行中のdev serverの再起動が必要、というのを覚えておく)。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—
