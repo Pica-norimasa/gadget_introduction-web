@@ -1030,6 +1030,26 @@
     本文にしか無い語で検索→つぶやきのみ2件(作品セクションは非表示)、
     (4)存在しない語→「一致する結果は見つかりませんでした」、を
     すべて確認した。lint/build clean。
+52. ~~インスパイアの信号を「あなたへ」の個人化に混ぜる~~ → 実装済み。
+    リポストは既に個人化スコアに反映されていた(フォロー中の人が
+    リポストした作品に+60点、`FeedSection.tsx`の`personalizedScore`)
+    一方、後発の「インスパイア」機能は個人化に一切影響していなかった
+    非対称を解消。`getRecentReposts()`と対になる新設
+    `getRecentInspirations()`(`InspirationSignalView { userName,
+    projectId }`、`Post.inspiredByProjectId`をプラットフォーム全体で
+    最新順に取得)を`queries.ts`に追加し、`app/page.tsx`から
+    `FeedSection`へ`inspirations`propとして渡すようにした。
+    `personalizedScore`に`inspiredByFollowed`引数を追加し、リポストと
+    同じ+60点(「拡散した」より「実際に何か作るくらい良いと思った」の
+    方が強い信号とも言えるが、恣意的な差をつけるより同格の「フォロー中の
+    人からの推薦」として揃えた、両方成立すれば加点は両方乗る)。
+    ブラウザで、(1)実際にsoraをフォロー→みかんの「献立まかせて」に
+    インスパイアされた投稿をsora名義で作成(テスト用)→RSC
+    ペイロード内に`inspirations`配列が正しく`{userName:"sora",
+    projectId:"kondate-makasete"}`を含んだ状態でクライアントへ渡って
+    いることを確認(既存の山中さんによる本物のインスパイア行も2件
+    混在していることも同時に確認できた)、を行った後、テスト用の
+    投稿・フォロー関係は削除・解除して原状回復した。lint/build clean。
 
 **開発環境の注意点(このセッション中に発生した実例)**: `next dev`を
 長時間動かしたまま`npm run build`を何度も実行すると、両方が同じ

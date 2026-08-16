@@ -3,6 +3,7 @@ import {
   getMyReactions,
   getPosts,
   getRecentActivity,
+  getRecentInspirations,
   getRecentReposts,
   getRecentStandalonePosts,
   getSuggestedAuthors,
@@ -30,6 +31,7 @@ export default async function Home() {
     suggestedAuthors,
     standalonePosts,
     likedPostIds,
+    inspirations,
   ] = await Promise.all([
     getWorks(),
     getPosts(),
@@ -40,6 +42,7 @@ export default async function Home() {
     getSuggestedAuthors(),
     getRecentStandalonePosts(),
     getMyLikedPostIds(),
+    getRecentInspirations(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -68,6 +71,7 @@ export default async function Home() {
             myReactions={myReactions}
             currentUserId={currentUser?.id ?? null}
             reposts={reposts}
+            inspirations={inspirations}
           />
           <Sidebar
             ranking={rankingWorks}

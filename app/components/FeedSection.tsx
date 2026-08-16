@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
-import type { RepostView } from "@/app/lib/queries";
+import type { InspirationSignalView, RepostView } from "@/app/lib/queries";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { WorkCard } from "./WorkCard";
@@ -28,23 +28,29 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 // 「あなたへ」タブの簡易パーソナライズ。本物のレコメンドAIの代わりに、
-// 手元にある3つのシグナル(フォロー中の作者・過去にリアクションした作品の
-// カテゴリ/ツール・フォロー中の"誰か"がリポストした作品)から素点を作る。
-// リポストのシグナルは、作品自体の作者をフォローしていなくても、
-// フォロー中の人が「これは良い」と拡散したという間接的な推薦になる
-// (直接フォローの+100ほどではないが、カテゴリ/ツール一致よりは強い、
-// という重み付け)。どのシグナルも無い(未フォロー・未リアクション・
-// リポストも無い)ユーザーには、従来通り小さな作者を少し優遇して発見の
-// 余地を残す。
+// 手元にある4つのシグナル(フォロー中の作者・過去にリアクションした作品の
+// カテゴリ/ツール・フォロー中の"誰か"がリポストした作品・フォロー中の
+// "誰か"がインスパイアされた作品)から素点を作る。リポストのシグナルは、
+// 作品自体の作者をフォローしていなくても、フォロー中の人が「これは良い」
+// と拡散したという間接的な推薦になる(直接フォローの+100ほどではないが、
+// カテゴリ/ツール一致よりは強い、という重み付け)。インスパイアの
+// シグナルも同じ重み付けにしている(「拡散した」より「実際に何か作る
+// くらい良いと思った」の方が強いとも言えるが、恣意的な差をつけるより
+// 同格の「フォロー中の人からの推薦」として揃えた)。両方のシグナルが
+// 同時に成立すれば加点は両方乗る。どのシグナルも無い(未フォロー・
+// 未リアクション・リポスト/インスパイアも無い)ユーザーには、従来通り
+// 小さな作者を少し優遇して発見の余地を残す。
 function personalizedScore(
   w: Work,
   followedAuthors: ReadonlySet<string>,
   affinity: { categories: Set<string>; tools: Set<string> },
   repostedByFollowed: ReadonlySet<string>,
+  inspiredByFollowed: ReadonlySet<string>,
 ): number {
   let score = 0;
   if (followedAuthors.has(w.author)) score += 100;
   if (repostedByFollowed.has(w.id)) score += 60;
+  if (inspiredByFollowed.has(w.id)) score += 60;
   if (affinity.categories.has(w.category)) score += 20;
   if (w.tool && affinity.tools.has(w.tool)) score += 10;
   score += Math.max(0, 30 - w.followers) * 0.5;
@@ -57,12 +63,14 @@ export function FeedSection({
   myReactions,
   currentUserId,
   reposts,
+  inspirations,
 }: {
   works: Work[];
   posts: Post[];
   myReactions: Record<string, ReactionKey[]>;
   currentUserId: string | null;
   reposts: RepostView[];
+  inspirations: InspirationSignalView[];
 }) {
   const [tab, setTab] = useState<Tab>("new");
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
@@ -103,12 +111,15 @@ export function FeedSection({
     const repostedByFollowed = new Set(
       reposts.filter((r) => followedAuthors.has(r.userName)).map((r) => r.projectId),
     );
+    const inspiredByFollowed = new Set(
+      inspirations.filter((i) => followedAuthors.has(i.userName)).map((i) => i.projectId),
+    );
     return copy.sort(
       (a, b) =>
-        personalizedScore(b, followedAuthors, affinity, repostedByFollowed) -
-        personalizedScore(a, followedAuthors, affinity, repostedByFollowed),
+        personalizedScore(b, followedAuthors, affinity, repostedByFollowed, inspiredByFollowed) -
+        personalizedScore(a, followedAuthors, affinity, repostedByFollowed, inspiredByFollowed),
     );
-  }, [tab, works, myReactions, followedAuthors, reposts]);
+  }, [tab, works, myReactions, followedAuthors, reposts, inspirations]);
 
   const visible = useMemo(() => {
     if (platformFilter.size === 0) return sorted;

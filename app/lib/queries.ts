@@ -401,6 +401,31 @@ export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
   }));
 }
 
+export type InspirationSignalView = {
+  userName: string;
+  projectId: string;
+};
+
+// リポストと同じ「フォロー中の誰かの行動」シグナル。プラットフォーム
+// 全体の最近のPost.inspiredByProjectIdを見て、フォロー中の人がどの
+// Projectにインスパイアされたかを`FeedSection.tsx`の個人化スコアへ
+// 渡すためのもの(リポストが「良いと思って拡散した」なら、こちらは
+// 「実際に何か作るくらい良いと思った」という、より強いかもしれない
+// 間接推薦)。
+export async function getRecentInspirations(limit = 50): Promise<InspirationSignalView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const rows = await prisma.post.findMany({
+    where: {
+      inspiredByProjectId: { not: null },
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { author: { select: { name: true } } },
+  });
+  return rows.map((r) => ({ userName: r.author.name, projectId: r.inspiredByProjectId! }));
+}
+
 // projectId -> 自分が既に押しているリアクション種別。フィード全体を
 // 1回で回すページ(`/`)向け。Post向け(postIdのみ埋まっている行)は
 // getMyLikedPostIds()の管轄なのでここでは除外する。
