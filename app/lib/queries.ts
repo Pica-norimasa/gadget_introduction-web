@@ -3,6 +3,8 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
+export type NotificationType = "reaction" | "comment" | "follow";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -188,6 +190,47 @@ export async function getCommentsForProject(projectId: string): Promise<CommentV
     authorName: r.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
+}
+
+export type NotificationView = {
+  id: string;
+  type: NotificationType;
+  actorName: string;
+  projectId: string | null;
+  projectTitle: string | null;
+  reactionType: ReactionKey | null;
+  hoursAgo: number;
+  read: boolean;
+};
+
+// 通知ベル用。最新20件のリストと未読件数をまとめて返す。
+export async function getNotificationData(): Promise<{ notifications: NotificationView[]; unreadCount: number }> {
+  const user = await getCurrentUser();
+  if (!user) return { notifications: [], unreadCount: 0 };
+
+  const [rows, unreadCount] = await Promise.all([
+    prisma.notification.findMany({
+      where: { recipientId: user.id },
+      include: { actor: { select: { name: true } }, project: { select: { id: true, title: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+    prisma.notification.count({ where: { recipientId: user.id, readAt: null } }),
+  ]);
+
+  return {
+    notifications: rows.map((r) => ({
+      id: r.id,
+      type: r.type as NotificationType,
+      actorName: r.actor.name,
+      projectId: r.project?.id ?? null,
+      projectTitle: r.project?.title ?? null,
+      reactionType: r.reactionType as ReactionKey | null,
+      hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+      read: r.readAt !== null,
+    })),
+    unreadCount,
+  };
 }
 
 // 自分がフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー

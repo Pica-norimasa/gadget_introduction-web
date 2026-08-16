@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { ReactionKey, Work } from "@/app/lib/mock-data";
+import { REACTION_META, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { toggleReaction } from "@/app/lib/reaction-actions";
-
-const REACTION_META: { key: ReactionKey; icon: string; label: string }[] = [
-  { key: "interesting", icon: "😲", label: "面白い" },
-  { key: "useful", icon: "🛠️", label: "便利" },
-  { key: "idea", icon: "💡", label: "発想◎" },
-  { key: "wantToTry", icon: "🙋", label: "使ってみたい" },
-];
 
 export function ReactionBar({
   workId,

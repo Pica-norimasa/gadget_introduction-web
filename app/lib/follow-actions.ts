@@ -23,6 +23,9 @@ export async function toggleFollowAction(authorName: string) {
     await prisma.follow.delete({ where: { id: existing.id } });
   } else {
     await prisma.follow.create({ data: { followerId: follower.id, followingId: following.id } });
+    await prisma.notification.create({
+      data: { type: "follow", recipientId: following.id, actorId: follower.id },
+    });
   }
 
   // フォロー状態はapp/layout.tsxで全ページ共通に取得しているため、layout単位で無効化する。

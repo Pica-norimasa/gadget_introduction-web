@@ -160,8 +160,34 @@
    表示は`work.comments`(`Project.commentsSeed` + 実`Comment`行数、
    reactions/followersと同じ起点カウント方式)と、作品詳細ページの
    `app/components/CommentForm.tsx`(投稿フォーム) + `WorkDetail.tsx`内の
-   一覧表示(サーバーコンポーネントでそのまま`comments.map`)。コメントの
-   編集・削除・返信(ネスト)は未実装。
+   一覧表示(サーバーコンポーネントでそのまま`comments.map`)。自分のコメントは
+   `deleteComment`でいつでも削除できる(Xと同様、時間制限なし)。編集・
+   返信(ネスト)は未実装。
+9. ~~ヘッダーの検索ボックスが飾りだけ~~ → 実装済み。`onChange`も検索結果も
+   無いただのプレースホルダーだったものを、`SiteHeader.tsx`内の
+   `<form action="/search" method="GET">`(ネイティブGETフォーム、JS不要)+
+   新設の`app/search/page.tsx`で置き換えた。`app/lib/queries.ts`の
+   `searchWorks(query)`はタイトル・キャッチコピー・作者名のいずれかに
+   `contains`一致するProjectを返す(`getWorks()`の中身を`getWorksWhere(where?)`
+   に切り出して共有)。
+10. ~~🔔通知ボタンが飾りだけ~~ → 実装済み。`Notification`モデル
+    (type: reaction/comment/follow, recipientId/actorId, 既読は`readAt`)を
+    追加し、`reaction-actions.ts`/`comment-actions.ts`/`follow-actions.ts`の
+    それぞれの「新規作成」分岐(トグルの取り消し側では作らない)に通知作成を
+    追加した。自分自身の投稿への自分の反応は通知しない(actorId===recipientId
+    は弾く)。`app/components/NotificationBell.tsx`(ドロップダウン、未読件数
+    バッジ)が`SiteHeader`から表示され、開いた瞬間に`markNotificationsRead`
+    (Server Action)を呼んで既読化する。実装中に「setOpenの関数形更新の中で
+    setLocalUnreadを呼ぶ」というReactのアンチパターンで
+    "Cannot update a component while rendering a different component"
+    エラーを一度出しており、`toggle()`内で`open`の現在値を先に読んでから
+    2つのsetStateを別々に(ネストさせずに)呼ぶ形に直して解消した。
+    リアクション/コメントの絵文字アイコン定義(`REACTION_META`)は
+    `ReactionBar.tsx`内のローカル定数から`mock-data.ts`のexportに移し、
+    通知の文面生成でも共有している。同じリアクション/フォローを
+    「取り消して→もう一度」した場合、その都度新しい通知行ができる
+    (X等と同じくトグルのたびに別イベントとして扱う割り切り。取り消し時に
+    対応する通知を消す処理はしていない)。
 
 ### このマシン固有のメモ(開発環境の制約)
 

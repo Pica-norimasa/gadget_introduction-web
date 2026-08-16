@@ -47,6 +47,13 @@ export type Work = {
 
 export type ReactionKey = keyof Work["reactions"];
 
+export const REACTION_META: { key: ReactionKey; icon: string; label: string }[] = [
+  { key: "interesting", icon: "😲", label: "面白い" },
+  { key: "useful", icon: "🛠️", label: "便利" },
+  { key: "idea", icon: "💡", label: "発想◎" },
+  { key: "wantToTry", icon: "🙋", label: "使ってみたい" },
+];
+
 // このデータはアプリ本体からはもう読まれない。prisma/seed.tsがDBへ投入する
 // ための唯一のソースとしてのみ使われる(実際の表示はapp/lib/queries.ts経由でDBから読む)。
 export const works: Work[] = [

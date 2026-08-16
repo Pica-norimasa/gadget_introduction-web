@@ -17,7 +17,7 @@ export async function createComment(
   if (!body) return { error: "コメントを入力してください" };
   if (body.length > 500) return { error: "500文字以内で入力してください" };
 
-  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, authorId: true } });
   if (!project) return { error: "作品が見つかりません" };
 
   const author = await getOrCreateCurrentUser();
@@ -25,6 +25,12 @@ export async function createComment(
   await prisma.comment.create({
     data: { projectId, body, authorId: author.id },
   });
+
+  if (project.authorId !== author.id) {
+    await prisma.notification.create({
+      data: { type: "comment", recipientId: project.authorId, actorId: author.id, projectId },
+    });
+  }
 
   revalidatePath(`/work/${projectId}`);
   // カード側の💬件数表示もこの投稿数を含むため、フィードも合わせて無効化する。

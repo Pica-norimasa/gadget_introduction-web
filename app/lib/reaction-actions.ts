@@ -18,6 +18,13 @@ export async function toggleReaction(projectId: string, type: ReactionKey) {
     await prisma.reaction.delete({ where: { id: existing.id } });
   } else {
     await prisma.reaction.create({ data: { projectId, userId: user.id, type } });
+
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+    if (project && project.authorId !== user.id) {
+      await prisma.notification.create({
+        data: { type: "reaction", recipientId: project.authorId, actorId: user.id, projectId, reactionType: type },
+      });
+    }
   }
 
   revalidatePath("/");

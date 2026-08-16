@@ -1,8 +1,10 @@
+import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { IdentityBadge } from "./IdentityBadge";
+import { NotificationBell } from "./NotificationBell";
 
 export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
-  const user = await getCurrentUser();
+  const [user, { notifications, unreadCount }] = await Promise.all([getCurrentUser(), getNotificationData()]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
@@ -39,13 +41,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           >
             ランキング
           </a>
-          <button
-            type="button"
-            aria-label="通知"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
-          >
-            🔔
-          </button>
+          <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           <IdentityBadge name={user?.name ?? null} />
           <button
             type="button"
