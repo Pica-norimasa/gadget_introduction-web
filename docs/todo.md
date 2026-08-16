@@ -851,6 +851,33 @@
     (文言用)とprojectId/postId(遷移先)を正しく別々に持つこと、
     を確認した後、テスト用のPost・Project・Notification等は全て削除して
     原状回復した。lint/build clean。
+44. ~~カバー画像がある作品でGitHub URLを編集で追加/変更しても反映が
+    確認できない~~ → 実装済み。`WorkDetail.tsx`のサムネイル分岐は
+    `coverImageUrl`が最優先で、`githubUrl`はカバー画像が無いときにしか
+    表示されない(if/else-ifの排他分岐)ため、画像投稿済みの作品に
+    あとからGitHub URLを追加/変更しても、詳細ページ上はその変更が
+    一切見えない状態になっていた(実際に山中さんの「test dayo」で
+    再現、画像+GitHub URL両方が設定済みなのに後者が全く表示されて
+    いなかった)。サムネイル分岐自体は変えず(画像優先は維持)、
+    `work.coverImageUrl && work.githubUrl`の両方が揃っているときだけ、
+    画像の下に「リポジトリ」ラベル付きで`GitHubCard`(`size="md"`の
+    小さめ版)を追加表示するようにした。フィードカード(`WorkCard.tsx`)
+    側は今回のスコープ外(要望が編集後の確認、という詳細ページの
+    文脈だったため)。ブラウザで、実際に「test dayo」(画像+GitHub URL
+    両方設定済みの実データ)を開き、画像の下に「リポジトリ」カードが
+    正しく表示されることを確認した(GitHub側のプレビュー取得自体は
+    無認証60req/hourのレート制限で失敗していたが、これは既知の別課題
+    でありカードの表示自体は正しく機能している)。lint/build clean。
+
+**開発環境の注意点(このセッション中に発生した実例)**: `next dev`を
+長時間動かしたまま`npm run build`を何度も実行すると、両方が同じ
+`.next/`ディレクトリを取り合う形になり、稼働中のdevサーバーの
+ルーティングキャッシュ(Turbopack)が壊れて、実在するページ
+(`/work/[id]/edit`)が原因不明の404を返すようになる不具合を実際に
+踏んだ(コード自体は`next build`側では正常にルートとして認識されて
+おり、バグではなかった)。`.next`ごと削除してdevサーバーを再起動
+すれば直る。以後、`npm run build`で検証したあとは`next dev`側も
+念のため再起動する運用にする。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

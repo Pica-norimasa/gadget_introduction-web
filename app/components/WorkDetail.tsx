@@ -100,6 +100,17 @@ export function WorkDetail({
           )}
         </div>
 
+        {/* カバー画像がある場合、上の分岐でGitHubCardは表示されない
+            (画像が優先される)。それだと編集で後からGitHub URLを追加/
+            変更しても反映が確認できないため、画像がある場合でも下に
+            小さめのカードで両方表示する。 */}
+        {work.coverImageUrl && work.githubUrl && (
+          <div className="mb-4">
+            <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">リポジトリ</p>
+            <GitHubCard githubUrl={work.githubUrl} size="md" />
+          </div>
+        )}
+
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
