@@ -26,7 +26,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const guessedType = inferPostType(body);
 
   return (
-    <div className="mx-auto max-w-[1180px] px-4 pt-6 sm:px-6">
+    <div id="composer" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-6 sm:px-6">
       <form
         ref={formRef}
         action={formAction}

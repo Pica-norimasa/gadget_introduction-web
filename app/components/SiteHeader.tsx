@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { IdentityBadge } from "./IdentityBadge";
@@ -43,12 +44,12 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           </a>
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           <IdentityBadge name={user?.name ?? null} />
-          <button
-            type="button"
+          <Link
+            href="/#composer"
             className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:opacity-90"
           >
             投稿する
-          </button>
+          </Link>
         </nav>
       </div>
     </header>

@@ -34,12 +34,22 @@ export function WorkDetail({
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
-        <Link
-          href="/"
-          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
-        >
-          ← 発見に戻る
-        </Link>
+        <div className="mb-4 flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+          >
+            ← 発見に戻る
+          </Link>
+          {work.authorId === currentUserId && (
+            <Link
+              href={`/work/${work.id}/edit`}
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] hover:text-[var(--ink)]"
+            >
+              ✎ 編集する
+            </Link>
+          )}
+        </div>
 
         <div className="mb-4 flex items-center gap-2">
           <AuthorAvatar name={work.author} size={36} />
