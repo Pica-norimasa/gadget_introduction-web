@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
-export type NotificationType = "reaction" | "comment" | "follow" | "repost";
+export type NotificationType = "reaction" | "comment" | "follow" | "repost" | "inspired";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -186,19 +186,76 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
 }
 
 export async function getWorkById(id: string): Promise<Work | null> {
-  const [project, reactionRows] = await Promise.all([
+  const [project, reactionRows, originPost] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
     }),
     prisma.reaction.groupBy({ where: { projectId: id }, by: ["type"], _count: { _all: true } }),
+    // このProject自体が他の作品にインスパイアされて生まれたかどうかは
+    // Post側にしか持たせていない(inspiredByProjectIdの説明はschema参照)ので、
+    // 1本目のPost(=このProjectの起点)を見に行く。詳細ページ1回分の
+    // 追加クエリで済むため、フィード一覧(getWorksWhere)側では行わない。
+    prisma.post.findFirst({
+      where: { projectId: id },
+      orderBy: { createdAt: "asc" },
+      select: { inspiredByProject: { select: { id: true, title: true } } },
+    }),
   ]);
   if (!project) return null;
 
   const realCounts: Partial<Record<ReactionKey, number>> = {};
   for (const row of reactionRows) realCounts[row.type as ReactionKey] = row._count._all;
 
-  return toWork(project, realCounts);
+  const work = toWork(project, realCounts);
+  if (originPost?.inspiredByProject) {
+    work.inspiredByProjectId = originPost.inspiredByProject.id;
+    work.inspiredByProjectTitle = originPost.inspiredByProject.title;
+  }
+  return work;
+}
+
+export type InspiredItem =
+  | { kind: "project"; work: Work }
+  | { kind: "post"; post: StandalonePostView };
+
+// 指定したProjectにインスパイアされて作られたPost/Projectの一覧
+// (作品詳細ページの「この作品からインスパイアされた投稿」向け)。
+// 新規Project作成時の1本目のPostにprojectIdが付いていれば"project"、
+// 単独投稿のままならprojectIdが無いので"post"として扱う。
+export async function getInspiredByProject(projectId: string): Promise<InspiredItem[]> {
+  const rows = await prisma.post.findMany({
+    where: { inspiredByProjectId: projectId },
+    orderBy: { createdAt: "desc" },
+    include: { author: { select: { name: true } }, _count: { select: { comments: true, reactions: true } } },
+  });
+  if (rows.length === 0) return [];
+
+  const inspiredProjectIds = rows.filter((r) => r.projectId).map((r) => r.projectId!);
+  const works = inspiredProjectIds.length > 0 ? await getWorksWhere({ id: { in: inspiredProjectIds } }) : [];
+  const workById = new Map(works.map((w) => [w.id, w]));
+
+  const items: InspiredItem[] = [];
+  for (const r of rows) {
+    if (r.projectId) {
+      const work = workById.get(r.projectId);
+      if (work) items.push({ kind: "project", work });
+    } else {
+      items.push({
+        kind: "post",
+        post: {
+          id: r.id,
+          authorName: r.author.name,
+          body: r.body,
+          imageUrl: r.imageUrl ?? undefined,
+          hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+          commentsCount: r._count.comments,
+          likesCount: r._count.reactions,
+        },
+      });
+    }
+  }
+  return items;
 }
 
 // 作品詳細ページの表示ごとに1増やす。Xのインプレッション表示と同じ考え方
@@ -435,6 +492,8 @@ export type PostDetailView = {
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
+  inspiredByProjectId?: string;
+  inspiredByProjectTitle?: string;
 };
 
 // /post/[id]専用。単独投稿1件の詳細。
@@ -444,6 +503,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     include: {
       author: { select: { id: true, name: true } },
       _count: { select: { comments: true, reactions: true } },
+      inspiredByProject: { select: { id: true, title: true } },
     },
   });
   if (!post) return null;
@@ -457,6 +517,8 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,
+    inspiredByProjectId: post.inspiredByProject?.id,
+    inspiredByProjectTitle: post.inspiredByProject?.title,
   };
 }
 
@@ -473,6 +535,10 @@ export type NotificationView = {
   // 使う。projectId/postIdはどちらか一方だけが埋まる。
   postId: string | null;
   reactionType: ReactionKey | null;
+  // inspired通知専用。インスパイア元Projectの情報(遷移先のprojectId/
+  // postIdとは別物)。
+  sourceProjectId: string | null;
+  sourceProjectTitle: string | null;
   hoursAgo: number;
   // グループ内の行が1件でも未読ならfalse(未読扱い)。
   read: boolean;
@@ -503,6 +569,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
       actor: { select: { name: true } },
       project: { select: { id: true, title: true } },
       post: { select: { id: true } },
+      sourceProject: { select: { id: true, title: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 50,
@@ -534,6 +601,8 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
       projectTitle: latest.project?.title ?? null,
       postId: latest.post?.id ?? null,
       reactionType: latest.reactionType as ReactionKey | null,
+      sourceProjectId: latest.sourceProject?.id ?? null,
+      sourceProjectTitle: latest.sourceProject?.title ?? null,
       hoursAgo: Math.max(0, Math.round((Date.now() - latest.createdAt.getTime()) / HOUR_MS)),
       read: group.every((r) => r.readAt !== null),
     };

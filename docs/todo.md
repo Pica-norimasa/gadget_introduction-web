@@ -808,6 +808,49 @@
     (2)他人(sora)のプロフィールでは自分の投稿のみ「投稿した作品」に
     出て「リポストした作品」は0件のままであること、を確認した後、
     テスト用のRepost行・通知は削除して原状回復した。lint/build clean。
+43. ~~インスパイアされて新規投稿/プロジェクト立ち上げ(項目42の続き)~~ →
+    実装済み。「他人の作品にインスパイアされて投稿/新規Projectを作る」
+    という、リポストが本来担うはずだった役割を、独立した機能として
+    新設。`Post.inspiredByProjectId`(nullable FK→Project)を1つ追加
+    するだけで、単独投稿・新規Project作成の両方をカバー(`createPost()`
+    がPost/Project両方の唯一の作成経路なので、Post側にだけ持たせれば
+    Project側の起点も辿れる、という設計)。入り口は作品詳細ページの
+    「🌱 これにインスパイアされて投稿する」リンク(`WorkDetail.tsx`)
+    のみで、コンポーザー単体からの自由検索ピッカーは今回作らないと
+    ユーザーと合意。リンクは`/?inspiredById=&inspiredByTitle=#composer`
+    でトップページのコンポーザーへ遷移し、`composer-store.ts`に
+    追加した`inspiredBy`状態を`PostComposerToggle.tsx`がマウント時に
+    (ハッシュ判定と同じ理由でwindow.location.searchを直接見て)
+    セットしてコンポーザーを展開、`PostComposer.tsx`が「🌱 [元タイトル]
+    からインスパイア ✕」のチップとhidden inputを表示する。投稿後は
+    元の作者に`type: "inspired"`の通知を送り(自分の作品への自己
+    インスパイアは通知しない)、`Notification`に新設した
+    `sourceProjectId`(インスパイア元、文言用)と既存の`projectId`/
+    `postId`(遷移先、新しく生まれたPost/Projectのどちらか)を両方
+    使う(遷移先と文言の元ネタが別物になる、他の通知種別には無かった
+    構成)。作品詳細ページには新設`getInspiredByProject()`で「この
+    作品からインスパイアされた投稿(N)」セクションを追加(Projectが
+    生まれていれば既存の`WorkCard`をそのまま再利用、単独投稿のままなら
+    簡易カード)。生成された側にも`🌱 [元]からインスパイア`のバッジを
+    表示(`WorkDetail.tsx`は起点Postを1本追加取得、`/post/[id]`は
+    `getPostById()`が直接持つ)。**ハマった点**: `Post`/`Notification`
+    がどちらも既にProjectへの1つ目のリレーション(`projectId`/
+    `project`)を持っていたため、2つ目のリレーション
+    (`inspiredByProjectId`/`sourceProjectId`)を追加した時点でPrisma
+    が「同じ2モデル間に複数リレーションがあるので両方に`@relation`名を
+    付けろ」という制約に引っかかり、既存の無名リレームも含めて
+    `"ProjectPosts"`/`"NotificationTarget"`のように明示的に命名し直す
+    必要があった(DBのカラム自体には影響しない、Prismaスキーマ内だけの
+    話)。また`/work/[id]/page.tsx`の`Promise.all`で返り値なしの
+    `incrementViews()`を配列の途中に置いたまま新しいクエリを追加すると
+    分割代入の位置がずれるミスをその場で発見・修正(`incrementViews()`
+    を配列の最後に移動)。ブラウザで、(1)単独投稿としてインスパイア
+    投稿→投稿詳細・元作品の詳細ページ双方にバッジ/セクションが正しく
+    反映、(2)新規Projectとしてインスパイア投稿→同様に新規Project側にも
+    起点Postを介してバッジが反映、(3)通知データがsourceProjectId
+    (文言用)とprojectId/postId(遷移先)を正しく別々に持つこと、
+    を確認した後、テスト用のPost・Project・Notification等は全て削除して
+    原状回復した。lint/build clean。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

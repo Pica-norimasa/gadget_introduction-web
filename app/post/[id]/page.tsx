@@ -62,6 +62,15 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           </Link>
         </div>
 
+        {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+          <Link
+            href={`/work/${post.inspiredByProjectId}`}
+            className="mb-3 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
+          >
+            🌱 {post.inspiredByProjectTitle} からインスパイア
+          </Link>
+        )}
+
         {post.body && (
           <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink)]">{post.body}</p>
         )}

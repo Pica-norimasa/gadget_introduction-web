@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { inferPostType } from "@/app/lib/infer-post-type";
+import { clearInspiredBy, useInspiredBy } from "@/app/lib/composer-store";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
 
@@ -20,6 +21,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inspiredBy = useInspiredBy();
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -44,6 +46,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       setProjectTarget(defaultProjectTarget);
       formRef.current?.reset();
       clearImage();
+      clearInspiredBy();
 
       if (state.projectId) {
         const projectId = state.projectId;
@@ -69,6 +72,22 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
         encType="multipart/form-data"
         className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4"
       >
+        {inspiredBy && (
+          <div className="mb-2 flex items-center gap-1.5">
+            <input type="hidden" name="inspiredByProjectId" value={inspiredBy.id} />
+            <span className="inline-flex items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)]">
+              🌱 {inspiredBy.title} からインスパイア
+            </span>
+            <button
+              type="button"
+              onClick={clearInspiredBy}
+              aria-label="インスパイア元を解除"
+              className="text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <textarea
           name="body"
           value={body}

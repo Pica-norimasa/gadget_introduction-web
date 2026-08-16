@@ -54,6 +54,11 @@ export type Work = {
   daysAgo: number;
   trendScore: number; // 0-100, "急上昇" strength
   followers: number; // author follower count — small number = "無名"
+  // この作品が他の作品にインスパイアされて作られた場合の元Project。
+  // getWorkById()(単体の詳細ページ)でのみ埋める。フィード一覧の
+  // 各カードでは毎回追加クエリになるため取得しない(未設定=undefined)。
+  inspiredByProjectId?: string;
+  inspiredByProjectTitle?: string;
 };
 
 export type ReactionKey = keyof Work["reactions"];

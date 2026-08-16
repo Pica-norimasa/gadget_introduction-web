@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { Work } from "@/app/lib/mock-data";
-import { openComposer, useComposerOpen } from "@/app/lib/composer-store";
+import { openComposer, openComposerWithInspiration, useComposerOpen } from "@/app/lib/composer-store";
 import { PostComposer } from "./PostComposer";
 
 // トップページを開いた瞬間から作品一覧を見せたいので、投稿フォームは
@@ -20,6 +20,26 @@ export function PostComposerToggle({ myProjects }: { myProjects: Work[] }) {
 
   useEffect(() => {
     if (window.location.hash === "#composer") openComposer();
+
+    // 作品詳細ページの「これにインスパイアされて投稿する」から
+    // ?inspiredById=&inspiredByTitle=付きで遷移してきた場合、その
+    // インスパイア元を保持したままコンポーザーを開く。ハッシュと同じ
+    // 理由(next/linkの同一ページ内遷移はhashchangeを発火しない)で
+    // マウント時に直接window.location.searchを見て判定する。
+    const params = new URLSearchParams(window.location.search);
+    const inspiredById = params.get("inspiredById");
+    const inspiredByTitle = params.get("inspiredByTitle");
+    if (inspiredById && inspiredByTitle) {
+      openComposerWithInspiration({ id: inspiredById, title: inspiredByTitle });
+      params.delete("inspiredById");
+      params.delete("inspiredByTitle");
+      const query = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`,
+      );
+    }
   }, []);
 
   if (expanded) {

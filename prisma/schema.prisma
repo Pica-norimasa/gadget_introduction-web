@@ -82,12 +82,20 @@ model Project {
 
   authorId    String
   author      User       @relation(fields: [authorId], references: [id])
-  posts       Post[]
+  posts       Post[]     @relation("ProjectPosts")
   reactions   Reaction[]
   comments    Comment[]
   reposts     Repost[]
-  notifications Notification[]
+  notifications Notification[] @relation("NotificationTarget")
   reports     Report[]
+
+  // このProjectにインスパイアされて作られたPost(単独投稿、または新規Project
+  // の1本目のPost)の一覧。逆方向は下のPost.inspiredByProject。
+  inspiredPosts Post[] @relation("PostInspiration")
+  // このProjectを起点にした「インスパイアされました」通知(sourceProjectId
+  // 側)。逆方向はNotification.sourceProject。表示には使わずFKの都合で
+  // 必要な back-relation。
+  inspirationNotifications Notification[] @relation("NotificationSource")
 }
 
 model Post {
@@ -105,7 +113,14 @@ model Post {
   // 投稿時にProjectと紐付けるのを必須にしない(plan-v2.htmlの方針)。
   // 紐付けない投稿は「孤立したPost」としてそのまま公開される。
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
+  project   Project? @relation("ProjectPosts", fields: [projectId], references: [id])
+
+  // 「他人のProjectにインスパイアされて投稿/新規Project作成した」の
+  // 紐付け(任意)。単独投稿でも、新規Project作成時の1本目のPostでも
+  // 使う(createPost()が両方の唯一の作成経路のため、Post側にだけ
+  // 持たせればProject側の起点にも複製不要で辿れる)。
+  inspiredByProjectId String?
+  inspiredByProject   Project? @relation("PostInspiration", fields: [inspiredByProjectId], references: [id])
 
   comments      Comment[]
   reactions     Reaction[]
@@ -113,6 +128,7 @@ model Post {
 
   @@index([projectId])
   @@index([authorId])
+  @@index([inspiredByProjectId])
 }
 
 model Reaction {
@@ -185,7 +201,7 @@ model Repost {
 
 model Notification {
   id        String    @id @default(cuid())
-  // reaction | comment | follow | repost
+  // reaction | comment | follow | repost | inspired
   type      String
   createdAt DateTime  @default(now())
   readAt    DateTime?
@@ -198,16 +214,23 @@ model Notification {
   actorId String
   actor   User   @relation("NotificationActor", fields: [actorId], references: [id])
 
-  // reaction/comment/repost通知の対象Project。follow通知はnull。
-  // 単独投稿へのcomment通知はprojectIdの代わりに下のpostIdを使う
-  // (projectId/postIdはどちらか一方だけが埋まる)。
+  // reaction/comment/repost/inspired通知の遷移先(=閲覧者が見るべきもの)。
+  // follow通知はnull。単独投稿へのcomment通知やinspired通知(単独投稿の
+  // 場合)はprojectIdの代わりに下のpostIdを使う(projectId/postIdは
+  // どちらか一方だけが埋まる)。inspired通知は常に新しく作られた側
+  // (Post/Project)を指す。
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
+  project   Project? @relation("NotificationTarget", fields: [projectId], references: [id])
   postId    String?
   post      Post?    @relation(fields: [postId], references: [id])
 
   // reaction通知のときだけ、押されたリアクション種別を保持(表示用)
   reactionType String?
+
+  // inspired通知専用: インスパイア元のProject(文言の「あなたの『X』に」の
+  // X部分に使う)。遷移先の上のprojectId/postIdとは別物。
+  sourceProjectId String?
+  sourceProject   Project? @relation("NotificationSource", fields: [sourceProjectId], references: [id])
 
   @@index([recipientId, createdAt])
 }

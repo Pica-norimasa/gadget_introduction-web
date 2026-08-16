@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import {
   getAllProjectIds,
   getCommentsForProject,
+  getInspiredByProject,
+  getMyReactions,
   getMyReactionsForProject,
   getPosts,
   getWorkById,
@@ -52,11 +54,13 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const [posts, myReactions, comments, currentUser] = await Promise.all([
+  const [posts, myReactions, comments, currentUser, inspiredItems, inspiredMyReactions] = await Promise.all([
     getPosts(),
     getMyReactionsForProject(work.id),
     getCommentsForProject(work.id),
     getCurrentUser(),
+    getInspiredByProject(work.id),
+    getMyReactions(),
     incrementViews(work.id),
   ]);
   const timeline = postsForProject(work.id, posts);
@@ -69,6 +73,9 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
       myReactions={myReactions}
       comments={comments}
       currentUserId={currentUser?.id ?? null}
+      inspiredItems={inspiredItems}
+      posts={posts}
+      inspiredMyReactions={inspiredMyReactions}
     />
   );
 }

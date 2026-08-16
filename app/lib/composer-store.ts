@@ -10,7 +10,10 @@
 
 import { useSyncExternalStore } from "react";
 
+export type InspiredBy = { id: string; title: string };
+
 let open = false;
+let inspiredBy: InspiredBy | null = null;
 const listeners = new Set<() => void>();
 
 function emitChange() {
@@ -20,6 +23,22 @@ function emitChange() {
 export function openComposer() {
   if (open) return;
   open = true;
+  emitChange();
+}
+
+// プロジェクト詳細ページの「これにインスパイアされて投稿する」から来た
+// ときに使う。openComposer()と違い、インスパイア元を保持したまま開く
+// (既に開いている状態から重ねて呼ばれても上書きできるよう、openの
+// 早期returnはしない)。
+export function openComposerWithInspiration(project: InspiredBy) {
+  open = true;
+  inspiredBy = project;
+  emitChange();
+}
+
+export function clearInspiredBy() {
+  if (!inspiredBy) return;
+  inspiredBy = null;
   emitChange();
 }
 
@@ -38,4 +57,16 @@ function getServerSnapshot() {
 
 export function useComposerOpen(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+function getInspiredBySnapshot() {
+  return inspiredBy;
+}
+
+function getInspiredByServerSnapshot() {
+  return null;
+}
+
+export function useInspiredBy(): InspiredBy | null {
+  return useSyncExternalStore(subscribe, getInspiredBySnapshot, getInspiredByServerSnapshot);
 }

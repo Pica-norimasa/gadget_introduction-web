@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
-import type { CommentView } from "@/app/lib/queries";
+import type { CommentView, InspiredItem } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
@@ -18,6 +18,7 @@ import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
 import { TimelinePostForm } from "./TimelinePostForm";
 import { ToolBadge } from "./ToolBadge";
+import { WorkCard } from "./WorkCard";
 import { WorkThumb } from "./WorkThumb";
 
 export function WorkDetail({
@@ -26,12 +27,20 @@ export function WorkDetail({
   myReactions,
   comments,
   currentUserId,
+  inspiredItems,
+  posts,
+  inspiredMyReactions,
 }: {
   work: Work;
   timeline: Post[];
   myReactions: ReactionKey[];
   comments: CommentView[];
   currentUserId: string | null;
+  inspiredItems: InspiredItem[];
+  // 「この作品からインスパイアされた投稿」でProjectカード(WorkCard)を
+  // そのまま再利用するために必要な、フィードと同じ形の付随データ。
+  posts: Post[];
+  inspiredMyReactions: Record<string, ReactionKey[]>;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -100,12 +109,26 @@ export function WorkDetail({
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
           {work.title}
         </h1>
+        {work.inspiredByProjectId && work.inspiredByProjectTitle && (
+          <Link
+            href={`/work/${work.inspiredByProjectId}`}
+            className="mb-2 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
+          >
+            🌱 {work.inspiredByProjectTitle} からインスパイア
+          </Link>
+        )}
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
         <div className="mb-6 flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
             <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+            <Link
+              href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
+              className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+            >
+              🌱 これにインスパイアされて投稿する
+            </Link>
           </div>
           <span className="font-mono text-[12px] text-[var(--ink-faint)]">
             👁️{formatCount(work.views)} · 💬{work.comments}
@@ -197,6 +220,47 @@ export function WorkDetail({
             )}
           </div>
           <CommentForm target={{ type: "project", id: work.id }} />
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+            この作品からインスパイアされた投稿({inspiredItems.length})
+          </h2>
+          {inspiredItems.length === 0 ? (
+            <p className="text-[13px] text-[var(--ink-faint)]">まだインスパイアされた投稿はありません</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {inspiredItems.map((item) =>
+                item.kind === "project" ? (
+                  <WorkCard
+                    key={`project-${item.work.id}`}
+                    work={item.work}
+                    posts={posts}
+                    myReactions={inspiredMyReactions}
+                    currentUserId={currentUserId}
+                    showAnchor={false}
+                  />
+                ) : (
+                  <Link
+                    key={`post-${item.post.id}`}
+                    href={`/post/${item.post.id}`}
+                    className="flex items-start gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 hover:border-[var(--accent)]"
+                  >
+                    <AuthorAvatar name={item.post.authorName} size={28} />
+                    <div className="min-w-0 flex-1">
+                      <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
+                        <span className="font-medium text-[var(--ink-soft)]">{item.post.authorName}</span> ・{" "}
+                        {formatRelativeHours(item.post.hoursAgo)}
+                      </p>
+                      {item.post.body && (
+                        <p className="text-[13px] leading-relaxed text-[var(--ink)]">{item.post.body}</p>
+                      )}
+                    </div>
+                  </Link>
+                ),
+              )}
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">

@@ -79,6 +79,28 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     );
   }
 
+  // インスパイア元(sourceProjectId)と、生成された新しい投稿/Project
+  // (projectId/postIdのどちらか)の2つのリンクを含む唯一の通知種別。
+  if (n.type === "inspired" && n.sourceProjectId) {
+    const targetHref = n.projectId ? `/work/${n.projectId}` : n.postId ? `/post/${n.postId}` : null;
+    return (
+      <>
+        {actor}が
+        <Link href={`/work/${n.sourceProjectId}`} onClick={onNavigate} className="hover:underline">
+          「{n.sourceProjectTitle}」
+        </Link>
+        にインスパイアされて
+        {targetHref ? (
+          <Link href={targetHref} onClick={onNavigate} className="hover:underline">
+            投稿しました
+          </Link>
+        ) : (
+          "投稿しました"
+        )}
+      </>
+    );
+  }
+
   const suffix =
     n.type === "comment"
       ? `が「${n.projectTitle}」にコメントしました`

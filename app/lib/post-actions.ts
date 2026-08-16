@@ -31,6 +31,7 @@ export async function createPost(
   const body = String(formData.get("body") ?? "").trim();
   const projectTarget = String(formData.get("projectTarget") ?? "");
   const newProjectTitle = String(formData.get("newProjectTitle") ?? "").trim();
+  const inspiredByProjectIdRaw = String(formData.get("inspiredByProjectId") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
   if (!body && !imageFile) {
@@ -50,6 +51,16 @@ export async function createPost(
   }
 
   const author = await getOrCreateCurrentUser();
+
+  // 「これにインスパイアされて投稿する」ボタン経由でのみ渡ってくる想定だが、
+  // フォーム改ざん対策として実在チェックだけはする(著者チェックは無し、
+  // 他人の作品にインスパイアされるのが自然なユースケースのため)。
+  const inspiredByProject = inspiredByProjectIdRaw
+    ? await prisma.project.findUnique({
+        where: { id: inspiredByProjectIdRaw },
+        select: { id: true, title: true, authorId: true },
+      })
+    : null;
 
   const type = inferPostType(body);
   let projectId: string | null = null;
@@ -81,15 +92,31 @@ export async function createPost(
     }
   }
 
-  await prisma.post.create({
+  const post = await prisma.post.create({
     data: {
       type,
       body,
       imageUrl,
       authorId: author.id,
       projectId,
+      inspiredByProjectId: inspiredByProject?.id ?? null,
     },
   });
+
+  // 自分以外の作品にインスパイアされた場合だけ、元の作者に通知する
+  // (自分の作品を自分でインスパイア元に指定しても通知は作らない)。
+  if (inspiredByProject && inspiredByProject.authorId !== author.id) {
+    await prisma.notification.create({
+      data: {
+        type: "inspired",
+        recipientId: inspiredByProject.authorId,
+        actorId: author.id,
+        sourceProjectId: inspiredByProject.id,
+        projectId,
+        postId: projectId ? null : post.id,
+      },
+    });
+  }
 
   if (projectId) {
     // 制作タイムラインの投稿者は常にそのProjectの作者と同一(冒頭の
@@ -116,5 +143,6 @@ export async function createPost(
 
   revalidatePath("/");
   if (projectId) revalidatePath(`/work/${projectId}`);
+  if (inspiredByProject) revalidatePath(`/work/${inspiredByProject.id}`);
   return { success: true, projectId: projectId ?? undefined };
 }
