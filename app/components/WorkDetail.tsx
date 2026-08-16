@@ -13,6 +13,7 @@ import { ReactionBar } from "./ReactionBar";
 import { ShareButtons } from "./ShareButtons";
 import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
+import { TimelinePostForm } from "./TimelinePostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
 
@@ -116,6 +117,11 @@ export function WorkDetail({
               </li>
             ))}
           </ol>
+          {work.authorId === currentUserId && (
+            <div className="mt-4">
+              <TimelinePostForm projectId={work.id} />
+            </div>
+          )}
         </div>
 
         <div className="mb-6">
