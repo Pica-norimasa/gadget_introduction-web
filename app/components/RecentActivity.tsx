@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
@@ -27,14 +28,29 @@ export async function RecentActivity() {
       <div className="flex flex-col gap-2">
         {posts.map((post) => {
           const meta = POST_TYPE_META[post.type as PostType];
-          return (
-            <div key={post.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-3 py-2">
+          const content = (
+            <>
               <p className="mb-0.5 font-mono text-[11px] text-[var(--ink-faint)]">
                 <span className="font-medium text-[var(--ink-soft)]">{post.author.name}</span> ・{" "}
                 {meta.icon} {meta.label} ・ {formatRelative(post.createdAt)}
                 {post.project ? ` ・ ${post.project.title}` : ""}
               </p>
               <p className="text-[13.5px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+            </>
+          );
+          // プロジェクトに紐付いた投稿だけ詳細ページへのリンクにする。孤立した
+          // 投稿(projectId無し)には遷移先のパーマリンクが無いので素のdivのまま。
+          return post.project ? (
+            <Link
+              key={post.id}
+              href={`/work/${post.project.id}`}
+              className="block rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-3 py-2 transition-colors hover:border-[var(--ink-faint)]"
+            >
+              {content}
+            </Link>
+          ) : (
+            <div key={post.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-3 py-2">
+              {content}
             </div>
           );
         })}
