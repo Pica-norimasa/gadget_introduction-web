@@ -9,6 +9,7 @@ import { CommentForm } from "@/app/components/CommentForm";
 import { CommentThread } from "@/app/components/CommentThread";
 import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
+import { PostEditor } from "@/app/components/PostEditor";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export async function generateMetadata({
@@ -80,8 +81,14 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           </Link>
         )}
 
-        {post.body && (
-          <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+        {post.authorId === currentUser?.id ? (
+          <div className="mb-4">
+            <PostEditor postId={post.id} body={post.body} />
+          </div>
+        ) : (
+          post.body && (
+            <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+          )
         )}
         {post.imageUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外

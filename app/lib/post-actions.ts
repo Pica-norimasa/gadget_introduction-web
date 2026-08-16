@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { randomUUID } from "node:crypto";
 import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
-import { getOrCreateCurrentUser } from "@/app/lib/session";
+import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
@@ -145,4 +145,38 @@ export async function createPost(
   if (projectId) revalidatePath(`/work/${projectId}`);
   if (inspiredByProject) revalidatePath(`/work/${inspiredByProject.id}`);
   return { success: true, projectId: projectId ?? undefined };
+}
+
+export type UpdatePostState = { error?: string; success?: boolean };
+
+// 投稿後の軽い編集(誤字修正など)を想定した本文のみの更新。画像の
+// 差し替え/削除は今回のスコープ外。つぶやき(projectId無し)・
+// 制作タイムライン投稿(projectId有り)はどちらも同じPostモデルなので、
+// このActionが両方をカバーする。
+export async function updatePost(
+  _prevState: UpdatePostState,
+  formData: FormData,
+): Promise<UpdatePostState> {
+  const postId = String(formData.get("postId") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+
+  if (!postId) return { error: "投稿が見つかりません" };
+  if (body.length > 280) return { error: "280文字以内で入力してください" };
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true, imageUrl: true, projectId: true },
+  });
+  if (!post) return { error: "投稿が見つかりません" };
+  if (!body && !post.imageUrl) return { error: "本文か画像のどちらかが必要です" };
+
+  const user = await getCurrentUser();
+  if (!user || user.id !== post.authorId) return { error: "権限がありません" };
+
+  await prisma.post.update({ where: { id: postId }, data: { body } });
+
+  if (post.projectId) revalidatePath(`/work/${post.projectId}`);
+  revalidatePath(`/post/${postId}`);
+  revalidatePath("/");
+  return { success: true };
 }

@@ -11,6 +11,7 @@ import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { MoreActionsMenu } from "./MoreActionsMenu";
+import { PostEditor } from "./PostEditor";
 import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
 import { ShareButtons } from "./ShareButtons";
@@ -176,7 +177,15 @@ export function WorkDetail({
                   {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
                   {formatRelativeHours(post.hoursAgo)}
                 </p>
-                {post.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>}
+                {work.authorId === currentUserId ? (
+                  <PostEditor
+                    postId={post.id}
+                    body={post.body}
+                    bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
+                  />
+                ) : (
+                  post.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+                )}
                 {post.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
                   <img
