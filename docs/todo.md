@@ -92,6 +92,10 @@
    `prisma/schema.prisma`の`datasource.provider`を`"mysql"`に、
    `app/lib/prisma.ts`のアダプタを`@prisma/adapter-mariadb`
    (またはPrisma公式のMySQL用ドライバアダプタ)に差し替える。
+   **同じタイミングで`app/lib/upload.ts`の画像保存先もS3等に
+   差し替える必要がある**(項目13参照)。ECS Fargateのような複数
+   インスタンス/エフェメラルなファイルシステム前提の構成では、
+   ローカルファイルシステムへの保存はそのままでは動かない。
 5. ~~投稿からのProject自動生成(plan-v2.html項目09)~~ → 実装済み。
    `app/components/PostComposer.tsx`に投稿先セレクタを追加し、
    「🆕 新しいプロジェクトとして」「単独の投稿」「📁 自分の既存Project」
@@ -207,6 +211,21 @@
     が編集できる。作品詳細ページの「← 発見に戻る」の右に、自分のProject
     のときだけ「✎ 編集する」リンクを出す。`hue`(サムネイルの色相)の
     変更UIは無し(見た目の些末な調整で優先度が低いため見送り)。
+13. ~~タイムライン/コメントに画像を添付できない~~ → 実装済み(画像のみ、
+    動画は「ゆくゆく」の要望なので今回は未着手)。`Post`/`Comment`両方に
+    `imageUrl String?`を追加。`app/lib/upload.ts`の`saveUploadedImage()`
+    がServer Action内で受け取った`File`をバリデーション(jpg/png/gif/webp、
+    5MBまで)した上で**ローカルの`/public/uploads`に直接書き込む**
+    実装になっている。これは本番のAWS環境(ECS Fargateのような複数
+    インスタンス/エフェメラルなファイルシステム前提)ではそのまま動かない
+    ため、S3移行が必須(項目4に追記)。本文か画像のどちらか一方だけでも
+    投稿できるようにcreatePost/createCommentのバリデーションを緩和した。
+    `next.config.ts`の`experimental.serverActions.bodySizeLimit`を
+    デフォルト1MBから8MBに引き上げている(Server Actionの標準機能で
+    File送信を受け取れるため、別途アップロード用のRoute Handlerは
+    作っていない)。`app/components/ImagePickerButton.tsx`を
+    PostComposer/TimelinePostForm/CommentForm共通の画像選択+プレビュー
+    部品として切り出した。
 
 ### このマシン固有のメモ(開発環境の制約)
 

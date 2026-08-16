@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META } from "@/app/lib/mock-data";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
+import { ImagePickerButton } from "./ImagePickerButton";
 
 const initialState: CreatePostState = {};
 
@@ -13,13 +14,32 @@ const initialState: CreatePostState = {};
 export function TimelinePostForm({ projectId }: { projectId: string }) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  function clearImage() {
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   useEffect(() => {
     if (state.success) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
       setBody("");
       formRef.current?.reset();
+      clearImage();
     }
   }, [state.success]);
 
@@ -30,6 +50,7 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
     <form
       ref={formRef}
       action={formAction}
+      encType="multipart/form-data"
       className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3"
     >
       <input type="hidden" name="projectTarget" value={projectId} />
@@ -42,6 +63,14 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
         maxLength={280}
         className="w-full resize-none border-none bg-transparent text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
       />
+      <div className="mt-2">
+        <ImagePickerButton
+          fileInputRef={fileInputRef}
+          preview={imagePreview}
+          onChange={handleImageChange}
+          onClear={clearImage}
+        />
+      </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span
           className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
@@ -54,7 +83,7 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
           <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
           <button
             type="submit"
-            disabled={!trimmed || pending}
+            disabled={(!trimmed && !imagePreview) || pending}
             className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
           >
             {pending ? "投稿中…" : "投稿する"}

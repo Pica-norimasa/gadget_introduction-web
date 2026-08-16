@@ -79,6 +79,8 @@ model Post {
   // idea | making | screenshot | demo | prototype | release | update | question
   type      String
   body      String
+  // ローカル開発では/public/uploadsへの相対パス。本番はS3等のURLに置き換える想定。
+  imageUrl  String?
   createdAt DateTime @default(now())
 
   authorId  String
@@ -110,6 +112,7 @@ model Reaction {
 model Comment {
   id        String   @id @default(cuid())
   body      String
+  imageUrl  String?
   createdAt DateTime @default(now())
 
   projectId String

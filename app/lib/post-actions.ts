@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { randomUUID } from "node:crypto";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
+import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
@@ -28,12 +29,22 @@ export async function createPost(
   const body = String(formData.get("body") ?? "").trim();
   const projectTarget = String(formData.get("projectTarget") ?? "");
   const newProjectTitle = String(formData.get("newProjectTitle") ?? "").trim();
+  const imageFile = extractImageFile(formData, "image");
 
-  if (!body) {
-    return { error: "本文を入力してください" };
+  if (!body && !imageFile) {
+    return { error: "本文か画像のどちらかを入力してください" };
   }
   if (body.length > 280) {
     return { error: "280文字以内で入力してください" };
+  }
+
+  let imageUrl: string | null = null;
+  if (imageFile) {
+    try {
+      imageUrl = await saveUploadedImage(imageFile);
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+    }
   }
 
   const author = await getOrCreateCurrentUser();
@@ -48,8 +59,8 @@ export async function createPost(
         // するものはタイトルの機械的な変換が難しい(日本語のため)ので、opaqueな
         // idで割り切る。
         id: `p-${randomUUID().replace(/-/g, "").slice(0, 12)}`,
-        title: newProjectTitle || deriveTitle(body),
-        catchText: body,
+        title: newProjectTitle || deriveTitle(body) || "無題の作品",
+        catchText: body || "(画像のみの投稿)",
         category: "プロトタイプ",
         stage: initialStageFor(type),
         platforms: ["Web"],
@@ -71,6 +82,7 @@ export async function createPost(
     data: {
       type,
       body,
+      imageUrl,
       authorId: author.id,
       projectId,
     },

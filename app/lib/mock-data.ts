@@ -425,6 +425,7 @@ export type Post = {
   projectId: string;
   type: PostType;
   body: string;
+  imageUrl?: string;
   hoursAgo: number;
 };
 

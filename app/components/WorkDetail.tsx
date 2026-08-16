@@ -113,7 +113,15 @@ export function WorkDetail({
                   {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
                   {formatRelativeHours(post.hoursAgo)}
                 </p>
-                <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>
+                {post.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>}
+                {post.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
+                  <img
+                    src={post.imageUrl}
+                    alt=""
+                    className="mt-2 max-h-80 max-w-full rounded-xl border border-[var(--line)] object-contain"
+                  />
+                )}
               </li>
             ))}
           </ol>
@@ -141,7 +149,15 @@ export function WorkDetail({
                     </p>
                     {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
                   </div>
-                  <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>
+                  {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
+                  {c.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
+                    <img
+                      src={c.imageUrl}
+                      alt=""
+                      className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
+                    />
+                  )}
                 </div>
               ))
             )}

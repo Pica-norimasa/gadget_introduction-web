@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META, type Work } from "@/app/lib/mock-data";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
+import { ImagePickerButton } from "./ImagePickerButton";
 
 const initialState: CreatePostState = {};
 
@@ -11,7 +12,25 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
   const [projectTarget, setProjectTarget] = useState("new");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  function clearImage() {
+    setImagePreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   useEffect(() => {
     if (state.success) {
@@ -19,6 +38,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       setBody("");
       setProjectTarget("new");
       formRef.current?.reset();
+      clearImage();
 
       if (state.projectId) {
         const projectId = state.projectId;
@@ -41,6 +61,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       <form
         ref={formRef}
         action={formAction}
+        encType="multipart/form-data"
         className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4"
       >
         <textarea
@@ -52,6 +73,14 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           maxLength={280}
           className="w-full resize-none border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
+        <div className="mt-2">
+          <ImagePickerButton
+            fileInputRef={fileInputRef}
+            preview={imagePreview}
+            onChange={handleImageChange}
+            onClear={clearImage}
+          />
+        </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
             name="projectTarget"
@@ -89,7 +118,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
             <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
             <button
               type="submit"
-              disabled={!trimmed || pending}
+              disabled={(!trimmed && !imagePreview) || pending}
               className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
             >
               {pending ? "投稿中…" : "投稿する"}
