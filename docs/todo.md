@@ -148,6 +148,20 @@
      移行時は`getOrCreateCurrentUser()`の中身をセッションCookie参照から
      実際の認証プロバイダのユーザー解決に差し替えるだけで、呼び出し側
      (Server Action群)は変更不要になるよう設計してある。
+7. ~~閲覧数(views)が固定値のまま~~ → 実装済み。`app/lib/queries.ts`の
+   `incrementViews(id)`が`Project.views`をアトミックに+1する。作品詳細ページの
+   本体(`work/[id]/page.tsx`のデフォルトexport)からだけ呼び、`generateMetadata`
+   やOGP画像生成ルートは別途`getWorkById`を呼ぶが増分しない(実際の閲覧とは
+   言えないため)。ユニーク訪問者の重複排除はしていない(`Work.views`は元々
+   Xのインプレッション表示を模した指標として設計されているため、これは仕様通り)。
+8. ~~コメント機能が存在しない~~ → 実装済み。`Comment`モデル(`projectId`必須、
+   `Post`と違って孤立コメントの概念は無い)を追加し、`app/lib/comment-actions.ts`
+   の`createComment`(Server Action)が軽量セッションのUser名義で書き込む。
+   表示は`work.comments`(`Project.commentsSeed` + 実`Comment`行数、
+   reactions/followersと同じ起点カウント方式)と、作品詳細ページの
+   `app/components/CommentForm.tsx`(投稿フォーム) + `WorkDetail.tsx`内の
+   一覧表示(サーバーコンポーネントでそのまま`comments.map`)。コメントの
+   編集・削除・返信(ネスト)は未実装。
 
 ### このマシン固有のメモ(開発環境の制約)
 

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
+import type { CommentView } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { CommentForm } from "./CommentForm";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
@@ -17,10 +19,12 @@ export function WorkDetail({
   work,
   timeline,
   myReactions,
+  comments,
 }: {
   work: Work;
   timeline: Post[];
   myReactions: ReactionKey[];
+  comments: CommentView[];
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -91,6 +95,28 @@ export function WorkDetail({
               </li>
             ))}
           </ol>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+            コメント({comments.length})
+          </h2>
+          <CommentForm projectId={work.id} />
+          <div className="mt-4 flex flex-col gap-3">
+            {comments.length === 0 ? (
+              <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
+            ) : (
+              comments.map((c) => (
+                <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
+                  <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
+                    <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
+                    {formatRelativeHours(c.hoursAgo)}
+                  </p>
+                  <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">

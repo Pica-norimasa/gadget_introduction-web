@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getMyReactionsForProject, getPosts, getWorkById, getWorks, incrementViews } from "@/app/lib/queries";
+import {
+  getCommentsForProject,
+  getMyReactionsForProject,
+  getPosts,
+  getWorkById,
+  getWorks,
+  incrementViews,
+} from "@/app/lib/queries";
 import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
@@ -44,13 +51,21 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const [posts, myReactions] = await Promise.all([
+  const [posts, myReactions, comments] = await Promise.all([
     getPosts(),
     getMyReactionsForProject(work.id),
+    getCommentsForProject(work.id),
     incrementViews(work.id),
   ]);
   const timeline = postsForProject(work.id, posts);
 
   // 今の訪問分をその場で足す(再取得はしない)。実際のDB値は次の読み込みから反映される。
-  return <WorkDetail work={{ ...work, views: work.views + 1 }} timeline={timeline} myReactions={myReactions} />;
+  return (
+    <WorkDetail
+      work={{ ...work, views: work.views + 1 }}
+      timeline={timeline}
+      myReactions={myReactions}
+      comments={comments}
+    />
+  );
 }

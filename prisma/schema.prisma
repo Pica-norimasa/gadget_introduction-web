@@ -33,6 +33,7 @@ model User {
   projects       Project[]
   posts          Post[]
   reactions      Reaction[]
+  comments       Comment[]
   following      Follow[]   @relation("Follower")
   followedBy     Follow[]   @relation("Following")
 }
@@ -66,6 +67,7 @@ model Project {
   author      User       @relation(fields: [authorId], references: [id])
   posts       Post[]
   reactions   Reaction[]
+  comments    Comment[]
 }
 
 model Post {
@@ -99,6 +101,20 @@ model Reaction {
   user      User    @relation(fields: [userId], references: [id])
 
   @@unique([projectId, userId, type])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id])
+
+  @@index([projectId])
+  @@index([authorId])
 }
 
 model Follow {

@@ -27,6 +27,7 @@ type ProjectWithAuthor = {
   reactionIdeaSeed: number;
   reactionWantToTrySeed: number;
   author: { name: string; followersSeed: number; _count: { followedBy: number } };
+  _count: { comments: number };
 };
 
 function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
@@ -50,7 +51,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
       idea: project.reactionIdeaSeed + (realReactionCounts?.idea ?? 0),
       wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
     },
-    comments: project.commentsSeed,
+    comments: project.commentsSeed + project._count.comments,
     views: project.views,
     daysAgo: Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS)),
     trendScore: project.trendScore,
@@ -63,7 +64,7 @@ const authorInclude = { include: { _count: { select: { followedBy: true } } } } 
 export async function getWorks(): Promise<Work[]> {
   const [projects, reactionRows] = await Promise.all([
     prisma.project.findMany({
-      include: { author: authorInclude },
+      include: { author: authorInclude, _count: { select: { comments: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.reaction.groupBy({ by: ["projectId", "type"], _count: { _all: true } }),
@@ -81,7 +82,10 @@ export async function getWorks(): Promise<Work[]> {
 
 export async function getWorkById(id: string): Promise<Work | null> {
   const [project, reactionRows] = await Promise.all([
-    prisma.project.findUnique({ where: { id }, include: { author: authorInclude } }),
+    prisma.project.findUnique({
+      where: { id },
+      include: { author: authorInclude, _count: { select: { comments: true } } },
+    }),
     prisma.reaction.groupBy({ where: { projectId: id }, by: ["type"], _count: { _all: true } }),
   ]);
   if (!project) return null;
@@ -143,6 +147,27 @@ export async function getMyReactionsForProject(projectId: string): Promise<React
     select: { type: true },
   });
   return rows.map((r) => r.type as ReactionKey);
+}
+
+export type CommentView = {
+  id: string;
+  body: string;
+  authorName: string;
+  hoursAgo: number;
+};
+
+export async function getCommentsForProject(projectId: string): Promise<CommentView[]> {
+  const rows = await prisma.comment.findMany({
+    where: { projectId },
+    include: { author: { select: { name: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    body: r.body,
+    authorName: r.author.name,
+    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+  }));
 }
 
 // 自分がフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー
