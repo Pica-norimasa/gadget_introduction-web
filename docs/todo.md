@@ -516,6 +516,11 @@
     1件+ブロック1件を作った状態から自分のプロフィールで両方確認→
     それぞれ解除→即座に行が消えて最終的にセクションごと消えること、
     他人のプロフィールにはこの情報が出ないことを確認した。
+    追記: ブロック中一覧にはいつブロックしたかも表示してほしいと
+    要望があり、`getBlockedUsers()`が`daysAgo`も返すように変更
+    (`BlockedUserRef`型、`formatPostedAgo()`で「今日にブロック」
+    のように表示)。ミュート側は要望が無かったため据え置き(ミュートは
+    Mute行自体に`createdAt`はあるが、一覧側では表示していない)。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

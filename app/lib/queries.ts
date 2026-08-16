@@ -510,7 +510,11 @@ export async function getMutedUsers(): Promise<UserRef[]> {
 
 // 自分がブロック中のUser(id+表示名)一覧。プロフィールページの
 // 「ブロック中」セクション向け。
-export async function getBlockedUsers(): Promise<UserRef[]> {
+export type BlockedUserRef = UserRef & { daysAgo: number };
+
+// ブロックはミュートと違い「いつブロックしたか」を一覧上で振り返りたい
+// 需要があるため、Mute行には無いdaysAgoをここだけ追加で返す。
+export async function getBlockedUsers(): Promise<BlockedUserRef[]> {
   const user = await getCurrentUser();
   if (!user) return [];
 
@@ -519,5 +523,8 @@ export async function getBlockedUsers(): Promise<UserRef[]> {
     include: { blocked: { select: { id: true, name: true } } },
     orderBy: { createdAt: "desc" },
   });
-  return blocks.map((b) => b.blocked);
+  return blocks.map((b) => ({
+    ...b.blocked,
+    daysAgo: Math.max(0, Math.floor((Date.now() - b.createdAt.getTime()) / DAY_MS)),
+  }));
 }

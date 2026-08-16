@@ -1,17 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import type { UserRef } from "@/app/lib/queries";
+import type { BlockedUserRef, UserRef } from "@/app/lib/queries";
 import { toggleBlock, useBlockedUsers } from "@/app/lib/block-store";
+import { formatPostedAgo } from "@/app/lib/format";
 import { toggleMute, useMutedUsers } from "@/app/lib/mute-store";
 import { AuthorAvatar } from "./AuthorAvatar";
 
-function UserRow({ user, onRelease, label }: { user: UserRef; onRelease: () => void; label: string }) {
+function UserRow({
+  user,
+  daysAgo,
+  onRelease,
+  label,
+}: {
+  user: UserRef;
+  daysAgo?: number;
+  onRelease: () => void;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
       <Link href={`/u/${encodeURIComponent(user.name)}`} className="flex min-w-0 flex-1 items-center gap-2">
         <AuthorAvatar name={user.name} size={28} />
-        <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{user.name}</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{user.name}</p>
+          {daysAgo !== undefined && (
+            <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(daysAgo)}にブロック</p>
+          )}
+        </div>
       </Link>
       <button
         type="button"
@@ -29,7 +45,13 @@ function UserRow({ user, onRelease, label }: { user: UserRef; onRelease: () => v
 // 「解除する」は同じ関数を再度呼ぶだけでよい)。表示はサーバーから渡された
 // 初期一覧をクライアント側ストアの最新状態でフィルタしており、解除すると
 // ストアが即座に更新されて行がその場で消える。
-export function MutedBlockedList({ mutedUsers, blockedUsers }: { mutedUsers: UserRef[]; blockedUsers: UserRef[] }) {
+export function MutedBlockedList({
+  mutedUsers,
+  blockedUsers,
+}: {
+  mutedUsers: UserRef[];
+  blockedUsers: BlockedUserRef[];
+}) {
   const mutedIds = useMutedUsers();
   const blockedIds = useBlockedUsers();
 
@@ -59,7 +81,7 @@ export function MutedBlockedList({ mutedUsers, blockedUsers }: { mutedUsers: Use
           </h2>
           <div className="flex flex-col gap-0.5">
             {visibleBlocked.map((u) => (
-              <UserRow key={u.id} user={u} label="解除する" onRelease={() => toggleBlock(u.id)} />
+              <UserRow key={u.id} user={u} daysAgo={u.daysAgo} label="解除する" onRelease={() => toggleBlock(u.id)} />
             ))}
           </div>
         </div>
