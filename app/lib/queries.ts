@@ -92,6 +92,15 @@ export async function getWorkById(id: string): Promise<Work | null> {
   return toWork(project, realCounts);
 }
 
+// 作品詳細ページの表示ごとに1増やす。Xのインプレッション表示と同じ考え方
+// (Work.viewsのコメント参照)で、ユニーク訪問者の重複排除はしない。
+export async function incrementViews(id: string): Promise<void> {
+  await prisma.project.update({
+    where: { id },
+    data: { views: { increment: 1 } },
+  });
+}
+
 export async function getPosts(): Promise<Post[]> {
   const rows = await prisma.post.findMany({
     where: { projectId: { not: null } },
