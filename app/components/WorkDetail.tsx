@@ -196,7 +196,7 @@ export function WorkDetail({
               ))
             )}
           </div>
-          <CommentForm projectId={work.id} />
+          <CommentForm target={{ type: "project", id: work.id }} />
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">

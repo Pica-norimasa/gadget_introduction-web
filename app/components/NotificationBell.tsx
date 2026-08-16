@@ -51,6 +51,20 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     return <>{actor}にフォローされました</>;
   }
 
+  // 単独投稿(プロジェクトに紐づかないPost)へのコメントは、Projectの
+  // ようなタイトルが無いため「〇〇さんの投稿」ではなく「あなたの投稿」に
+  // コメントした、という一般的な文言にし、/post/[id]へリンクする。
+  if (n.type === "comment" && n.postId) {
+    return (
+      <>
+        {actor}
+        <Link href={`/post/${n.postId}`} onClick={onNavigate} className="hover:underline">
+          があなたの投稿にコメントしました
+        </Link>
+      </>
+    );
+  }
+
   const suffix =
     n.type === "comment"
       ? `が「${n.projectTitle}」にコメントしました`

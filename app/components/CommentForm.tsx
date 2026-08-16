@@ -6,7 +6,7 @@ import { ImagePickerButton } from "./ImagePickerButton";
 
 const initialState: CreateCommentState = {};
 
-export function CommentForm({ projectId }: { projectId: string }) {
+export function CommentForm({ target }: { target: { type: "project" | "post"; id: string } }) {
   const [state, formAction, pending] = useActionState(createComment, initialState);
   const [body, setBody] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -42,7 +42,8 @@ export function CommentForm({ projectId }: { projectId: string }) {
 
   return (
     <form ref={formRef} action={formAction} encType="multipart/form-data" className="flex flex-col gap-2">
-      <input type="hidden" name="projectId" value={projectId} />
+      <input type="hidden" name="targetType" value={target.type} />
+      <input type="hidden" name="targetId" value={target.id} />
       <textarea
         name="body"
         value={body}

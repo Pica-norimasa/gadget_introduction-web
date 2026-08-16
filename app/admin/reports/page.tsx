@@ -56,8 +56,11 @@ export default async function AdminReportsPage() {
                       対象の作品: {r.target.title} →
                     </Link>
                   )}
-                  {r.target.kind === "comment" && (
-                    <Link href={`/work/${r.target.projectId}`} className="text-[var(--accent)] hover:underline">
+                  {r.target.kind === "comment" && (r.target.projectId || r.target.postId) && (
+                    <Link
+                      href={r.target.projectId ? `/work/${r.target.projectId}` : `/post/${r.target.postId}`}
+                      className="text-[var(--accent)] hover:underline"
+                    >
                       対象のコメント: {r.target.body.slice(0, 60)} →
                     </Link>
                   )}

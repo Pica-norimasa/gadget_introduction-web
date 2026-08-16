@@ -246,6 +246,7 @@ export type StandalonePostView = {
   body: string;
   imageUrl?: string;
   hoursAgo: number;
+  commentsCount: number;
 };
 
 // プロジェクトに紐付けない「気軽な単独投稿」限定。トップページの
@@ -260,7 +261,7 @@ export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePo
     },
     orderBy: { createdAt: "desc" },
     take: limit,
-    include: { author: { select: { name: true } } },
+    include: { author: { select: { name: true } }, _count: { select: { comments: true } } },
   });
   return rows.map((r) => ({
     id: r.id,
@@ -268,6 +269,7 @@ export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePo
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    commentsCount: r._count.comments,
   }));
 }
 
@@ -357,6 +359,53 @@ export async function getCommentsForProject(projectId: string): Promise<CommentV
   }));
 }
 
+// /post/[id]専用。単独投稿(プロジェクトに紐づかないPost)へのコメント一覧。
+export async function getCommentsForPost(postId: string): Promise<CommentView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const rows = await prisma.comment.findMany({
+    where: { postId, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
+    include: { author: { select: { name: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    body: r.body,
+    imageUrl: r.imageUrl ?? undefined,
+    authorId: r.authorId,
+    authorName: r.author.name,
+    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+  }));
+}
+
+export type PostDetailView = {
+  id: string;
+  body: string;
+  imageUrl?: string;
+  authorId: string;
+  authorName: string;
+  hoursAgo: number;
+  commentsCount: number;
+};
+
+// /post/[id]専用。単独投稿1件の詳細。
+export async function getPostById(id: string): Promise<PostDetailView | null> {
+  const post = await prisma.post.findUnique({
+    where: { id },
+    include: { author: { select: { id: true, name: true } }, _count: { select: { comments: true } } },
+  });
+  if (!post) return null;
+
+  return {
+    id: post.id,
+    body: post.body,
+    imageUrl: post.imageUrl ?? undefined,
+    authorId: post.author.id,
+    authorName: post.author.name,
+    hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
+    commentsCount: post._count.comments,
+  };
+}
+
 export type NotificationView = {
   id: string;
   type: NotificationType;
@@ -366,17 +415,26 @@ export type NotificationView = {
   actorCount: number;
   projectId: string | null;
   projectTitle: string | null;
+  // 単独投稿(プロジェクトに紐づかないPost)へのcomment通知のときだけ
+  // 使う。projectId/postIdはどちらか一方だけが埋まる。
+  postId: string | null;
   reactionType: ReactionKey | null;
   hoursAgo: number;
   // グループ内の行が1件でも未読ならfalse(未読扱い)。
   read: boolean;
 };
 
-// 種別+対象Project+リアクション種別が同じ通知は1件にまとめる
+// 種別+対象Project/Post+リアクション種別が同じ通知は1件にまとめる
 // (X/Instagramの「Aさん、Bさん他5人がいいねしました」と同じ考え方)。
-// フォロー通知はprojectId/reactionTypeを持たないため種別だけでまとまる。
-function notificationGroupKey(r: { type: string; projectId: string | null; reactionType: string | null }): string {
-  return `${r.type}:${r.projectId ?? ""}:${r.reactionType ?? ""}`;
+// フォロー通知はprojectId/postId/reactionTypeを持たないため種別だけで
+// まとまる。
+function notificationGroupKey(r: {
+  type: string;
+  projectId: string | null;
+  postId: string | null;
+  reactionType: string | null;
+}): string {
+  return `${r.type}:${r.projectId ?? ""}:${r.postId ?? ""}:${r.reactionType ?? ""}`;
 }
 
 // 通知ベル用。グループ化した最新20件のリストと、未読グループ数を返す。
@@ -387,7 +445,11 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
   // グループ化すると表示件数が縮むため、元データは20件よりだいぶ多めに取る。
   const rows = await prisma.notification.findMany({
     where: { recipientId: user.id },
-    include: { actor: { select: { name: true } }, project: { select: { id: true, title: true } } },
+    include: {
+      actor: { select: { name: true } },
+      project: { select: { id: true, title: true } },
+      post: { select: { id: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -416,6 +478,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
       actorCount: actorNames.length,
       projectId: latest.project?.id ?? null,
       projectTitle: latest.project?.title ?? null,
+      postId: latest.post?.id ?? null,
       reactionType: latest.reactionType as ReactionKey | null,
       hoursAgo: Math.max(0, Math.round((Date.now() - latest.createdAt.getTime()) / HOUR_MS)),
       read: group.every((r) => r.readAt !== null),
@@ -574,7 +637,7 @@ export type AdminReportView = {
   createdAt: Date;
   target:
     | { kind: "project"; id: string; title: string }
-    | { kind: "comment"; id: string; body: string; projectId: string }
+    | { kind: "comment"; id: string; body: string; projectId: string | null; postId: string | null }
     | { kind: "user"; id: string; name: string }
     | { kind: "unknown" };
 };
@@ -589,7 +652,7 @@ export async function getAllReports(): Promise<AdminReportView[]> {
     include: {
       reporter: { select: { name: true } },
       project: { select: { id: true, title: true } },
-      comment: { select: { id: true, body: true, projectId: true } },
+      comment: { select: { id: true, body: true, projectId: true, postId: true } },
       reportedUser: { select: { id: true, name: true } },
     },
   });
@@ -599,7 +662,13 @@ export async function getAllReports(): Promise<AdminReportView[]> {
     if (r.targetType === "project" && r.project) {
       target = { kind: "project", id: r.project.id, title: r.project.title };
     } else if (r.targetType === "comment" && r.comment) {
-      target = { kind: "comment", id: r.comment.id, body: r.comment.body, projectId: r.comment.projectId };
+      target = {
+        kind: "comment",
+        id: r.comment.id,
+        body: r.comment.body,
+        projectId: r.comment.projectId,
+        postId: r.comment.postId,
+      };
     } else if (r.targetType === "user" && r.reportedUser) {
       target = { kind: "user", id: r.reportedUser.id, name: r.reportedUser.name };
     }

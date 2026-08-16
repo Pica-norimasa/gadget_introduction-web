@@ -685,6 +685,38 @@
     アイデアだけでもOK)」(プレースホルダー、`PostComposer.tsx`)に
     変更し、「作っている最中」を前提としない書き方にした。ブラウザで
     両方の文言が実際に反映されていることを確認した。
+38. ~~プロジェクトに紐づかない単独投稿にコメントできない~~ → 実装済み。
+    `Comment`モデルの`projectId`を必須から`String?`(任意)に変更し、
+    `postId String?`を新設(`Report`と同じ「discriminatorなしで
+    片方だけ埋まる」ポリモーフィック関連のパターン)。`Notification`
+    モデルにも同様に`postId`を追加し、単独投稿へのコメント通知は
+    `projectId`の代わりに`postId`を使う。`comment-actions.ts`の
+    `createComment`はフォームの`targetType`("project"/"post")と
+    `targetId`から投稿先を判定して`projectId`/`postId`のどちらか
+    片方だけをセットする形に全面書き換え、`CommentForm.tsx`の
+    props も`projectId: string`から`target: { type; id }`に変更。
+    新設した`/post/[id]`ページ(`app/post/[id]/page.tsx`)が
+    単独投稿の詳細ページで、`WorkDetail.tsx`のコメント部分相当
+    (本文・画像・コメント一覧・`CommentForm`)のみを持つ簡易版。
+    `MurmurStrip.tsx`のリンク先を投稿者プロフィールから`/post/[id]`
+    に変更し、カードに💬件数を追加。通知ベル(`NotificationBell.tsx`)
+    は`type === "comment" && postId`の場合に「〇〇さんがあなたの
+    投稿にコメントしました」という(プロジェクトのタイトルが無いため)
+    専用文言を出し`/post/[id]`へリンクする分岐を追加。**ハマった点**:
+    `Comment.projectId`が任意になったことで、通報一覧
+    (`getAllReports()`/`admin/reports/page.tsx`)の`AdminReportView`
+    型が`projectId: string`を要求していた箇所がビルドエラーになった
+    ため、`projectId: string | null; postId: string | null`に広げ、
+    リンク先も`projectId`があれば`/work/...`、無ければ`/post/...`
+    を選ぶよう修正。**スコープ外**: 単独投稿そのものへの通報機能
+    (今回追加したのはコメントへの通報のみで、既存のコメント通報の
+    延長)。ブラウザで、(1)単独投稿を作成→`/post/[id]`に正しい
+    タイトル・本文・空のコメント状態で表示、(2)別ユーザーがコメント
+    →投稿者への通知が「があなたの投稿にコメントしました」の文言で
+    生成され`/post/[id]`へのリンクが正しく機能、(3)MurmurStripの
+    カードの💬件数がコメント追加後に1へ更新、(4)既存のプロジェクトへ
+    のコメント(`/work/[id]`)が今回のポリモーフィック化後も
+    リグレッション無く動作すること、をすべて確認した。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

@@ -107,6 +107,9 @@ model Post {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
 
+  comments      Comment[]
+  notifications Notification[]
+
   @@index([projectId])
   @@index([authorId])
 }
@@ -131,13 +134,20 @@ model Comment {
   imageUrl  String?
   createdAt DateTime @default(now())
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  // projectIdとpostIdはどちらか一方だけが埋まる(単独投稿へのコメントを
+  // 可能にするため、Projectだけでなく孤立したPostにもコメントできる
+  // ようにした)。
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
   authorId  String
   author    User    @relation(fields: [authorId], references: [id])
   reports   Report[]
 
   @@index([projectId])
+  @@index([postId])
   @@index([authorId])
 }
 
@@ -176,9 +186,13 @@ model Notification {
   actorId String
   actor   User   @relation("NotificationActor", fields: [actorId], references: [id])
 
-  // reaction/comment通知の対象Project。follow通知はnull。
+  // reaction/comment/repost通知の対象Project。follow通知はnull。
+  // 単独投稿へのcomment通知はprojectIdの代わりに下のpostIdを使う
+  // (projectId/postIdはどちらか一方だけが埋まる)。
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
 
   // reaction通知のときだけ、押されたリアクション種別を保持(表示用)
   reactionType String?

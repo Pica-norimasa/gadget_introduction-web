@@ -7,20 +7,38 @@ import { prisma } from "@/app/lib/prisma";
 
 export type CreateCommentState = { error?: string; success?: boolean };
 
+// targetType/targetIdはCommentForm.tsxが渡す。project(通常の作品)と
+// post(プロジェクトに紐づかない単独投稿)のどちらにもコメントできる
+// ようにするための、Reportモデルと同じポリモーフィックな考え方。
 export async function createComment(
   _prevState: CreateCommentState,
   formData: FormData,
 ): Promise<CreateCommentState> {
-  const projectId = String(formData.get("projectId") ?? "");
+  const targetType = String(formData.get("targetType") ?? "");
+  const targetId = String(formData.get("targetId") ?? "");
   const body = String(formData.get("body") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
-  if (!projectId) return { error: "投稿先が不明です" };
+  if (targetType !== "project" && targetType !== "post") return { error: "投稿先が不明です" };
+  if (!targetId) return { error: "投稿先が不明です" };
   if (!body && !imageFile) return { error: "コメントか画像のどちらかを入力してください" };
   if (body.length > 500) return { error: "500文字以内で入力してください" };
 
-  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, authorId: true } });
-  if (!project) return { error: "作品が見つかりません" };
+  let projectId: string | null = null;
+  let postId: string | null = null;
+  let recipientId: string;
+
+  if (targetType === "project") {
+    const project = await prisma.project.findUnique({ where: { id: targetId }, select: { id: true, authorId: true } });
+    if (!project) return { error: "作品が見つかりません" };
+    projectId = project.id;
+    recipientId = project.authorId;
+  } else {
+    const post = await prisma.post.findUnique({ where: { id: targetId }, select: { id: true, authorId: true } });
+    if (!post) return { error: "投稿が見つかりません" };
+    postId = post.id;
+    recipientId = post.authorId;
+  }
 
   let imageUrl: string | null = null;
   if (imageFile) {
@@ -34,16 +52,17 @@ export async function createComment(
   const author = await getOrCreateCurrentUser();
 
   await prisma.comment.create({
-    data: { projectId, body, imageUrl, authorId: author.id },
+    data: { projectId, postId, body, imageUrl, authorId: author.id },
   });
 
-  if (project.authorId !== author.id) {
+  if (recipientId !== author.id) {
     await prisma.notification.create({
-      data: { type: "comment", recipientId: project.authorId, actorId: author.id, projectId },
+      data: { type: "comment", recipientId, actorId: author.id, projectId, postId },
     });
   }
 
-  revalidatePath(`/work/${projectId}`);
+  if (projectId) revalidatePath(`/work/${projectId}`);
+  if (postId) revalidatePath(`/post/${postId}`);
   // カード側の💬件数表示もこの投稿数を含むため、フィードも合わせて無効化する。
   revalidatePath("/");
   return { success: true };
@@ -56,12 +75,13 @@ export async function deleteComment(commentId: string): Promise<void> {
 
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
-    select: { authorId: true, projectId: true },
+    select: { authorId: true, projectId: true, postId: true },
   });
   if (!comment || comment.authorId !== user.id) return;
 
   await prisma.comment.delete({ where: { id: commentId } });
 
-  revalidatePath(`/work/${comment.projectId}`);
+  if (comment.projectId) revalidatePath(`/work/${comment.projectId}`);
+  if (comment.postId) revalidatePath(`/post/${comment.postId}`);
   revalidatePath("/");
 }
