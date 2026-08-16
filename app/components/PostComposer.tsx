@@ -73,7 +73,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           name="body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="今なにか作ってますか？思いついたことをどうぞ(未完成・アイデアだけでもOK)"
+          placeholder="思いついたこと、気になってること、なんでもどうぞ(未完成・アイデアだけでもOK)"
           rows={2}
           maxLength={280}
           className="w-full resize-none border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"

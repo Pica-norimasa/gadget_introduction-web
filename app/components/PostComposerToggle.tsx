@@ -34,7 +34,7 @@ export function PostComposerToggle({ myProjects }: { myProjects: Work[] }) {
         className="flex w-full items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[15px] text-[var(--ink-faint)] transition-colors hover:border-[var(--accent)]"
       >
         <span aria-hidden>✎</span>
-        今なにか作ってますか？投稿する
+        思いついたこと、気軽に投稿する
       </button>
     </div>
   );
