@@ -9,7 +9,7 @@ import {
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
-import { PostComposer } from "@/app/components/PostComposer";
+import { PostComposerToggle } from "@/app/components/PostComposerToggle";
 import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { ImmersiveEntry } from "@/app/components/ImmersiveEntry";
 import { HeroRail } from "@/app/components/HeroRail";
@@ -39,7 +39,7 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <PostComposer myProjects={myProjects} />
+        <PostComposerToggle myProjects={myProjects} />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
         <HeroRail

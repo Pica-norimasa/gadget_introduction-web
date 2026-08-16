@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import type { ActivityView, RepostView, SuggestedAuthor } from "@/app/lib/queries";
+import { openComposer } from "@/app/lib/composer-store";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
 import { latestPostFor } from "@/app/lib/post-helpers";
@@ -236,9 +237,18 @@ export function Sidebar({
           <div className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
             <p className="mb-1.5">まだ作品がありません。</p>
             <div className="flex flex-wrap gap-x-3 gap-y-1">
-              <Link href="/#composer" className="text-[var(--accent)] underline decoration-dotted">
+              <button
+                type="button"
+                onClick={() => {
+                  openComposer();
+                  requestAnimationFrame(() => {
+                    document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                }}
+                className="text-[var(--accent)] underline decoration-dotted"
+              >
                 投稿してみる
-              </Link>
+              </button>
               <Link href="/guide" className="text-[var(--accent)] underline decoration-dotted">
                 使い方を見る
               </Link>

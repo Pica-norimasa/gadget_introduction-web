@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { ComposerButton } from "./ComposerButton";
 import { IdentityBadge } from "./IdentityBadge";
 import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
@@ -46,12 +47,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           <IdentityBadge name={user?.name ?? null} />
-          <Link
-            href="/#composer"
-            className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:opacity-90"
-          >
-            投稿する
-          </Link>
+          <ComposerButton />
         </nav>
       </div>
     </header>
