@@ -57,7 +57,7 @@ export function WorkDetail({
             <p className="truncate text-[15px] font-semibold text-[var(--ink)]">{work.author}</p>
             <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
           </div>
-          <FollowButton author={work.author} size="md" />
+          {work.authorId !== currentUserId && <FollowButton author={work.author} size="md" />}
         </div>
 
         <div className="mb-4">

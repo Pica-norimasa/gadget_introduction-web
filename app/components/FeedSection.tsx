@@ -8,8 +8,8 @@ import { WorkCard } from "./WorkCard";
 type Tab = "trend" | "new" | "recommend";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "trend", label: "急上昇" },
   { id: "new", label: "新着" },
+  { id: "trend", label: "急上昇" },
   { id: "recommend", label: "あなたへ" },
 ];
 
@@ -29,12 +29,14 @@ export function FeedSection({
   works,
   posts,
   myReactions,
+  currentUserId,
 }: {
   works: Work[];
   posts: Post[];
   myReactions: Record<string, ReactionKey[]>;
+  currentUserId: string | null;
 }) {
-  const [tab, setTab] = useState<Tab>("trend");
+  const [tab, setTab] = useState<Tab>("new");
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -181,6 +183,7 @@ export function FeedSection({
                   work={w}
                   posts={posts}
                   myReactions={myReactions}
+                  currentUserId={currentUserId}
                   showAnchor={isFirst}
                 />
               );

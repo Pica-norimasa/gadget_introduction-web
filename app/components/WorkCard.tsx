@@ -21,12 +21,14 @@ export function WorkCard({
   work,
   posts,
   myReactions,
+  currentUserId,
   size = "md",
   showAnchor = true,
 }: {
   work: Work;
   posts: Post[];
   myReactions: Record<string, ReactionKey[]>;
+  currentUserId: string | null;
   size?: "md" | "lg";
   // 同じ作品がヒーローレールとフィードの両方に出ることがあるため、
   // id="work-xxx" を持つインスタンスは1つ(フィード側)だけにする。
@@ -52,9 +54,11 @@ export function WorkCard({
           <p className="truncate text-[13px] font-semibold text-[var(--ink)]">{work.author}</p>
           <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
         </div>
-        <div className="relative z-20">
-          <FollowButton author={work.author} />
-        </div>
+        {work.authorId !== currentUserId && (
+          <div className="relative z-20">
+            <FollowButton author={work.author} />
+          </div>
+        )}
       </div>
 
       <div className="relative">

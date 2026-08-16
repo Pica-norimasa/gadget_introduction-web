@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getMyReactions, getPosts, searchWorks } from "@/app/lib/queries";
+import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
 
@@ -21,10 +22,11 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
-  const [results, posts, myReactions] = await Promise.all([
+  const [results, posts, myReactions, currentUser] = await Promise.all([
     searchWorks(query),
     getPosts(),
     getMyReactions(),
+    getCurrentUser(),
   ]);
 
   return (
@@ -56,7 +58,14 @@ export default async function SearchPage({
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {results.map((w) => (
-              <WorkCard key={w.id} work={w} posts={posts} myReactions={myReactions} showAnchor={false} />
+              <WorkCard
+                key={w.id}
+                work={w}
+                posts={posts}
+                myReactions={myReactions}
+                currentUserId={currentUser?.id ?? null}
+                showAnchor={false}
+              />
             ))}
           </div>
         )}

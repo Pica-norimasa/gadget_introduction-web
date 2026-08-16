@@ -19,8 +19,19 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       setBody("");
       setProjectTarget("new");
       formRef.current?.reset();
+
+      if (state.projectId) {
+        const projectId = state.projectId;
+        // revalidatePath後の再レンダリングでカードがDOMに反映されてから
+        // ハッシュを付けたい。location.hashを立てるとブラウザが自動で
+        // #work-xxxまでスクロールし、WorkCardの`target:`スタイルで
+        // リング枠が付く(DiceButton等と同じ仕組みを流用)。
+        requestAnimationFrame(() => {
+          window.location.hash = `work-${projectId}`;
+        });
+      }
     }
-  }, [state.success]);
+  }, [state.success, state.projectId]);
 
   const trimmed = body.trim();
   const guessedType = inferPostType(body);

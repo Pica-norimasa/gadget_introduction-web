@@ -29,10 +29,20 @@ export default async function Home() {
         <PostComposer myProjects={myProjects} />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
-        <HeroRail works={heroWorks} posts={posts} myReactions={myReactions} />
+        <HeroRail
+          works={heroWorks}
+          posts={posts}
+          myReactions={myReactions}
+          currentUserId={currentUser?.id ?? null}
+        />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
-          <FeedSection works={works} posts={posts} myReactions={myReactions} />
+          <FeedSection
+            works={works}
+            posts={posts}
+            myReactions={myReactions}
+            currentUserId={currentUser?.id ?? null}
+          />
           <Sidebar ranking={rankingWorks} posts={posts} works={works} activity={activity} />
         </div>
       </main>

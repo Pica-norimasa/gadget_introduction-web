@@ -7,7 +7,7 @@ import { getOrCreateCurrentUser } from "@/app/lib/session";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
-export type CreatePostState = { error?: string; success?: boolean };
+export type CreatePostState = { error?: string; success?: boolean; projectId?: string };
 
 // 新規Project作成時の初期stage。投稿から継続的にstageを追従させるのは
 // 別スコープ(このマッピングは作成された瞬間の初期値だけを決める)。
@@ -78,5 +78,5 @@ export async function createPost(
 
   revalidatePath("/");
   if (projectId) revalidatePath(`/work/${projectId}`);
-  return { success: true };
+  return { success: true, projectId: projectId ?? undefined };
 }
