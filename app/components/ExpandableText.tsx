@@ -16,7 +16,9 @@ export function ExpandableText({ text, className = "" }: { text: string; classNa
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="ml-1 font-medium text-[var(--teal)] hover:underline"
+          // WorkCardではカード全体がリンクになっているため、このボタンだけは
+          // relative z-20で上に重ねてクリックを奪う必要がある。
+          className="relative z-20 ml-1 font-medium text-[var(--teal)] hover:underline"
         >
           続きを読む
         </button>

@@ -39,20 +39,29 @@ export function WorkCard({
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-shadow hover:shadow-[0_6px_20px_var(--shadow)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-shadow hover:shadow-[0_6px_20px_var(--shadow)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
     >
+      {/* カード全体を詳細ページへのリンクにする(stretched link)。上に重なる
+          FollowButton/ReactionBar/GitHubCardリンク/続きを読むボタンだけは
+          relative z-20を付けて個別にクリックできるようにしている。 */}
+      <Link href={`/work/${work.id}`} aria-label={work.title} className="absolute inset-0 z-10" />
+
       <div className="mb-2 flex items-center gap-2">
         <AuthorAvatar name={work.author} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-semibold text-[var(--ink)]">{work.author}</p>
           <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
         </div>
-        <FollowButton author={work.author} />
+        <div className="relative z-20">
+          <FollowButton author={work.author} />
+        </div>
       </div>
 
       <div className="relative">
         {!work.glyph && work.githubUrl ? (
-          <GitHubCard githubUrl={work.githubUrl} size={size} />
+          <div className="relative z-20">
+            <GitHubCard githubUrl={work.githubUrl} size={size} />
+          </div>
         ) : work.glyph && work.hasMotion ? (
           <MotionThumb hue={work.hue} glyph={work.glyph} size={size} />
         ) : (
@@ -101,11 +110,10 @@ export function WorkCard({
         )}
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
-          <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
-          <div className="flex items-center justify-between text-[12px] text-[var(--ink-faint)]">
-            <Link href={`/work/${work.id}`} className="hover:text-[var(--ink-soft)] hover:underline">
-              🔗 詳細・共有
-            </Link>
+          <div className="relative z-20">
+            <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
+          </div>
+          <div className="flex items-center justify-end text-[12px] text-[var(--ink-faint)]">
             <span className="font-mono">
               👁️{formatCount(work.views)} · 💬{work.comments}
             </span>
