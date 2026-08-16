@@ -226,8 +226,15 @@
     作っていない)。`app/components/ImagePickerButton.tsx`を
     PostComposer/TimelinePostForm/CommentForm共通の画像選択+プレビュー
     部品として切り出した。
-
-### このマシン固有のメモ(開発環境の制約)
+14. ~~コメント欄にアイコンが出ない~~ → 実装済み。既存の`AuthorAvatar`
+    (名前の文字列から色相を決定的に生成するイニシャルアバター)を
+    `WorkDetail.tsx`のコメント行に追加しただけで、新規コンポーネントは
+    不要だった。**未着手**: 「Xの@からはじまるユーザーID」のような、
+    表示名とは別の恒久的なハンドル表示。今の`User.name`は表示名を
+    兼ねていて`IdentityBadge`からいつでも変更できるため、そのまま
+    ハンドルとして使うとXの@handleのような「基本は変わらない識別子」
+    という性質に合わない。実装するなら、User作成時に別途
+    `handle`(変更不可、または変更頻度を制限)を持たせる形になる。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

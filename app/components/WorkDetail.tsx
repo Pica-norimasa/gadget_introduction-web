@@ -142,22 +142,27 @@ export function WorkDetail({
             ) : (
               comments.map((c) => (
                 <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <p className="text-[12px] text-[var(--ink-faint)]">
-                      <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
-                      {formatRelativeHours(c.hoursAgo)}
-                    </p>
-                    {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
+                  <div className="flex items-start gap-2">
+                    <AuthorAvatar name={c.authorName} size={28} />
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <p className="text-[12px] text-[var(--ink-faint)]">
+                          <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
+                          {formatRelativeHours(c.hoursAgo)}
+                        </p>
+                        {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
+                      </div>
+                      {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
+                      {c.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
+                        <img
+                          src={c.imageUrl}
+                          alt=""
+                          className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
+                        />
+                      )}
+                    </div>
                   </div>
-                  {c.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>}
-                  {c.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-                    <img
-                      src={c.imageUrl}
-                      alt=""
-                      className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
-                    />
-                  )}
                 </div>
               ))
             )}
