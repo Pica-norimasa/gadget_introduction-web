@@ -115,11 +115,15 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- prev/next close over entryIndex intentionally per-render
   }, [openIndex, entryIndex]);
 
+  // フォロー中の作者が誰もいない(≒新規訪問者の大半)ときは、見出しだけが
+  // 中身の無いまま浮いて見えてしまうため、セクションごと非表示にする。
+  if (stories.length === 0) return null;
+
   return (
     <>
       <div className="mx-auto max-w-[1180px] px-4 pt-6 sm:px-6">
         <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">
-          Build Logs
+          フォロー中ユーザー
         </p>
         <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:thin]">
           {stories.map((story, i) => {
