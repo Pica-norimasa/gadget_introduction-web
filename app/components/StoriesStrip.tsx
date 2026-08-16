@@ -130,28 +130,38 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
           {stories.map((story, i) => {
             const isSeen = seen.has(story.author);
             return (
-              <button
-                key={story.author}
-                type="button"
-                onClick={() => openStory(i)}
-                className="flex w-16 shrink-0 flex-col items-center gap-1 text-center"
-              >
-                <span
-                  className="grid h-14 w-14 place-items-center rounded-full p-[2px] transition-opacity"
-                  style={{
-                    background: isSeen
-                      ? "var(--line)"
-                      : `conic-gradient(from 180deg, hsl(${story.hue} 80% 60%), hsl(${
-                          story.hue + 50
-                        } 80% 60%), hsl(${story.hue} 80% 60%))`,
-                  }}
+              // アイコン部分(タップでストーリーズを開く)と作者名部分(タップで
+              // プロフィールへ遷移)は役割が違うので、<button>の中に<Link>を
+              // 入れる(=インタラクティブ要素の入れ子)のではなく兄弟要素として
+              // 分けている。
+              <div key={story.author} className="flex w-16 shrink-0 flex-col items-center gap-1 text-center">
+                <button
+                  type="button"
+                  onClick={() => openStory(i)}
+                  aria-label={`${story.author}のストーリーズを見る`}
                 >
-                  <span className="grid h-full w-full place-items-center rounded-full bg-[var(--bg)] text-xl">
-                    <span aria-hidden>{story.glyph}</span>
+                  <span
+                    className="grid h-14 w-14 place-items-center rounded-full p-[2px] transition-opacity"
+                    style={{
+                      background: isSeen
+                        ? "var(--line)"
+                        : `conic-gradient(from 180deg, hsl(${story.hue} 80% 60%), hsl(${
+                            story.hue + 50
+                          } 80% 60%), hsl(${story.hue} 80% 60%))`,
+                    }}
+                  >
+                    <span className="grid h-full w-full place-items-center rounded-full bg-[var(--bg)] text-xl">
+                      <span aria-hidden>{story.glyph}</span>
+                    </span>
                   </span>
-                </span>
-                <span className="max-w-full truncate text-[11px] text-[var(--ink-soft)]">{story.author}</span>
-              </button>
+                </button>
+                <Link
+                  href={`/u/${encodeURIComponent(story.author)}`}
+                  className="max-w-full truncate text-[11px] text-[var(--ink-soft)] hover:underline"
+                >
+                  {story.author}
+                </Link>
+              </div>
             );
           })}
         </div>
