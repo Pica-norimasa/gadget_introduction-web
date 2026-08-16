@@ -43,7 +43,13 @@ export default async function Home() {
             myReactions={myReactions}
             currentUserId={currentUser?.id ?? null}
           />
-          <Sidebar ranking={rankingWorks} posts={posts} works={works} activity={activity} />
+          <Sidebar
+            ranking={rankingWorks}
+            posts={posts}
+            works={works}
+            activity={activity}
+            myProjects={myProjects}
+          />
         </div>
       </main>
 

@@ -5,6 +5,7 @@ import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import type { ActivityView } from "@/app/lib/queries";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
+import { latestPostFor } from "@/app/lib/post-helpers";
 import { WorkThumb } from "./WorkThumb";
 
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
@@ -41,6 +42,27 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
   );
 }
 
+function MyProjectRow({ work, posts }: { work: Work; posts: Post[] }) {
+  const latest = latestPostFor(work.id, posts);
+  return (
+    <Link
+      href={`/work/${work.id}`}
+      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]"
+    >
+      <div className="w-10 shrink-0">
+        <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{work.title}</p>
+        <p className="truncate text-[12px] text-[var(--ink-faint)]">
+          {work.stage}
+          {latest ? ` ・ ${formatRelativeHours(latest.hoursAgo)}更新` : ""}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 function ActivityRow({ item }: { item: ActivityView }) {
   const meta = POST_TYPE_META[item.type];
   const body = (
@@ -68,11 +90,13 @@ export function Sidebar({
   posts,
   works,
   activity,
+  myProjects,
 }: {
   ranking: Work[];
   posts: Post[];
   works: Work[];
   activity: ActivityView[];
+  myProjects: Work[];
 }) {
   const followedAuthors = useFollowedAuthors();
   const followedPosts = posts
@@ -83,6 +107,26 @@ export function Sidebar({
 
   return (
     <aside className="flex flex-col gap-6">
+      <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+        <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+          自分の創作物
+        </h3>
+        {myProjects.length === 0 ? (
+          <p className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
+            まだ作品がありません。
+            <Link href="/#composer" className="text-[var(--accent)] underline decoration-dotted">
+              投稿してみましょう
+            </Link>
+          </p>
+        ) : (
+          <div className="flex flex-col gap-0.5">
+            {myProjects.map((w) => (
+              <MyProjectRow key={w.id} work={w} posts={posts} />
+            ))}
+          </div>
+        )}
+      </div>
+
       <div id="ranking" className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24">
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
           週間ランキング
