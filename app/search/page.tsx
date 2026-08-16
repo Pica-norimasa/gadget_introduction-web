@@ -11,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
-  return { title: query ? `「${query}」の検索結果 | きざし` : "検索 | きざし" };
+  return { title: query ? `「${query}」の検索結果 | Draftly` : "検索 | Draftly" };
 }
 
 export default async function SearchPage({

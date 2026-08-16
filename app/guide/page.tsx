@@ -3,14 +3,14 @@ import Link from "next/link";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "使い方 | きざし",
-  description: "きざしの投稿の流れを3ステップで紹介します。",
+  title: "使い方 | Draftly",
+  description: "Draftlyの投稿の流れを3ステップで紹介します。",
 };
 
 const STEPS = [
   {
     title: "完成していなくてOK",
-    body: "「こんなの欲しい」と思っただけでも、作りかけの画面でも投稿できます。きざしは完成品を披露する場所ではなく、作っている途中の記録を積み重ねていく場所です。",
+    body: "「こんなの欲しい」と思っただけでも、作りかけの画面でも投稿できます。Draftlyは完成品を披露する場所ではなく、作っている途中の記録を積み重ねていく場所です。",
   },
   {
     title: "投稿するとプロジェクトが生まれる",
@@ -29,7 +29,7 @@ export default function GuidePage() {
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">
-          きざしの使い方
+          Draftlyの使い方
         </h1>
         <p className="mb-8 text-[14px] leading-relaxed text-[var(--ink-soft)]">
           アイデアを、育てながら見せる場所。完成させてから発表する必要はありません。

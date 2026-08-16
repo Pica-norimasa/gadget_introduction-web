@@ -29,7 +29,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             fontWeight: 700,
           }}
         >
-          きざし
+          Draftly
         </div>
       ),
       size,
@@ -67,7 +67,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         ) : null}
 
         <div style={{ display: "flex", fontSize: 28, color: "rgba(20,18,14,0.6)", marginBottom: 16 }}>
-          きざし ・ {work.stage}
+          Draftly ・ {work.stage}
         </div>
         <div
           style={{

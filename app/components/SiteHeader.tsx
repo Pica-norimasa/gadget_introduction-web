@@ -16,7 +16,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
             芽
           </span>
           <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
-            きざし
+            Draftly
           </span>
         </a>
 

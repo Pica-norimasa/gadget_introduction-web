@@ -54,7 +54,7 @@ export default async function Home() {
       </main>
 
       <footer className="border-t border-[var(--line)] px-4 py-8 text-center text-[12px] text-[var(--ink-faint)] sm:px-6">
-        きざし — アイデアを、育てながら見せる場所。開発中のプロトタイプです。
+        Draftly — アイデアを、育てながら見せる場所。開発中のプロトタイプです。
       </footer>
 
       <DiceButton works={works} />

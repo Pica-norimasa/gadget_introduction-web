@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   // 本番ドメインが決まったらNEXT_PUBLIC_SITE_URLで上書きする。
   // 未設定時はローカル開発用のフォールバック。
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: "きざし | アイデアを、育てながら見せる場所",
+  title: "Draftly | アイデアを、育てながら見せる場所",
   description:
     "非エンジニアがAIで作った作品を発表し、発見し合う創作プラットフォームのコンセプトモック。",
 };

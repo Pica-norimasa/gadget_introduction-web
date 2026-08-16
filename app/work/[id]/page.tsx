@@ -25,19 +25,19 @@ export async function generateMetadata({
   const { id } = await params;
   const work = await getWorkById(id);
   if (!work) {
-    return { title: "作品が見つかりません | きざし" };
+    return { title: "作品が見つかりません | Draftly" };
   }
 
   const description = work.catch.length > 120 ? `${work.catch.slice(0, 120)}…` : work.catch;
 
   return {
-    title: `${work.title} | きざし`,
+    title: `${work.title} | Draftly`,
     description,
     openGraph: {
       title: work.title,
       description,
       type: "article",
-      siteName: "きざし",
+      siteName: "Draftly",
     },
     twitter: {
       card: "summary_large_image",
