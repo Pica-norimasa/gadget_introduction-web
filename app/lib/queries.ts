@@ -528,3 +528,54 @@ export async function getBlockedUsers(): Promise<BlockedUserRef[]> {
     daysAgo: Math.max(0, Math.floor((Date.now() - b.createdAt.getTime()) / DAY_MS)),
   }));
 }
+
+export type AdminReportView = {
+  id: string;
+  targetType: string;
+  reason: string;
+  detail: string | null;
+  reporterName: string;
+  createdAt: Date;
+  target:
+    | { kind: "project"; id: string; title: string }
+    | { kind: "comment"; id: string; body: string; projectId: string }
+    | { kind: "user"; id: string; name: string }
+    | { kind: "unknown" };
+};
+
+// /admin/reports専用。現在ユーザーでスコープしない唯一のクエリ(通報は
+// 誰の通報一覧かではなく、プラットフォーム全体の一覧を運営者が見るための
+// もの)。呼び出し側(admin/reports/page.tsx)が事前にisAdminAuthed()で
+// ゲートする前提。
+export async function getAllReports(): Promise<AdminReportView[]> {
+  const reports = await prisma.report.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      reporter: { select: { name: true } },
+      project: { select: { id: true, title: true } },
+      comment: { select: { id: true, body: true, projectId: true } },
+      reportedUser: { select: { id: true, name: true } },
+    },
+  });
+
+  return reports.map((r) => {
+    let target: AdminReportView["target"] = { kind: "unknown" };
+    if (r.targetType === "project" && r.project) {
+      target = { kind: "project", id: r.project.id, title: r.project.title };
+    } else if (r.targetType === "comment" && r.comment) {
+      target = { kind: "comment", id: r.comment.id, body: r.comment.body, projectId: r.comment.projectId };
+    } else if (r.targetType === "user" && r.reportedUser) {
+      target = { kind: "user", id: r.reportedUser.id, name: r.reportedUser.name };
+    }
+
+    return {
+      id: r.id,
+      targetType: r.targetType,
+      reason: r.reason,
+      detail: r.detail,
+      reporterName: r.reporter.name,
+      createdAt: r.createdAt,
+      target,
+    };
+  });
+}
