@@ -65,6 +65,20 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     );
   }
 
+  // 単独投稿への「いいね」も同様にタイトルが無いため専用文言にする。
+  // Post向けリアクションは常にtype "like"固定なのでreactionTypeによる
+  // 出し分けは不要。
+  if (n.type === "reaction" && n.postId) {
+    return (
+      <>
+        {actor}
+        <Link href={`/post/${n.postId}`} onClick={onNavigate} className="hover:underline">
+          があなたの投稿に❤️いいねしました
+        </Link>
+      </>
+    );
+  }
+
   const suffix =
     n.type === "comment"
       ? `が「${n.projectTitle}」にコメントしました`

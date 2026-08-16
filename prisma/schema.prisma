@@ -108,6 +108,7 @@ model Post {
   project   Project? @relation(fields: [projectId], references: [id])
 
   comments      Comment[]
+  reactions     Reaction[]
   notifications Notification[]
 
   @@index([projectId])
@@ -116,16 +117,24 @@ model Post {
 
 model Reaction {
   id        String   @id @default(cuid())
-  // interesting | useful | idea | wantToTry
+  // interesting | useful | idea | wantToTry (Project向け) | like (Post向け)
   type      String
   createdAt DateTime @default(now())
 
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  // projectIdとpostIdはどちらか一方だけが埋まる(Commentと同じポリモーフィック
+  // パターン。単独投稿への「いいね」を可能にするため)。Post向けはtypeが
+  // 常に"like"の1種類のみ(Xのハートアイコンと同じ単純な二値トグル)。
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
   userId    String
   user      User    @relation(fields: [userId], references: [id])
 
   @@unique([projectId, userId, type])
+  @@unique([postId, userId, type])
+  @@index([postId])
 }
 
 model Comment {

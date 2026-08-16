@@ -30,3 +30,29 @@ export async function toggleReaction(projectId: string, type: ReactionKey) {
   revalidatePath("/");
   revalidatePath(`/work/${projectId}`);
 }
+
+// 単独投稿(Post)向けの「いいね」。Projectの4種類リアクションと違い、Xの
+// ハートアイコンと同じ単純な二値トグルなので、typeは常に"like"固定。
+export async function toggleLike(postId: string) {
+  const user = await getOrCreateCurrentUser();
+
+  const existing = await prisma.reaction.findUnique({
+    where: { postId_userId_type: { postId, userId: user.id, type: "like" } },
+  });
+
+  if (existing) {
+    await prisma.reaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.reaction.create({ data: { postId, userId: user.id, type: "like" } });
+
+    const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+    if (post && post.authorId !== user.id) {
+      await prisma.notification.create({
+        data: { type: "reaction", recipientId: post.authorId, actorId: user.id, postId, reactionType: "like" },
+      });
+    }
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/post/${postId}`);
+}

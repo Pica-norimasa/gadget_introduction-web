@@ -732,6 +732,35 @@
     トグルできること、(2)作品編集フォームのチェックボックスにも両方が
     表示されること、(3)実際にUnityにチェックを入れて保存→作品詳細
     ページのバッジに🎮が反映されること、を確認した。lint/build clean。
+40. ~~つぶやき投稿にいいねできない~~ → 実装済み。Projectの4種類
+    リアクション(😲🛠️💡🙋、種類ごとにトグル可能)とは別物で、要望が
+    「Xのハートアイコンのような」二値のいいねだったため、同じ流用は
+    せず`Reaction`モデルをComment/Notificationと同じポリモーフィック
+    パターンで拡張(`projectId`/`postId`はどちらか一方だけが埋まる、
+    `@@unique`もそれぞれに追加)。Post向けの`type`は常に`"like"`
+    固定(種類の出し分けが無いXのいいねと同じ単純さのため)。
+    `reaction-actions.ts`に`toggleLike(postId)`を追加(`toggleReaction`
+    と同じトグル+通知作成のパターン)。新設`LikeButton.tsx`は
+    `ReactionBar.tsx`と違いローカルstateだけの最小構成の楽観トグル。
+    表示箇所は(1)`MurmurStrip.tsx`のカード footer(💬件数の隣に
+    ❤️/🤍)、(2)`/post/[id]`ページの本文直下。**ハマった点**:
+    MurmurStripのカードは元々カード全体が1枚の`<Link>`だったため、
+    いいねボタンをそのまま入れると`<a>`の中に`<button>`が入れ子になる
+    (以前の「兄弟リンクに分割」問題と同種)。カード全体を`<div>`にし、
+    本文部分だけを`<Link>`、footer(いいね+💬)は兄弟の`<div>`として
+    分離して解消。`getMyReactions()`(Project専用)は`Reaction.projectId`
+    がnullableになった影響で型・実行時両方の修正が必要になり、
+    `projectId: { not: null }`で明示的にPost向けの行を除外。新設
+    `getMyLikedPostIds()`(フィード一覧用)・`getMyLikeForPost()`
+    (詳細ページ用)はgetMyReactions/getMyReactionsForProjectと対になる
+    構成。通知ベルにも`type === "reaction" && postId`の専用文言
+    (「があなたの投稿に❤️いいねしました」)を追加。ブラウザで、
+    (1)MurmurStripのカードでいいねをクリックしてもカードへの遷移が
+    発生しないこと(兄弟構造の検証)、(2)楽観トグル→リロード後も
+    サーバー側に反映されていること、(3)いいね解除も正しくReaction行を
+    削除すること、(4)本人以外への通知が正しいpostId・文言で作られる
+    こと、(5)既存のProjectリアクション(ReactionBar)に
+    リグレッションが無いこと、をすべて確認した。lint/build clean。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

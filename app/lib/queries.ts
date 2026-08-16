@@ -89,11 +89,12 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.reaction.groupBy({ by: ["projectId", "type"], _count: { _all: true } }),
+    prisma.reaction.groupBy({ by: ["projectId", "type"], where: { projectId: { not: null } }, _count: { _all: true } }),
   ]);
 
   const countsByProject = new Map<string, Partial<Record<ReactionKey, number>>>();
   for (const row of reactionRows) {
+    if (!row.projectId) continue;
     const entry = countsByProject.get(row.projectId) ?? {};
     entry[row.type as ReactionKey] = row._count._all;
     countsByProject.set(row.projectId, entry);
@@ -247,6 +248,7 @@ export type StandalonePostView = {
   imageUrl?: string;
   hoursAgo: number;
   commentsCount: number;
+  likesCount: number;
 };
 
 // プロジェクトに紐付けない「気軽な単独投稿」限定。トップページの
@@ -261,7 +263,7 @@ export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePo
     },
     orderBy: { createdAt: "desc" },
     take: limit,
-    include: { author: { select: { name: true } }, _count: { select: { comments: true } } },
+    include: { author: { select: { name: true } }, _count: { select: { comments: true, reactions: true } } },
   });
   return rows.map((r) => ({
     id: r.id,
@@ -270,6 +272,7 @@ export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePo
     imageUrl: r.imageUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
     commentsCount: r._count.comments,
+    likesCount: r._count.reactions,
   }));
 }
 
@@ -304,19 +307,20 @@ export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
 }
 
 // projectId -> 自分が既に押しているリアクション種別。フィード全体を
-// 1回で回すページ(`/`)向け。
+// 1回で回すページ(`/`)向け。Post向け(postIdのみ埋まっている行)は
+// getMyLikedPostIds()の管轄なのでここでは除外する。
 export async function getMyReactions(): Promise<Record<string, ReactionKey[]>> {
   const user = await getCurrentUser();
   if (!user) return {};
 
   const rows = await prisma.reaction.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, projectId: { not: null } },
     select: { projectId: true, type: true },
   });
 
   const result: Record<string, ReactionKey[]> = {};
   for (const r of rows) {
-    (result[r.projectId] ??= []).push(r.type as ReactionKey);
+    (result[r.projectId!] ??= []).push(r.type as ReactionKey);
   }
   return result;
 }
@@ -331,6 +335,30 @@ export async function getMyReactionsForProject(projectId: string): Promise<React
     select: { type: true },
   });
   return rows.map((r) => r.type as ReactionKey);
+}
+
+// postId -> 自分が既に「いいね」しているか。トップページのMurmurStrip
+// (複数投稿を一度に描画)向けに、まとめてSetで返す。
+export async function getMyLikedPostIds(): Promise<Set<string>> {
+  const user = await getCurrentUser();
+  if (!user) return new Set();
+
+  const rows = await prisma.reaction.findMany({
+    where: { userId: user.id, type: "like", postId: { not: null } },
+    select: { postId: true },
+  });
+  return new Set(rows.map((r) => r.postId!));
+}
+
+// 単一Post向け(/post/[id])。全件取得するgetMyLikedPostIds()より軽い。
+export async function getMyLikeForPost(postId: string): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user) return false;
+
+  const row = await prisma.reaction.findUnique({
+    where: { postId_userId_type: { postId, userId: user.id, type: "like" } },
+  });
+  return row !== null;
 }
 
 export type CommentView = {
@@ -385,13 +413,17 @@ export type PostDetailView = {
   authorName: string;
   hoursAgo: number;
   commentsCount: number;
+  likesCount: number;
 };
 
 // /post/[id]専用。単独投稿1件の詳細。
 export async function getPostById(id: string): Promise<PostDetailView | null> {
   const post = await prisma.post.findUnique({
     where: { id },
-    include: { author: { select: { id: true, name: true } }, _count: { select: { comments: true } } },
+    include: {
+      author: { select: { id: true, name: true } },
+      _count: { select: { comments: true, reactions: true } },
+    },
   });
   if (!post) return null;
 
@@ -403,6 +435,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     authorName: post.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
     commentsCount: post._count.comments,
+    likesCount: post._count.reactions,
   };
 }
 

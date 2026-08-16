@@ -1,4 +1,5 @@
 import {
+  getMyLikedPostIds,
   getMyReactions,
   getPosts,
   getRecentActivity,
@@ -19,17 +20,27 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
-  const [works, posts, myReactions, currentUser, activity, reposts, suggestedAuthors, standalonePosts] =
-    await Promise.all([
-      getWorks(),
-      getPosts(),
-      getMyReactions(),
-      getCurrentUser(),
-      getRecentActivity(),
-      getRecentReposts(),
-      getSuggestedAuthors(),
-      getRecentStandalonePosts(),
-    ]);
+  const [
+    works,
+    posts,
+    myReactions,
+    currentUser,
+    activity,
+    reposts,
+    suggestedAuthors,
+    standalonePosts,
+    likedPostIds,
+  ] = await Promise.all([
+    getWorks(),
+    getPosts(),
+    getMyReactions(),
+    getCurrentUser(),
+    getRecentActivity(),
+    getRecentReposts(),
+    getSuggestedAuthors(),
+    getRecentStandalonePosts(),
+    getMyLikedPostIds(),
+  ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
   const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
@@ -48,7 +59,7 @@ export default async function Home() {
           myReactions={myReactions}
           currentUserId={currentUser?.id ?? null}
         />
-        <MurmurStrip posts={standalonePosts} />
+        <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
           <FeedSection

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCommentsForPost, getPostById } from "@/app/lib/queries";
+import { getCommentsForPost, getMyLikeForPost, getPostById } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { CommentForm } from "@/app/components/CommentForm";
 import { DeleteCommentButton } from "@/app/components/DeleteCommentButton";
+import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
@@ -31,6 +32,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     getCurrentUser(),
   ]);
   if (!post) notFound();
+
+  const liked = await getMyLikeForPost(post.id);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -70,6 +73,10 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             className="mb-4 max-h-[480px] w-full rounded-2xl border border-[var(--line)] object-contain"
           />
         )}
+
+        <div className="mb-6">
+          <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+        </div>
 
         <div className="mb-6">
           <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
