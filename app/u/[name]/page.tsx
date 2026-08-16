@@ -8,6 +8,7 @@ import { BioEditor } from "@/app/components/BioEditor";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { MutedBlockedList } from "@/app/components/MutedBlockedList";
+import { ProfileTabs } from "@/app/components/ProfileTabs";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
 
@@ -83,47 +84,48 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           )}
         </div>
 
-        <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-          投稿した作品({profile.works.length})
-        </h2>
-        {profile.works.length === 0 ? (
-          <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {profile.works.map((work) => (
-              <WorkCard
-                key={work.id}
-                work={work}
-                posts={posts}
-                myReactions={myReactions}
-                currentUserId={currentUser?.id ?? null}
-                showAnchor={false}
-              />
-            ))}
-          </div>
-        )}
-
-        <h2 className="mb-3 mt-8 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-          リポストした作品({profile.repostedWorks.length})
-        </h2>
-        {profile.repostedWorks.length === 0 ? (
-          <p className="text-[13px] text-[var(--ink-faint)]">まだリポストした作品はありません</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {profile.repostedWorks.map((work) => (
-              <WorkCard
-                key={work.id}
-                work={work}
-                posts={posts}
-                myReactions={myReactions}
-                currentUserId={currentUser?.id ?? null}
-                showAnchor={false}
-              />
-            ))}
-          </div>
-        )}
-
-        {isOwnProfile && <MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
+        <ProfileTabs
+          postedLabel={`投稿した作品(${profile.works.length})`}
+          repostedLabel={`リポストした作品(${profile.repostedWorks.length})`}
+          showBlockedTab={isOwnProfile}
+          postedContent={
+            profile.works.length === 0 ? (
+              <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {profile.works.map((work) => (
+                  <WorkCard
+                    key={work.id}
+                    work={work}
+                    posts={posts}
+                    myReactions={myReactions}
+                    currentUserId={currentUser?.id ?? null}
+                    showAnchor={false}
+                  />
+                ))}
+              </div>
+            )
+          }
+          repostedContent={
+            profile.repostedWorks.length === 0 ? (
+              <p className="text-[13px] text-[var(--ink-faint)]">まだリポストした作品はありません</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {profile.repostedWorks.map((work) => (
+                  <WorkCard
+                    key={work.id}
+                    work={work}
+                    posts={posts}
+                    myReactions={myReactions}
+                    currentUserId={currentUser?.id ?? null}
+                    showAnchor={false}
+                  />
+                ))}
+              </div>
+            )
+          }
+          blockedContent={<MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
+        />
       </main>
     </div>
   );

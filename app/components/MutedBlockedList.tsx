@@ -58,10 +58,12 @@ export function MutedBlockedList({
   const visibleMuted = mutedUsers.filter((u) => mutedIds.has(u.id));
   const visibleBlocked = blockedUsers.filter((u) => blockedIds.has(u.id));
 
-  if (visibleMuted.length === 0 && visibleBlocked.length === 0) return null;
+  if (visibleMuted.length === 0 && visibleBlocked.length === 0) {
+    return <p className="text-[13px] text-[var(--ink-faint)]">ミュート・ブロック中のユーザーはいません</p>;
+  }
 
   return (
-    <div className="mt-8 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {visibleMuted.length > 0 && (
         <div>
           <h2 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
