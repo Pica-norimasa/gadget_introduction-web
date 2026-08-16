@@ -36,6 +36,7 @@ model User {
   posts          Post[]
   reactions      Reaction[]
   comments       Comment[]
+  reposts        Repost[]
   following      Follow[]   @relation("Follower")
   followedBy     Follow[]   @relation("Following")
 
@@ -76,6 +77,7 @@ model Project {
   posts       Post[]
   reactions   Reaction[]
   comments    Comment[]
+  reposts     Repost[]
   notifications Notification[]
 }
 
@@ -129,9 +131,24 @@ model Comment {
   @@index([authorId])
 }
 
+model Repost {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // 自分の作品を自分でリポストすること自体は禁止しない(Xで言う「セルフ
+  // リツイート」に近い扱い。通知だけは自分宛てには作らない)。
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
 model Notification {
   id        String    @id @default(cuid())
-  // reaction | comment | follow
+  // reaction | comment | follow | repost
   type      String
   createdAt DateTime  @default(now())
   readAt    DateTime?

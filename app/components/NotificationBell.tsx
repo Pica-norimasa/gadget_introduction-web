@@ -20,6 +20,7 @@ function describe(n: NotificationView): string {
   const who = actorLabel(n);
   if (n.type === "follow") return `${who}にフォローされました`;
   if (n.type === "comment") return `${who}が「${n.projectTitle}」にコメントしました`;
+  if (n.type === "repost") return `${who}が「${n.projectTitle}」をリポストしました`;
   const meta = REACTION_META.find((m) => m.key === n.reactionType);
   return `${who}が「${n.projectTitle}」に${meta?.icon ?? ""}リアクションしました`;
 }

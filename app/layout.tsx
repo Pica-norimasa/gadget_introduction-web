@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { getFollowedAuthors } from "@/app/lib/queries";
+import { getFollowedAuthors, getRepostedProjectIds } from "@/app/lib/queries";
 import { FollowHydrator } from "@/app/components/FollowHydrator";
+import { RepostHydrator } from "@/app/components/RepostHydrator";
 
 export const metadata: Metadata = {
   // 本番ドメインが決まったらNEXT_PUBLIC_SITE_URLで上書きする。
@@ -13,12 +14,13 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const followedAuthors = await getFollowedAuthors();
+  const [followedAuthors, repostedProjectIds] = await Promise.all([getFollowedAuthors(), getRepostedProjectIds()]);
 
   return (
     <html lang="ja" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <FollowHydrator initial={followedAuthors} />
+        <RepostHydrator initial={repostedProjectIds} />
         {children}
       </body>
     </html>

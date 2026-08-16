@@ -11,6 +11,7 @@ import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { ReactionBar } from "./ReactionBar";
+import { RepostButton } from "./RepostButton";
 import { ShareButtons } from "./ShareButtons";
 import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
@@ -96,7 +97,10 @@ export function WorkDetail({
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
         <div className="mb-6 flex items-center justify-between">
-          <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
+            <RepostButton projectId={work.id} count={work.reposts} size="md" />
+          </div>
           <span className="font-mono text-[12px] text-[var(--ink-faint)]">
             👁️{formatCount(work.views)} · 💬{work.comments}
           </span>

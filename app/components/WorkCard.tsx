@@ -10,6 +10,7 @@ import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { ReactionBar } from "./ReactionBar";
+import { RepostButton } from "./RepostButton";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
@@ -122,8 +123,9 @@ export function WorkCard({
         )}
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
-          <div className="relative z-20">
+          <div className="relative z-20 flex flex-wrap items-center gap-1.5">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
+            <RepostButton projectId={work.id} count={work.reposts} />
           </div>
           <div className="flex items-center justify-end text-[12px] text-[var(--ink-faint)]">
             <span className="font-mono">

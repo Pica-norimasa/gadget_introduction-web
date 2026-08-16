@@ -1,4 +1,4 @@
-import { getMyReactions, getPosts, getRecentActivity, getWorks } from "@/app/lib/queries";
+import { getMyReactions, getPosts, getRecentActivity, getRecentReposts, getWorks } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposer } from "@/app/components/PostComposer";
@@ -10,12 +10,13 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
-  const [works, posts, myReactions, currentUser, activity] = await Promise.all([
+  const [works, posts, myReactions, currentUser, activity, reposts] = await Promise.all([
     getWorks(),
     getPosts(),
     getMyReactions(),
     getCurrentUser(),
     getRecentActivity(),
+    getRecentReposts(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -50,6 +51,7 @@ export default async function Home() {
             activity={activity}
             myProjects={myProjects}
             currentUserName={currentUser?.name ?? null}
+            reposts={reposts}
           />
         </div>
       </main>

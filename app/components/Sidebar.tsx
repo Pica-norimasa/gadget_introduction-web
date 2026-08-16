@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
-import type { ActivityView } from "@/app/lib/queries";
+import type { ActivityView, RepostView } from "@/app/lib/queries";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
 import { latestPostFor } from "@/app/lib/post-helpers";
@@ -44,6 +44,21 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
       </p>
       <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{post.body}</p>
     </a>
+  );
+}
+
+function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
+  return (
+    <Link href={`/work/${work.id}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+      <p className="text-[12px] text-[var(--ink-faint)]">
+        🔁 <span className="font-medium text-[var(--ink-soft)]">{repost.userName}</span>さんがリポスト ・{" "}
+        {formatRelativeHours(repost.hoursAgo)}
+      </p>
+      <p className="text-[13.5px] text-[var(--ink)]">
+        <span className="text-[var(--teal)]">{work.title}</span>
+      </p>
+      <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+    </Link>
   );
 }
 
@@ -94,6 +109,10 @@ function ActivityRow({ item }: { item: ActivityView }) {
   );
 }
 
+type FollowedFeedEntry =
+  | { kind: "post"; hoursAgo: number; post: Post; work: Work }
+  | { kind: "repost"; hoursAgo: number; repost: RepostView; work: Work };
+
 export function Sidebar({
   ranking,
   posts,
@@ -101,6 +120,7 @@ export function Sidebar({
   activity,
   myProjects,
   currentUserName,
+  reposts,
 }: {
   ranking: Work[];
   posts: Post[];
@@ -108,12 +128,27 @@ export function Sidebar({
   activity: ActivityView[];
   myProjects: Work[];
   currentUserName: string | null;
+  reposts: RepostView[];
 }) {
   const followedAuthors = useFollowedAuthors();
-  const followedPosts = posts
-    .map((post) => ({ post, work: works.find((w) => w.id === post.projectId) }))
-    .filter((entry): entry is { post: Post; work: Work } => !!entry.work && followedAuthors.has(entry.work.author))
-    .sort((a, b) => a.post.hoursAgo - b.post.hoursAgo)
+
+  // フォロー中の作者本人の投稿と、フォロー中の"誰か"がリポストした
+  // (作者自体はフォロー対象でなくてもよい)作品を時系列でマージする。
+  // これが「他人の投稿を自分のフォロワーに再配布する」実際の導線になる。
+  const followedFeed: FollowedFeedEntry[] = [
+    ...posts
+      .map((post) => ({ post, work: works.find((w) => w.id === post.projectId) }))
+      .filter((entry): entry is { post: Post; work: Work } => !!entry.work && followedAuthors.has(entry.work.author))
+      .map((entry): FollowedFeedEntry => ({ kind: "post", hoursAgo: entry.post.hoursAgo, ...entry })),
+    ...reposts
+      .map((repost) => ({ repost, work: works.find((w) => w.id === repost.projectId) }))
+      .filter(
+        (entry): entry is { repost: RepostView; work: Work } =>
+          !!entry.work && followedAuthors.has(entry.repost.userName),
+      )
+      .map((entry): FollowedFeedEntry => ({ kind: "repost", hoursAgo: entry.repost.hoursAgo, ...entry })),
+  ]
+    .sort((a, b) => a.hoursAgo - b.hoursAgo)
     .slice(0, 6);
 
   return (
@@ -181,15 +216,19 @@ export function Sidebar({
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
           フォロー中の創作活動
         </h3>
-        {followedPosts.length === 0 ? (
+        {followedFeed.length === 0 ? (
           <p className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
-            気になる作者をフォローすると、ここに投稿が届きます
+            気になる作者をフォローすると、ここに投稿やリポストが届きます
           </p>
         ) : (
           <div className="flex flex-col divide-y divide-[var(--line)]">
-            {followedPosts.map(({ post, work }) => (
-              <PostRow key={post.id} post={post} work={work} />
-            ))}
+            {followedFeed.map((entry) =>
+              entry.kind === "post" ? (
+                <PostRow key={`post-${entry.post.id}`} post={entry.post} work={entry.work} />
+              ) : (
+                <RepostRow key={`repost-${entry.repost.id}`} repost={entry.repost} work={entry.work} />
+              ),
+            )}
           </div>
         )}
       </div>

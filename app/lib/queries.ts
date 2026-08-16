@@ -3,7 +3,7 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
-export type NotificationType = "reaction" | "comment" | "follow";
+export type NotificationType = "reaction" | "comment" | "follow" | "repost";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -31,7 +31,7 @@ type ProjectWithAuthor = {
   reactionIdeaSeed: number;
   reactionWantToTrySeed: number;
   author: { name: string; followersSeed: number; _count: { followedBy: number } };
-  _count: { comments: number };
+  _count: { comments: number; reposts: number };
 };
 
 function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
@@ -57,6 +57,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
       wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
     },
     comments: project.commentsSeed + project._count.comments,
+    reposts: project._count.reposts,
     views: project.views,
     daysAgo: Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS)),
     trendScore: project.trendScore,
@@ -70,7 +71,7 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
   const [projects, reactionRows] = await Promise.all([
     prisma.project.findMany({
       where,
-      include: { author: authorInclude, _count: { select: { comments: true } } },
+      include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.reaction.groupBy({ by: ["projectId", "type"], _count: { _all: true } }),
@@ -137,7 +138,7 @@ export async function getWorkById(id: string): Promise<Work | null> {
   const [project, reactionRows] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
-      include: { author: authorInclude, _count: { select: { comments: true } } },
+      include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
     }),
     prisma.reaction.groupBy({ where: { projectId: id }, by: ["type"], _count: { _all: true } }),
   ]);
@@ -199,6 +200,32 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
     authorName: r.author.name,
     projectId: r.project?.id ?? null,
     projectTitle: r.project?.title ?? null,
+    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+  }));
+}
+
+export type RepostView = {
+  id: string;
+  userName: string;
+  projectId: string;
+  projectTitle: string;
+  hoursAgo: number;
+};
+
+// プラットフォーム全体の最新のリポスト。サイドバーの「フォロー中の創作活動」で
+// 通常の投稿と時系列でマージし、リポストしたユーザーがフォロー対象なら表示する
+// (=フォロワーへの再配布の仕組み)。
+export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
+  const rows = await prisma.repost.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { user: { select: { name: true } }, project: { select: { id: true, title: true } } },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    userName: r.user.name,
+    projectId: r.project.id,
+    projectTitle: r.project.title,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
 }
@@ -339,4 +366,17 @@ export async function getFollowedAuthors(): Promise<string[]> {
     include: { following: { select: { name: true } } },
   });
   return follows.map((f) => f.following.name);
+}
+
+// 自分がリポスト済みのProjectId一覧。app/layout.tsxがアプリ全体の
+// リポスト状態をクライアント側ストア(repost-store.ts)に初期反映するために使う。
+export async function getRepostedProjectIds(): Promise<string[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const reposts = await prisma.repost.findMany({
+    where: { userId: user.id },
+    select: { projectId: true },
+  });
+  return reposts.map((r) => r.projectId);
 }
