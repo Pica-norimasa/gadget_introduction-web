@@ -3,6 +3,7 @@ import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/li
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { CoverImage } from "./CoverImage";
 import { ExpandableText } from "./ExpandableText";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
@@ -67,7 +68,9 @@ export function WorkCard({
       </div>
 
       <div className="relative">
-        {!work.glyph && work.githubUrl ? (
+        {work.coverImageUrl ? (
+          <CoverImage src={work.coverImageUrl} size={size} />
+        ) : !work.glyph && work.githubUrl ? (
           <div className="relative z-20">
             <GitHubCard githubUrl={work.githubUrl} size={size} />
           </div>

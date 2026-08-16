@@ -4,6 +4,7 @@ import type { CommentView } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
+import { CoverImage } from "./CoverImage";
 import { DeleteCommentButton } from "./DeleteCommentButton";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
@@ -72,7 +73,9 @@ export function WorkDetail({
         </div>
 
         <div className="mb-4">
-          {!work.glyph && work.githubUrl ? (
+          {work.coverImageUrl ? (
+            <CoverImage src={work.coverImageUrl} size="lg" />
+          ) : !work.glyph && work.githubUrl ? (
             <GitHubCard githubUrl={work.githubUrl} size="lg" />
           ) : work.glyph && work.hasMotion ? (
             <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />

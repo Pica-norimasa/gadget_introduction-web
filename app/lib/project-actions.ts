@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/session";
+import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { prisma } from "@/app/lib/prisma";
 import type { AiTool, Category, Platform, Stage } from "@/app/lib/mock-data";
 
@@ -36,6 +37,8 @@ export async function updateProject(
   const glyph = String(formData.get("glyph") ?? "").trim();
   const githubUrl = String(formData.get("githubUrl") ?? "").trim();
   const platforms = formData.getAll("platforms").map(String);
+  const coverImageFile = extractImageFile(formData, "image");
+  const removeCoverImage = formData.get("removeCoverImage") === "1";
 
   if (!projectId) return { error: "作品が見つかりません" };
   if (!title) return { error: "タイトルを入力してください" };
@@ -58,6 +61,19 @@ export async function updateProject(
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
   if (!project || project.authorId !== user.id) return { error: "権限がありません" };
 
+  // undefinedのままなら既存のcoverImageUrlに触れない。新規アップロードが
+  // あれば差し替え、明示的な削除(removeCoverImage)ならnullにする。
+  let coverImageUrl: string | null | undefined;
+  if (coverImageFile) {
+    try {
+      coverImageUrl = await saveUploadedImage(coverImageFile);
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+    }
+  } else if (removeCoverImage) {
+    coverImageUrl = null;
+  }
+
   await prisma.project.update({
     where: { id: projectId },
     data: {
@@ -69,6 +85,7 @@ export async function updateProject(
       glyph: glyph || null,
       githubUrl: githubUrl || null,
       platforms,
+      ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
     },
   });
 

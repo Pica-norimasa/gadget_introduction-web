@@ -30,6 +30,7 @@ export type Work = {
   authorId?: string;
   hue: number; // thumbnail accent hue, 0-360
   glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
+  coverImageUrl?: string; // アップロードされた実写真。あればglyph/hueより優先して表示
   githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する
   hasMotion?: boolean; // true = 動画/GIFを添付した投稿。ホバー/スクロール時にミュート再生風プレビューを見せる
   reactions: {

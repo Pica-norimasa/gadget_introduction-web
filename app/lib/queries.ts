@@ -18,6 +18,7 @@ type ProjectWithAuthor = {
   platforms: unknown;
   hue: number;
   glyph: string | null;
+  coverImageUrl: string | null;
   githubUrl: string | null;
   hasMotion: boolean;
   views: number;
@@ -46,6 +47,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
+    coverImageUrl: project.coverImageUrl ?? undefined,
     githubUrl: project.githubUrl ?? undefined,
     hasMotion: project.hasMotion,
     reactions: {

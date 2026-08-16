@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState, type ChangeEvent } from "react";
 import type { Work } from "@/app/lib/mock-data";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { updateProject, type UpdateProjectState } from "@/app/lib/project-actions";
+import { ImagePickerButton } from "./ImagePickerButton";
 
 const CATEGORIES = [
   "Webアプリ",
@@ -35,10 +36,37 @@ const labelClass = "text-[12px] font-medium text-[var(--ink-soft)]";
 
 export function ProjectEditForm({ work }: { work: Work }) {
   const [state, formAction, pending] = useActionState(updateProject, initialState);
+  const [imagePreview, setImagePreview] = useState<string | null>(work.coverImageUrl ?? null);
+  const [imageRemoved, setImageRemoved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImagePreview(URL.createObjectURL(file));
+    setImageRemoved(false);
+  }
+
+  function clearImage() {
+    setImagePreview(null);
+    setImageRemoved(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} encType="multipart/form-data" className="flex flex-col gap-4">
       <input type="hidden" name="projectId" value={work.id} />
+      <input type="hidden" name="removeCoverImage" value={imageRemoved ? "1" : ""} />
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>カバー画像(空欄可)</span>
+        <ImagePickerButton
+          fileInputRef={fileInputRef}
+          preview={imagePreview}
+          onChange={handleImageChange}
+          onClear={clearImage}
+        />
+      </label>
 
       <label className="flex flex-col gap-1">
         <span className={labelClass}>タイトル</span>

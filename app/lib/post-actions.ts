@@ -67,6 +67,7 @@ export async function createPost(
         stage: initialStageFor(type),
         platforms: ["Web"],
         hue: Math.floor(Math.random() * 360),
+        coverImageUrl: imageUrl,
         authorId: author.id,
       },
     });

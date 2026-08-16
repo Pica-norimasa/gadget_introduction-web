@@ -6,6 +6,7 @@ import type { ActivityView } from "@/app/lib/queries";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
 import { latestPostFor } from "@/app/lib/post-helpers";
+import { CoverImage } from "./CoverImage";
 import { WorkThumb } from "./WorkThumb";
 
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
@@ -16,7 +17,11 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
     >
       <span className="w-5 shrink-0 font-mono text-sm font-bold text-[var(--ink-faint)]">{rank}</span>
       <div className="w-10 shrink-0">
-        <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+        {work.coverImageUrl ? (
+          <CoverImage src={work.coverImageUrl} compact />
+        ) : (
+          <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{work.title}</p>
@@ -50,7 +55,11 @@ function MyProjectRow({ work, posts }: { work: Work; posts: Post[] }) {
       className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]"
     >
       <div className="w-10 shrink-0">
-        <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+        {work.coverImageUrl ? (
+          <CoverImage src={work.coverImageUrl} compact />
+        ) : (
+          <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{work.title}</p>

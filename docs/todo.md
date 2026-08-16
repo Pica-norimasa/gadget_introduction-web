@@ -305,6 +305,26 @@
     あるシグナルなので、新規のサーバー問い合わせは不要だった。
     ブラウザで実際にsoraをフォロー→「あなたへ」の先頭にsoraの作品が
     来ることを確認、フォロー解除で元の並びに戻ることも確認した。
+20. ~~サムネイルが絵文字ベースでビジュアルが弱い~~ → 実装済み。UI/UX
+    比較レビューの指摘通り、`WorkThumb`は色相+絵文字のプレースホルダー
+    しか持たず、実写真を貼れなかった。`Project.coverImageUrl String?`を
+    追加(migration: `20260816102158_add_project_cover_image`)、
+    設定されていれば`GitHubCard`/`MotionThumb`/`WorkThumb`より優先して
+    `CoverImage.tsx`(実画像を`object-cover`で表示、`compact`/`size`
+    バリアントはWorkThumbと同じ考え方)を表示する。設定経路は2つ:
+    (1)投稿コンポーザーで新規プロジェクト作成時に画像を添付すると、
+    その画像がそのまま初期カバーになる(`post-actions.ts`)。
+    (2)作品編集ページ(`ProjectEditForm.tsx`)に`ImagePickerButton`を
+    追加し、後から設定・差し替え・削除できる。削除は「アップロード
+    無し」と区別する必要があるため、`removeCoverImage`という隠し
+    フィールドを別途持たせている(`project-actions.ts`の`updateProject`:
+    新規アップロードがあれば差し替え、`removeCoverImage=1`ならnullに、
+    どちらも無ければ既存値に触れない)。`WorkCard`・`WorkDetail`・
+    `Sidebar`(週間ランキング・自分の創作物のcompactサムネイル)の
+    3箇所に反映。OGP画像(`opengraph-image.tsx`)はまだ絵文字のままで
+    未対応(Satoriでの画像URL解決が別途必要になるため、今回はスコープ
+    外)。ブラウザで実際に画像付き投稿→カード/詳細ページへの反映、
+    編集ページでの削除→プレースホルダーへの復帰まで確認した。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

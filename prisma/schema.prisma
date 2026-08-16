@@ -53,6 +53,9 @@ model Project {
   platforms   Json // Platform[]をそのまま格納(例: ["Web","iOS"])
   hue         Int
   glyph       String?
+  // アップロードされた実写真/スクリーンショット。設定されていればglyph/hue
+  // ベースのプレースホルダーより優先して表示する。
+  coverImageUrl String?
   githubUrl   String?
   hasMotion   Boolean  @default(false)
   views       Int      @default(0)
