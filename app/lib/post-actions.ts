@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { randomUUID } from "node:crypto";
+import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
@@ -87,6 +89,29 @@ export async function createPost(
       projectId,
     },
   });
+
+  if (projectId) {
+    // 制作タイムラインの投稿者は常にそのProjectの作者と同一(冒頭の
+    // コメント参照)なので、projectAuthorIdはauthor.idでよい。応援コメント
+    // 生成はレスポンスをブロックしたくない(将来LLM APIに差し替えたときの
+    // レイテンシを考慮)ので、after()でレスポンス送信後に実行する。
+    const targetProjectId = projectId;
+    const projectAuthorId = author.id;
+    after(async () => {
+      try {
+        await postAiEncouragementComment({
+          projectId: targetProjectId,
+          projectAuthorId,
+          postType: type,
+          hasBody: Boolean(body),
+          hasImage: Boolean(imageUrl),
+        });
+        revalidatePath(`/work/${targetProjectId}`);
+      } catch (e) {
+        console.error("AI応援コメントの投稿に失敗しました", e);
+      }
+    });
+  }
 
   revalidatePath("/");
   if (projectId) revalidatePath(`/work/${projectId}`);

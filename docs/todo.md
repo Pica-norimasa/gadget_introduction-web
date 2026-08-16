@@ -235,6 +235,23 @@
     ハンドルとして使うとXの@handleのような「基本は変わらない識別子」
     という性質に合わない。実装するなら、User作成時に別途
     `handle`(変更不可、または変更頻度を制限)を持たせる形になる。
+15. ~~制作タイムライン投稿にAIが応援コメントを自動でつける~~ →
+    実装済み。ただし本物のLLM呼び出しではなく、投稿の種別(アイデア/
+    制作中/デモ/リリース等)と本文・画像の有無だけを見て定型文プールから
+    ランダムに1件選ぶテンプレート実装(`app/lib/ai-comment.ts`の
+    `generateEncouragementComment()`)。将来的に実際のLLM API呼び出しに
+    差し替える前提で、この関数のシグネチャ(入力=投稿の意味的特徴のみ、
+    出力=Promise<string>)だけで呼び出し側と分離してある。コメントの
+    投稿者は`app/lib/ai-user.ts`の`getAiUser()`が`name`のuniqueを
+    利用してupsertする固定User(`きざしAI`、sessionId無し=mock由来の
+    シードUserと同じ扱い)。トリガーは`app/lib/post-actions.ts`の
+    `createPost`内、Projectに紐づくPost(=タイムライン投稿。新規
+    プロジェクト作成の最初の投稿も含む)が作られたときで、`next/server`の
+    `after()`でレスポンス送信後に実行している(将来LLM API呼び出しに
+    差し替えたときのレイテンシで投稿自体を遅くしないため)。生成した
+    コメントは通常のコメント投稿と同様`Notification`(type: "comment")
+    も作るので、通知ベルにも「きざしAIさんがコメントしました」として出る。
+    **未着手**: 実際のLLM API呼び出しへの差し替え(要APIキー)。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—
