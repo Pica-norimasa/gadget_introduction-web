@@ -72,11 +72,12 @@ export function FeedSection({
     return sorted.filter((w) => w.platforms.some((p) => platformFilter.has(p)));
   }, [sorted, platformFilter]);
 
-  // モックデータは有限なので、無限スクロールらしさを出すために
-  // シャッフルした複製を繰り返し継ぎ足す(実プロダクトではページングAPIに置き換える)。
+  // 1周目はタブのソート順(急上昇/新着/あなたへ)をそのまま見せる。
+  // 件数が有限なので無限スクロールらしさを出すために2周目以降だけ
+  // シャッフルした複製を継ぎ足す(実プロダクトではページングAPIに置き換える)。
   const feed = useMemo(() => {
     if (visible.length === 0) return [];
-    const list: Work[] = [];
+    const list: Work[] = [...visible];
     while (list.length < MAX_ITEMS) {
       list.push(...(mounted ? shuffled(visible) : visible));
     }
