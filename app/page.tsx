@@ -9,6 +9,7 @@ import {
   getSuggestedAuthors,
   getWorks,
 } from "@/app/lib/queries";
+import Link from "next/link";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposerToggle } from "@/app/components/PostComposerToggle";
@@ -87,7 +88,15 @@ export default async function Home() {
       </main>
 
       <footer className="border-t border-[var(--line)] px-4 py-8 text-center text-[12px] text-[var(--ink-faint)] sm:px-6">
-        Draftly — アイデアを、育てながら見せる場所。開発中のプロトタイプです。
+        <p>Draftly — アイデアを、育てながら見せる場所。開発中のプロトタイプです。</p>
+        <p className="mt-2 flex items-center justify-center gap-3">
+          <Link href="/terms" className="hover:text-[var(--ink-soft)] hover:underline">
+            利用規約
+          </Link>
+          <Link href="/privacy" className="hover:text-[var(--ink-soft)] hover:underline">
+            プライバシーポリシー
+          </Link>
+        </p>
       </footer>
 
       <DiceButton works={works} />
