@@ -312,5 +312,10 @@ model Report {
   reportedUserId String?
   reportedUser   User?   @relation("ReportsReceived", fields: [reportedUserId], references: [id])
 
+  // 対応済みにした日時。null=未対応。誰が対応したかまでは記録しない
+  // (ADMIN_KEYは個人を識別しない共有の合言葉のため、Notification.readAt
+  // と同じ「いつ」だけを持つ単純な方式)。
+  resolvedAt DateTime?
+
   @@index([targetType])
 }

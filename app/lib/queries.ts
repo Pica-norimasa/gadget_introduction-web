@@ -766,6 +766,7 @@ export type AdminReportView = {
   detail: string | null;
   reporterName: string;
   createdAt: Date;
+  resolvedAt: Date | null;
   target:
     | { kind: "project"; id: string; title: string }
     | { kind: "comment"; id: string; body: string; projectId: string | null; postId: string | null }
@@ -815,6 +816,7 @@ export async function getAllReports(): Promise<AdminReportView[]> {
       detail: r.detail,
       reporterName: r.reporter.name,
       createdAt: r.createdAt,
+      resolvedAt: r.resolvedAt,
       target,
     };
   });

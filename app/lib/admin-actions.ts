@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE } from "@/app/lib/admin-cookie";
+import { isAdminAuthed } from "@/app/lib/admin-auth";
+import { prisma } from "@/app/lib/prisma";
 
 export type AdminLoginState = { error?: string };
 
@@ -29,5 +31,21 @@ export async function adminLogin(
 
 export async function adminLogout(): Promise<void> {
   (await cookies()).delete(ADMIN_COOKIE);
+  revalidatePath("/admin/reports");
+}
+
+// 対応済み⇔未対応をトグルする。isAdminAuthed()はCookie経由なので、この
+// Server Action自体もページと同じゲートで守る(未ログインなら何もしない)。
+export async function toggleReportResolved(reportId: string): Promise<void> {
+  if (!(await isAdminAuthed())) return;
+
+  const report = await prisma.report.findUnique({ where: { id: reportId }, select: { resolvedAt: true } });
+  if (!report) return;
+
+  await prisma.report.update({
+    where: { id: reportId },
+    data: { resolvedAt: report.resolvedAt ? null : new Date() },
+  });
+
   revalidatePath("/admin/reports");
 }
