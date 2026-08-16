@@ -7,11 +7,21 @@ import { formatRelativeHours } from "@/app/lib/format";
 import type { NotificationView } from "@/app/lib/queries";
 import { markNotificationsRead } from "@/app/lib/notification-actions";
 
+// "Aさん" / "Aさん、Bさん" / "Aさん、Bさん他5人" のように、まとめた
+// 通知の主語部分を組み立てる。
+function actorLabel(n: NotificationView): string {
+  const [first, second] = n.actorNames;
+  if (n.actorCount <= 1) return `${first}さん`;
+  if (n.actorCount === 2) return `${first}さん、${second}さん`;
+  return `${first}さん、${second}さん他${n.actorCount - 2}人`;
+}
+
 function describe(n: NotificationView): string {
-  if (n.type === "follow") return `${n.actorName}さんにフォローされました`;
-  if (n.type === "comment") return `${n.actorName}さんが「${n.projectTitle}」にコメントしました`;
+  const who = actorLabel(n);
+  if (n.type === "follow") return `${who}にフォローされました`;
+  if (n.type === "comment") return `${who}が「${n.projectTitle}」にコメントしました`;
   const meta = REACTION_META.find((m) => m.key === n.reactionType);
-  return `${n.actorName}さんが「${n.projectTitle}」に${meta?.icon ?? ""}リアクションしました`;
+  return `${who}が「${n.projectTitle}」に${meta?.icon ?? ""}リアクションしました`;
 }
 
 export function NotificationBell({

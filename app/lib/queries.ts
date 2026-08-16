@@ -261,42 +261,71 @@ export async function getCommentsForProject(projectId: string): Promise<CommentV
 export type NotificationView = {
   id: string;
   type: NotificationType;
-  actorName: string;
+  // 同じ対象への通知をまとめた「Aさん、Bさん他5人が...」形式の表示用。
+  // 重複除去済み、最新順。
+  actorNames: string[];
+  actorCount: number;
   projectId: string | null;
   projectTitle: string | null;
   reactionType: ReactionKey | null;
   hoursAgo: number;
+  // グループ内の行が1件でも未読ならfalse(未読扱い)。
   read: boolean;
 };
 
-// 通知ベル用。最新20件のリストと未読件数をまとめて返す。
+// 種別+対象Project+リアクション種別が同じ通知は1件にまとめる
+// (X/Instagramの「Aさん、Bさん他5人がいいねしました」と同じ考え方)。
+// フォロー通知はprojectId/reactionTypeを持たないため種別だけでまとまる。
+function notificationGroupKey(r: { type: string; projectId: string | null; reactionType: string | null }): string {
+  return `${r.type}:${r.projectId ?? ""}:${r.reactionType ?? ""}`;
+}
+
+// 通知ベル用。グループ化した最新20件のリストと、未読グループ数を返す。
 export async function getNotificationData(): Promise<{ notifications: NotificationView[]; unreadCount: number }> {
   const user = await getCurrentUser();
   if (!user) return { notifications: [], unreadCount: 0 };
 
-  const [rows, unreadCount] = await Promise.all([
-    prisma.notification.findMany({
-      where: { recipientId: user.id },
-      include: { actor: { select: { name: true } }, project: { select: { id: true, title: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    }),
-    prisma.notification.count({ where: { recipientId: user.id, readAt: null } }),
-  ]);
+  // グループ化すると表示件数が縮むため、元データは20件よりだいぶ多めに取る。
+  const rows = await prisma.notification.findMany({
+    where: { recipientId: user.id },
+    include: { actor: { select: { name: true } }, project: { select: { id: true, title: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
-  return {
-    notifications: rows.map((r) => ({
-      id: r.id,
-      type: r.type as NotificationType,
-      actorName: r.actor.name,
-      projectId: r.project?.id ?? null,
-      projectTitle: r.project?.title ?? null,
-      reactionType: r.reactionType as ReactionKey | null,
-      hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
-      read: r.readAt !== null,
-    })),
-    unreadCount,
-  };
+  const groups = new Map<string, typeof rows>();
+  const order: string[] = [];
+  for (const r of rows) {
+    const key = notificationGroupKey(r);
+    const existing = groups.get(key);
+    if (existing) {
+      existing.push(r);
+    } else {
+      groups.set(key, [r]);
+      order.push(key);
+    }
+  }
+
+  const notifications: NotificationView[] = order.slice(0, 20).map((key) => {
+    const group = groups.get(key)!;
+    const latest = group[0];
+    const actorNames = [...new Set(group.map((r) => r.actor.name))];
+    return {
+      id: latest.id,
+      type: latest.type as NotificationType,
+      actorNames,
+      actorCount: actorNames.length,
+      projectId: latest.project?.id ?? null,
+      projectTitle: latest.project?.title ?? null,
+      reactionType: latest.reactionType as ReactionKey | null,
+      hoursAgo: Math.max(0, Math.round((Date.now() - latest.createdAt.getTime()) / HOUR_MS)),
+      read: group.every((r) => r.readAt !== null),
+    };
+  });
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  return { notifications, unreadCount };
 }
 
 // 自分がフォロー中の作者名一覧。app/layout.tsxがアプリ全体のフォロー
