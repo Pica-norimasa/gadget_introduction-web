@@ -370,6 +370,53 @@ export async function getFollowedAuthors(): Promise<string[]> {
   return follows.map((f) => f.following.name);
 }
 
+export type SuggestedAuthor = {
+  id: string;
+  name: string;
+  bio: string | null;
+  followers: number;
+  topWork: { id: string; title: string; glyph: string | null; hue: number; coverImageUrl: string | null } | null;
+};
+
+// サイドバー「おすすめの作者」向け。フォロー導線が無いと新規ユーザーは
+// フォロー0のまま孤立し、パーソナライズやリポスト拡散(あなたへタブ、
+// フォロー中の創作活動)が機能しないため、フォロー起点をここで作る。
+// 本物のレコメンドの代わりに、まだフォローしていない/自分以外で、
+// 作品を1つ以上投稿しているUserをフォロワー数順に並べるだけの簡易実装。
+// Draftly AI(コメント専用でProjectを持たない)はprojects: { some: {} }
+// の条件だけで自然に除外される。
+export async function getSuggestedAuthors(limit = 5): Promise<SuggestedAuthor[]> {
+  const currentUser = await getCurrentUser();
+
+  const following = currentUser
+    ? await prisma.follow.findMany({ where: { followerId: currentUser.id }, select: { followingId: true } })
+    : [];
+  const excludeIds = [...following.map((f) => f.followingId), ...(currentUser ? [currentUser.id] : [])];
+
+  const users = await prisma.user.findMany({
+    where: { id: { notIn: excludeIds }, projects: { some: {} } },
+    include: {
+      _count: { select: { followedBy: true } },
+      projects: {
+        orderBy: { trendScore: "desc" },
+        take: 1,
+        select: { id: true, title: true, glyph: true, hue: true, coverImageUrl: true },
+      },
+    },
+  });
+
+  return users
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      bio: u.bio,
+      followers: u.followersSeed + u._count.followedBy,
+      topWork: u.projects[0] ?? null,
+    }))
+    .sort((a, b) => b.followers - a.followers)
+    .slice(0, limit);
+}
+
 // 自分がリポスト済みのProjectId一覧。app/layout.tsxがアプリ全体の
 // リポスト状態をクライアント側ストア(repost-store.ts)に初期反映するために使う。
 export async function getRepostedProjectIds(): Promise<string[]> {

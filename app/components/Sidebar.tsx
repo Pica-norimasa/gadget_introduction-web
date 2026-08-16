@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
-import type { ActivityView, RepostView } from "@/app/lib/queries";
+import type { ActivityView, RepostView, SuggestedAuthor } from "@/app/lib/queries";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
 import { latestPostFor } from "@/app/lib/post-helpers";
+import { AuthorAvatar } from "./AuthorAvatar";
 import { CoverImage } from "./CoverImage";
+import { FollowButton } from "./FollowButton";
 import { WorkThumb } from "./WorkThumb";
 
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
@@ -64,6 +66,23 @@ function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
         <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
       )}
     </Link>
+  );
+}
+
+function SuggestedAuthorRow({ author }: { author: SuggestedAuthor }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
+      <Link href={`/u/${encodeURIComponent(author.name)}`} className="flex min-w-0 flex-1 items-center gap-2">
+        <AuthorAvatar name={author.name} size={32} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{author.name}</p>
+          <p className="truncate text-[12px] text-[var(--ink-faint)]">
+            {author.bio || (author.topWork ? author.topWork.title : `フォロワー${author.followers}`)}
+          </p>
+        </div>
+      </Link>
+      <FollowButton author={author.name} />
+    </div>
   );
 }
 
@@ -126,6 +145,7 @@ export function Sidebar({
   myProjects,
   currentUserName,
   reposts,
+  suggestedAuthors,
 }: {
   ranking: Work[];
   posts: Post[];
@@ -134,6 +154,7 @@ export function Sidebar({
   myProjects: Work[];
   currentUserName: string | null;
   reposts: RepostView[];
+  suggestedAuthors: SuggestedAuthor[];
 }) {
   const followedAuthors = useFollowedAuthors();
 
@@ -212,6 +233,19 @@ export function Sidebar({
           <div className="flex flex-col divide-y divide-[var(--line)]">
             {activity.map((item) => (
               <ActivityRow key={item.id} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {suggestedAuthors.length > 0 && (
+        <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+          <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+            おすすめの作者
+          </h3>
+          <div className="flex flex-col gap-0.5">
+            {suggestedAuthors.map((author) => (
+              <SuggestedAuthorRow key={author.id} author={author} />
             ))}
           </div>
         </div>
