@@ -42,12 +42,20 @@ export function WorkDetail({
             ← 発見に戻る
           </Link>
           {work.authorId === currentUserId && (
-            <Link
-              href={`/work/${work.id}/edit`}
-              className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] hover:text-[var(--ink)]"
-            >
-              ✎ 編集する
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/guide"
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] hover:text-[var(--ink)]"
+              >
+                使い方を見る
+              </Link>
+              <Link
+                href={`/work/${work.id}/edit`}
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] hover:text-[var(--ink)]"
+              >
+                ✎ 編集する
+              </Link>
+            </div>
           )}
         </div>
 

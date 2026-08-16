@@ -112,12 +112,17 @@ export function Sidebar({
           自分の創作物
         </h3>
         {myProjects.length === 0 ? (
-          <p className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
-            まだ作品がありません。
-            <Link href="/#composer" className="text-[var(--accent)] underline decoration-dotted">
-              投稿してみましょう
-            </Link>
-          </p>
+          <div className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
+            <p className="mb-1.5">まだ作品がありません。</p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <Link href="/#composer" className="text-[var(--accent)] underline decoration-dotted">
+                投稿してみる
+              </Link>
+              <Link href="/guide" className="text-[var(--accent)] underline decoration-dotted">
+                使い方を見る
+              </Link>
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col gap-0.5">
             {myProjects.map((w) => (
