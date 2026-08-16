@@ -51,6 +51,7 @@ export default async function Home() {
             posts={posts}
             myReactions={myReactions}
             currentUserId={currentUser?.id ?? null}
+            reposts={reposts}
           />
           <Sidebar
             ranking={rankingWorks}
