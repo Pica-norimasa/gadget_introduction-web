@@ -11,7 +11,12 @@ const initialState: CreatePostState = {};
 export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
-  const [projectTarget, setProjectTarget] = useState("new");
+  // 投稿のたびに「新しいプロジェクトとして」を選び直す必要があると、
+  // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
+  // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
+  // 直近のものを既定にして、「書くだけで投稿できる」を最短動線にする。
+  const defaultProjectTarget = myProjects.length > 0 ? myProjects[0].id : "new";
+  const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,7 +41,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
     if (state.success) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
       setBody("");
-      setProjectTarget("new");
+      setProjectTarget(defaultProjectTarget);
       formRef.current?.reset();
       clearImage();
 
@@ -51,7 +56,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
         });
       }
     }
-  }, [state.success, state.projectId]);
+  }, [state.success, state.projectId, defaultProjectTarget]);
 
   const trimmed = body.trim();
   const guessedType = inferPostType(body);
@@ -82,6 +87,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           />
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-[11px] text-[var(--ink-faint)]">投稿先</span>
           <select
             name="projectTarget"
             value={projectTarget}
