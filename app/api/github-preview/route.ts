@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// TODO(AWS+MySQL移行時): 今は毎回このRoute Handlerがライブでgithub.comを叩く
-// 構成なので、無認証だと60req/hourの壁に当たりやすい。バックエンドを持ったら
-// 詳細は docs/todo.md を参照。
+// GITHUB_TOKEN(.env)が設定されていれば認証付きリクエストになり、
+// レート制限が無認証の60req/hourから5,000req/hourに上がる
+// (publicリポジトリのメタデータ取得だけなのでスコープ無しのPATで良い)。
+// 未設定でも動く(無認証のまま)ようフォールバックしている。
 const GITHUB_REPO_URL = /^https?:\/\/github\.com\/([^/\s]+)\/([^/\s]+?)\/?$/;
 
 export async function GET(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Accept: "application/vnd.github+json",
         "User-Agent": "kizashi-app",
+        ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
       },
       next: { revalidate: 3600 },
     });
