@@ -22,16 +22,17 @@ export function IdentityBadge({ name }: { name: string | null }) {
         type="button"
         onClick={() => setEditing(true)}
         title="表示名を変更"
-        className="hidden items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:flex"
+        className="flex items-center gap-1.5 rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
       >
         <span aria-hidden>👤</span>
-        {name ?? "ゲスト"}
+        {/* モバイル幅ではアイコンだけにして、ヘッダーの横幅を圧迫しないようにする */}
+        <span className="hidden sm:inline">{name ?? "ゲスト"}</span>
       </button>
     );
   }
 
   return (
-    <form action={formAction} className="hidden items-center gap-1.5 sm:flex">
+    <form action={formAction} className="flex items-center gap-1.5">
       <input
         type="text"
         name="name"
@@ -39,7 +40,7 @@ export function IdentityBadge({ name }: { name: string | null }) {
         maxLength={20}
         autoFocus
         placeholder="表示名"
-        className="w-28 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3 py-1.5 text-[13px] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)]"
+        className="w-24 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3 py-1.5 text-[13px] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] sm:w-28"
       />
       <button
         type="submit"

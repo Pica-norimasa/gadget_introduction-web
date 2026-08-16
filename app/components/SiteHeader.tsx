@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { IdentityBadge } from "./IdentityBadge";
+import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
 
 export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
@@ -9,7 +10,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
-      <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
+      <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
         <a href="#" className="flex items-center gap-2 shrink-0">
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent)] text-[15px] text-[var(--accent-ink)]">
             芽
@@ -42,6 +43,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           >
             ランキング
           </a>
+          <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           <IdentityBadge name={user?.name ?? null} />
           <Link
