@@ -91,12 +91,14 @@ export function Sidebar({
   works,
   activity,
   myProjects,
+  currentUserName,
 }: {
   ranking: Work[];
   posts: Post[];
   works: Work[];
   activity: ActivityView[];
   myProjects: Work[];
+  currentUserName: string | null;
 }) {
   const followedAuthors = useFollowedAuthors();
   const followedPosts = posts
@@ -108,9 +110,19 @@ export function Sidebar({
   return (
     <aside className="flex flex-col gap-6">
       <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
-        <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-          自分の創作物
-        </h3>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h3 className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+            自分の創作物
+          </h3>
+          {currentUserName && (
+            <Link
+              href={`/u/${encodeURIComponent(currentUserName)}`}
+              className="shrink-0 text-[12px] text-[var(--accent)] hover:underline"
+            >
+              プロフィールを見る
+            </Link>
+          )}
+        </div>
         {myProjects.length === 0 ? (
           <div className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
             <p className="mb-1.5">まだ作品がありません。</p>

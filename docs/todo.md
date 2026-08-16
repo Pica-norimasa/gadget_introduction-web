@@ -283,6 +283,15 @@
     Clientをメモリに保持したままだったため`Unknown argument bio`
     エラーになった。プロセス再起動で解消(`prisma generate`後は
     実行中のdev serverの再起動が必要、というのを覚えておく)。
+18. ~~トップページから自分のプロフィールへの入り口が無い~~ →
+    実装済み。プロフィールページ自体(項目16)は作ったが、辿り着けるのは
+    「自分の投稿した作品カードの中の自分の名前」経由だけで、未投稿だと
+    その経路も無かった。サイドバーの「自分の創作物」見出しの右に
+    「プロフィールを見る」リンクを追加(`Sidebar`に`currentUserName`を
+    新規propとして渡し、`/u/${encodeURIComponent(currentUserName)}`
+    へ)。User行がまだ無い(一度も投稿・リアクション・フォローしていない)
+    訪問者にはリンク自体を出さない(そのプロフィールページはまだ
+    存在しないため)。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

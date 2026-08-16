@@ -49,6 +49,7 @@ export default async function Home() {
             works={works}
             activity={activity}
             myProjects={myProjects}
+            currentUserName={currentUser?.name ?? null}
           />
         </div>
       </main>
