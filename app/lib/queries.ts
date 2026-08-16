@@ -213,13 +213,18 @@ export type ActivityView = {
   hoursAgo: number;
 };
 
-// プラットフォーム全体の最新の投稿(孤立したPostも含む)。サイドバーの
-// 「最新の創作活動」向け。プロジェクト単位のタイムラインではないので
-// getPosts()(projectId必須)とは別に、全件を対象にする。
+// プロジェクトに紐づく投稿限定。サイドバーの「最新の創作活動」向け。
+// 孤立したPost(単独の投稿)は専用の枠(MurmurStrip、
+// getRecentStandalonePosts())に役割を移したため、ここでは除外する
+// (以前はここに一緒に出していたが、サイドバーの奥に埋もれて目立たない
+// という指摘を受けて分離した)。
 export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.post.findMany({
-    where: excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined,
+    where: {
+      projectId: { not: null },
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: limit,
     include: { author: { select: { name: true } }, project: { select: { id: true, title: true } } },
@@ -231,6 +236,37 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
     authorName: r.author.name,
     projectId: r.project?.id ?? null,
     projectTitle: r.project?.title ?? null,
+    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+  }));
+}
+
+export type StandalonePostView = {
+  id: string;
+  authorName: string;
+  body: string;
+  imageUrl?: string;
+  hoursAgo: number;
+};
+
+// プロジェクトに紐付けない「気軽な単独投稿」限定。トップページの
+// MurmurStrip向け。以前はサイドバーの「最新の創作活動」に他の投稿と
+// 一緒に埋もれていたため、専用の目立つ枠に切り出した。
+export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePostView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const rows = await prisma.post.findMany({
+    where: {
+      projectId: null,
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { author: { select: { name: true } } },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    authorName: r.author.name,
+    body: r.body,
+    imageUrl: r.imageUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
 }

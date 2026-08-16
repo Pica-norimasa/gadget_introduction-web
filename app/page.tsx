@@ -3,6 +3,7 @@ import {
   getPosts,
   getRecentActivity,
   getRecentReposts,
+  getRecentStandalonePosts,
   getSuggestedAuthors,
   getWorks,
 } from "@/app/lib/queries";
@@ -12,20 +13,23 @@ import { PostComposer } from "@/app/components/PostComposer";
 import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { ImmersiveEntry } from "@/app/components/ImmersiveEntry";
 import { HeroRail } from "@/app/components/HeroRail";
+import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
-  const [works, posts, myReactions, currentUser, activity, reposts, suggestedAuthors] = await Promise.all([
-    getWorks(),
-    getPosts(),
-    getMyReactions(),
-    getCurrentUser(),
-    getRecentActivity(),
-    getRecentReposts(),
-    getSuggestedAuthors(),
-  ]);
+  const [works, posts, myReactions, currentUser, activity, reposts, suggestedAuthors, standalonePosts] =
+    await Promise.all([
+      getWorks(),
+      getPosts(),
+      getMyReactions(),
+      getCurrentUser(),
+      getRecentActivity(),
+      getRecentReposts(),
+      getSuggestedAuthors(),
+      getRecentStandalonePosts(),
+    ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
   const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
@@ -44,6 +48,7 @@ export default async function Home() {
           myReactions={myReactions}
           currentUserId={currentUser?.id ?? null}
         />
+        <MurmurStrip posts={standalonePosts} />
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
           <FeedSection
