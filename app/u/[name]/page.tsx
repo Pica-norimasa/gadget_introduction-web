@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlockedUsers, getMutedUsers, getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
@@ -45,6 +46,13 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← 発見に戻る
+        </Link>
+
         <div className="mb-8 flex items-start gap-3">
           <AuthorAvatar name={profile.name} size={56} />
           <div className="min-w-0 flex-1">

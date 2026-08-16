@@ -11,14 +11,14 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
       <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
-        <a href="#" className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent)] text-[15px] text-[var(--accent-ink)]">
             芽
           </span>
           <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
             Draftly
           </span>
-        </a>
+        </Link>
 
         <form action="/search" method="GET" className="relative hidden flex-1 max-w-md sm:block">
           <input
@@ -31,18 +31,18 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
         </form>
 
         <nav className="ml-auto flex items-center gap-2 sm:gap-3">
-          <a
-            href="#feed"
+          <Link
+            href="/#feed"
             className="hidden rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
           >
             発見する
-          </a>
-          <a
-            href="#ranking"
+          </Link>
+          <Link
+            href="/#ranking"
             className="hidden rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
           >
             ランキング
-          </a>
+          </Link>
           <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           <IdentityBadge name={user?.name ?? null} />
