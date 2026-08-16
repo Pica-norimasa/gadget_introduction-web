@@ -8,6 +8,7 @@ import {
   getWorks,
   incrementViews,
 } from "@/app/lib/queries";
+import { getCurrentUser } from "@/app/lib/session";
 import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
@@ -51,10 +52,11 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const [posts, myReactions, comments] = await Promise.all([
+  const [posts, myReactions, comments, currentUser] = await Promise.all([
     getPosts(),
     getMyReactionsForProject(work.id),
     getCommentsForProject(work.id),
+    getCurrentUser(),
     incrementViews(work.id),
   ]);
   const timeline = postsForProject(work.id, posts);
@@ -66,6 +68,7 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
       timeline={timeline}
       myReactions={myReactions}
       comments={comments}
+      currentUserId={currentUser?.id ?? null}
     />
   );
 }

@@ -152,6 +152,7 @@ export async function getMyReactionsForProject(projectId: string): Promise<React
 export type CommentView = {
   id: string;
   body: string;
+  authorId: string;
   authorName: string;
   hoursAgo: number;
 };
@@ -165,6 +166,7 @@ export async function getCommentsForProject(projectId: string): Promise<CommentV
   return rows.map((r) => ({
     id: r.id,
     body: r.body,
+    authorId: r.authorId,
     authorName: r.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));

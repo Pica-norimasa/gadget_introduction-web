@@ -4,6 +4,7 @@ import type { CommentView } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
+import { DeleteCommentButton } from "./DeleteCommentButton";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
@@ -20,11 +21,13 @@ export function WorkDetail({
   timeline,
   myReactions,
   comments,
+  currentUserId,
 }: {
   work: Work;
   timeline: Post[];
   myReactions: ReactionKey[];
   comments: CommentView[];
+  currentUserId: string | null;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -107,10 +110,13 @@ export function WorkDetail({
             ) : (
               comments.map((c) => (
                 <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
-                  <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
-                    <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
-                    {formatRelativeHours(c.hoursAgo)}
-                  </p>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-[12px] text-[var(--ink-faint)]">
+                      <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
+                      {formatRelativeHours(c.hoursAgo)}
+                    </p>
+                    {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
+                  </div>
                   <p className="text-[14px] leading-relaxed text-[var(--ink)]">{c.body}</p>
                 </div>
               ))

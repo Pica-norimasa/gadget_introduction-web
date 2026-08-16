@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getOrCreateCurrentUser } from "@/app/lib/session";
+import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { prisma } from "@/app/lib/prisma";
 
 export type CreateCommentState = { error?: string; success?: boolean };
@@ -30,4 +30,21 @@ export async function createComment(
   // カード側の💬件数表示もこの投稿数を含むため、フィードも合わせて無効化する。
   revalidatePath("/");
   return { success: true };
+}
+
+// 自分のコメントはいつでも削除できる(Xと同様、時間制限は設けない)。
+export async function deleteComment(commentId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { authorId: true, projectId: true },
+  });
+  if (!comment || comment.authorId !== user.id) return;
+
+  await prisma.comment.delete({ where: { id: commentId } });
+
+  revalidatePath(`/work/${comment.projectId}`);
+  revalidatePath("/");
 }
