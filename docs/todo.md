@@ -717,6 +717,21 @@
     カードの💬件数がコメント追加後に1へ更新、(4)既存のプロジェクトへ
     のコメント(`/work/[id]`)が今回のポリモーフィック化後も
     リグレッション無く動作すること、をすべて確認した。
+39. ~~対応環境にUnity・Unreal Engineが無い~~ → 実装済み。「使った
+    ツール」(`AiTool`、Claude/Gemini/Bolt等)ではなく、ユーザーの
+    要望通り「対応環境」(`Platform`、Web/iOS/Android/Windows/macOS/
+    Linux/拡張機能)側への追加を選択(Unity/Unrealは慣習的には
+    「制作に使うエンジン」寄りだが、UI上の見出し「対応環境」の文言と
+    より一致するため)。`Platform`型(`mock-data.ts`)にUnity/Unreal
+    Engineを追加、`PLATFORM_META`/`PLATFORM_ORDER`
+    (`platform-meta.ts`)にアイコン(🎮/🕹️)付きで追加、
+    `project-actions.ts`の`PLATFORMS`検証配列にも追加。`platforms`は
+    Prisma上ただの`Json`カラム(DBレベルのenum制約は無し)なので
+    マイグレーション不要。ブラウザで、(1)トップページの「対応環境」
+    フィルタにUnity/Unreal Engineが正しいアイコンで表示されクリックで
+    トグルできること、(2)作品編集フォームのチェックボックスにも両方が
+    表示されること、(3)実際にUnityにチェックを入れて保存→作品詳細
+    ページのバッジに🎮が反映されること、を確認した。lint/build clean。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

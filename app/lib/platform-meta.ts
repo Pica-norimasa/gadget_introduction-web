@@ -8,6 +8,8 @@ export const PLATFORM_META: Record<Platform, { label: string; icon: string }> = 
   Linux: { label: "Linux", icon: "🐧" },
   Web: { label: "Web", icon: "🌐" },
   拡張機能: { label: "拡張機能", icon: "🧩" },
+  Unity: { label: "Unity", icon: "🎮" },
+  "Unreal Engine": { label: "Unreal Engine", icon: "🕹️" },
 };
 
 export const PLATFORM_ORDER: Platform[] = [
@@ -18,4 +20,6 @@ export const PLATFORM_ORDER: Platform[] = [
   "macOS",
   "Linux",
   "拡張機能",
+  "Unity",
+  "Unreal Engine",
 ];

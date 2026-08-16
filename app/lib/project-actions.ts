@@ -21,7 +21,17 @@ const CATEGORIES: Category[] = [
 ];
 const STAGES: Stage[] = ["アイデア", "プロトタイプ", "ベータ", "公開中"];
 const TOOLS: Exclude<AiTool, null>[] = ["Claude", "ChatGPT", "Gemini", "Bolt", "v0", "Cursor", "self"];
-const PLATFORMS: Platform[] = ["iOS", "Android", "Windows", "macOS", "Linux", "Web", "拡張機能"];
+const PLATFORMS: Platform[] = [
+  "iOS",
+  "Android",
+  "Windows",
+  "macOS",
+  "Linux",
+  "Web",
+  "拡張機能",
+  "Unity",
+  "Unreal Engine",
+];
 
 export async function updateProject(
   _prevState: UpdateProjectState,

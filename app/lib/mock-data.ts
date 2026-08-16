@@ -14,7 +14,16 @@ export type Category =
 
 // 対応プラットフォーム。自由記述タグではなく固定語彙にして、
 // 表記ゆれなしにフィルタできるようにする。
-export type Platform = "iOS" | "Android" | "Windows" | "macOS" | "Linux" | "Web" | "拡張機能";
+export type Platform =
+  | "iOS"
+  | "Android"
+  | "Windows"
+  | "macOS"
+  | "Linux"
+  | "Web"
+  | "拡張機能"
+  | "Unity"
+  | "Unreal Engine";
 
 export type Work = {
   id: string;
