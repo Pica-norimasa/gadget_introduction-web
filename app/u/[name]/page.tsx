@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
+import { getBlockedUsers, getMutedUsers, getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { BioEditor } from "@/app/components/BioEditor";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
+import { MutedBlockedList } from "@/app/components/MutedBlockedList";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
 
@@ -32,6 +33,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
   ]);
   if (!profile) notFound();
   const isOwnProfile = profile.id === currentUser?.id;
+
+  // ミュート/ブロック中一覧は「自分の」状態を返すクエリなので、他人の
+  // プロフィールを見ているときに取得しても意味が無い(表示もしない)。
+  const [mutedUsers, blockedUsers] = isOwnProfile
+    ? await Promise.all([getMutedUsers(), getBlockedUsers()])
+    : [[], []];
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -87,6 +94,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             ))}
           </div>
         )}
+
+        {isOwnProfile && <MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
       </main>
     </div>
   );

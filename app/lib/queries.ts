@@ -490,3 +490,34 @@ export async function getBlockedUserIds(): Promise<string[]> {
   const blocks = await prisma.block.findMany({ where: { blockerId: user.id }, select: { blockedId: true } });
   return blocks.map((b) => b.blockedId);
 }
+
+export type UserRef = { id: string; name: string };
+
+// 自分がミュート中のUser(id+表示名)一覧。プロフィールページの
+// 「ミュート中」セクション向け(上のgetMutedUserIdsはidだけの軽量版で
+// 用途が違う)。
+export async function getMutedUsers(): Promise<UserRef[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const mutes = await prisma.mute.findMany({
+    where: { muterId: user.id },
+    include: { muted: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return mutes.map((m) => m.muted);
+}
+
+// 自分がブロック中のUser(id+表示名)一覧。プロフィールページの
+// 「ブロック中」セクション向け。
+export async function getBlockedUsers(): Promise<UserRef[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const blocks = await prisma.block.findMany({
+    where: { blockerId: user.id },
+    include: { blocked: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  return blocks.map((b) => b.blocked);
+}
