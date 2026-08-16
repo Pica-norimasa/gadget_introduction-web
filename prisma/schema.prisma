@@ -75,7 +75,7 @@ model Project {
   // 種類ごとに数百件のダミー行を作る必要が出るため、シード時点ではこの起点カウント
   // (+ 実際のReaction行数)を合算して表示する設計にしている。
   commentsSeed            Int @default(0)
-  reactionInterestingSeed Int @default(0)
+  reactionLikeSeed        Int @default(0)
   reactionUsefulSeed      Int @default(0)
   reactionIdeaSeed        Int @default(0)
   reactionWantToTrySeed   Int @default(0)
@@ -117,13 +117,16 @@ model Post {
 
 model Reaction {
   id        String   @id @default(cuid())
-  // interesting | useful | idea | wantToTry (Project向け) | like (Post向け)
+  // like | useful | idea | wantToTry (Project向け) | like (Post向け、こちらは常にlike固定)
   type      String
   createdAt DateTime @default(now())
 
   // projectIdとpostIdはどちらか一方だけが埋まる(Commentと同じポリモーフィック
   // パターン。単独投稿への「いいね」を可能にするため)。Post向けはtypeが
   // 常に"like"の1種類のみ(Xのハートアイコンと同じ単純な二値トグル)。
+  // Project向けも元は"interesting"(😲面白い)だったが、ハート系の
+  // 汎用リアクションと意味が重複していたため"like"(❤️いいね)に統合した
+  // (履歴データはマイグレーションでtype変換済み)。
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id])
   postId    String?

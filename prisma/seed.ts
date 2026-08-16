@@ -42,7 +42,7 @@ async function main() {
         trendScore: w.trendScore,
         createdAt: new Date(Date.now() - w.daysAgo * 24 * 60 * 60 * 1000),
         commentsSeed: w.comments,
-        reactionInterestingSeed: w.reactions.interesting,
+        reactionLikeSeed: w.reactions.like,
         reactionUsefulSeed: w.reactions.useful,
         reactionIdeaSeed: w.reactions.idea,
         reactionWantToTrySeed: w.reactions.wantToTry,

@@ -761,6 +761,29 @@
     削除すること、(4)本人以外への通知が正しいpostId・文言で作られる
     こと、(5)既存のProjectリアクション(ReactionBar)に
     リグレッションが無いこと、をすべて確認した。lint/build clean。
+41. ~~通常のProject投稿にもハートのいいねが欲しい/4種リアクションの
+    使い分けが分かりにくい~~ → 実装済み。ユーザーに確認したところ、
+    4種のうち😲「面白い」がハートの「いいね」と意味が近く重複する
+    ので、削除してハートに置き換えることを選択(😲🛠️💡🙋の4種→
+    ❤️🛠️💡🙋の4種、種類数は変えず中身だけ差し替え)。`Reaction.type`の
+    "interesting"を"like"に、`REACTION_META`の😲面白いを❤️いいねに
+    改名。`Project.reactionInterestingSeed`カラムも`reactionLikeSeed`に
+    リネーム。**データ移行に注意を払った点**: 単純に
+    `prisma migrate dev`で列名変更すると非対話環境では「列を削除して
+    新規追加」というdestructiveな移行になり、20件の起点カウントデータが
+    消える警告が出た。対話プロンプトが必要なリネーム検出に頼らず、
+    手動でマイグレーションファイルを作成
+    (`ALTER TABLE "Project" RENAME COLUMN ...`により列の中身を保持した
+    ままリネーム)、あわせて既存の`Reaction`行(type="interesting")と
+    `Notification`行(reactionType="interesting")も同じマイグレーション
+    内でtype="like"へUPDATEし、ユーザーの過去のリアクション履歴が
+    「ハートのいいねだったこと」として引き継がれるようにした
+    (`prisma db execute`で実行後、`prisma migrate resolve --applied`で
+    履歴に記録)。ブラウザで、(1)作品詳細ページ・フィードカード両方で
+    ❤️アイコン+従来通りのカウントが表示されること(起点カウントの
+    保持を確認)、(2)実際にトグルして正しく動作すること、(3)通知が
+    正しいtype/reactionTypeで作られること、を確認した後、テスト用に
+    作成した通知・Reaction行は削除して原状回復した。lint/build clean。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—

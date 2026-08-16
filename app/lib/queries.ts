@@ -41,7 +41,7 @@ type ProjectWithAuthor = {
   createdAt: Date;
   authorId: string;
   commentsSeed: number;
-  reactionInterestingSeed: number;
+  reactionLikeSeed: number;
   reactionUsefulSeed: number;
   reactionIdeaSeed: number;
   reactionWantToTrySeed: number;
@@ -66,7 +66,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     githubUrl: project.githubUrl ?? undefined,
     hasMotion: project.hasMotion,
     reactions: {
-      interesting: project.reactionInterestingSeed + (realReactionCounts?.interesting ?? 0),
+      like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
       useful: project.reactionUsefulSeed + (realReactionCounts?.useful ?? 0),
       idea: project.reactionIdeaSeed + (realReactionCounts?.idea ?? 0),
       wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
