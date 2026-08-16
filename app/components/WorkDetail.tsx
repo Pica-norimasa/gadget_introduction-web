@@ -61,11 +61,13 @@ export function WorkDetail({
         </div>
 
         <div className="mb-4 flex items-center gap-2">
-          <AuthorAvatar name={work.author} size={36} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-semibold text-[var(--ink)]">{work.author}</p>
-            <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
-          </div>
+          <Link href={`/u/${encodeURIComponent(work.author)}`} className="flex min-w-0 flex-1 items-center gap-2">
+            <AuthorAvatar name={work.author} size={36} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">{work.author}</p>
+              <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
+            </div>
+          </Link>
           {work.authorId !== currentUserId && <FollowButton author={work.author} size="md" />}
         </div>
 
@@ -143,12 +145,19 @@ export function WorkDetail({
               comments.map((c) => (
                 <div key={c.id} className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
                   <div className="flex items-start gap-2">
-                    <AuthorAvatar name={c.authorName} size={28} />
+                    <Link href={`/u/${encodeURIComponent(c.authorName)}`} className="shrink-0">
+                      <AuthorAvatar name={c.authorName} size={28} />
+                    </Link>
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex items-center justify-between gap-2">
                         <p className="text-[12px] text-[var(--ink-faint)]">
-                          <span className="font-medium text-[var(--ink-soft)]">{c.authorName}</span> ・{" "}
-                          {formatRelativeHours(c.hoursAgo)}
+                          <Link
+                            href={`/u/${encodeURIComponent(c.authorName)}`}
+                            className="font-medium text-[var(--ink-soft)] hover:underline"
+                          >
+                            {c.authorName}
+                          </Link>{" "}
+                          ・ {formatRelativeHours(c.hoursAgo)}
                         </p>
                         {c.authorId === currentUserId && <DeleteCommentButton commentId={c.id} />}
                       </div>

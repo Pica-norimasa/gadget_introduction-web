@@ -100,6 +100,35 @@ export async function searchWorks(query: string): Promise<Work[]> {
   });
 }
 
+export type UserProfile = {
+  id: string;
+  name: string;
+  followers: number;
+  following: number;
+  works: Work[];
+};
+
+// ユーザープロフィールページ(/u/[name])向け。フォロワー数はProject.author
+// と同じくfollowersSeed+実Follow数、フォロー中はシードを持たないので実
+// Follow数のみ。
+export async function getUserProfile(name: string): Promise<UserProfile | null> {
+  const user = await prisma.user.findUnique({
+    where: { name },
+    include: { _count: { select: { followedBy: true, following: true } } },
+  });
+  if (!user) return null;
+
+  const works = await getWorksWhere({ authorId: user.id });
+
+  return {
+    id: user.id,
+    name: user.name,
+    followers: user.followersSeed + user._count.followedBy,
+    following: user._count.following,
+    works,
+  };
+}
+
 export async function getWorkById(id: string): Promise<Work | null> {
   const [project, reactionRows] = await Promise.all([
     prisma.project.findUnique({

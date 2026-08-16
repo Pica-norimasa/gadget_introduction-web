@@ -49,11 +49,16 @@ export function WorkCard({
       <Link href={`/work/${work.id}`} aria-label={work.title} className="absolute inset-0 z-10" />
 
       <div className="mb-2 flex items-center gap-2">
-        <AuthorAvatar name={work.author} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-[var(--ink)]">{work.author}</p>
-          <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
-        </div>
+        <Link
+          href={`/u/${encodeURIComponent(work.author)}`}
+          className="relative z-20 flex min-w-0 flex-1 items-center gap-2"
+        >
+          <AuthorAvatar name={work.author} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">{work.author}</p>
+            <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
+          </div>
+        </Link>
         {work.authorId !== currentUserId && (
           <div className="relative z-20">
             <FollowButton author={work.author} />

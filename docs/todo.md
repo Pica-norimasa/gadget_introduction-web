@@ -252,6 +252,23 @@
     コメントは通常のコメント投稿と同様`Notification`(type: "comment")
     も作るので、通知ベルにも「Draftly AIさんがコメントしました」として出る。
     **未着手**: 実際のLLM API呼び出しへの差し替え(要APIキー)。
+16. ~~ユーザーフォローがプロダクト単位に見える~~ → 実装済み。実は
+    `Follow`モデルは元々User⇄User(フォローすると相手の今後の全
+    プロジェクトがサイドバーの「フォロー中の創作活動」に流れる)だった
+    が、フォロー結果を確認できる場所(プロフィールページ)が無く、
+    フォローボタンも各作品カードの中にしか出てこないため、プロダクト
+    単位のフォローに見えていた。Xのユーザーページに相当する
+    `/u/[name]`(`app/u/[name]/page.tsx`)を新設し、アバター・
+    フォロワー数/フォロー中の数・その人が投稿した全プロジェクト
+    (`getUserProfile()`、`getWorksWhere({ authorId })`を再利用)・
+    フォローボタンを表示。`User.name`は既にAuthor識別に使われている
+    ため(`toggleFollowAction(authorName)`等)そのままURLパラメータに
+    採用、日本語名は`encodeURIComponent`/`decodeURIComponent`で
+    往復させている。既存の作者名/アバター(`WorkCard`のカード内、
+    `WorkDetail`の作者行、`WorkDetail`のコメント行)からこのページへの
+    リンクを追加。**未着手**: サイドバーの活動ログや通知ベルの投稿者名、
+    `StoriesStrip`のストーリー内の作者名はまだリンクしていない(同じ
+    パターンで機械的に追加できるはずだが、今回のスコープからは外した)。
 
 このMac(macOS 13 Ventura / Intel)では:
 - **Docker Desktopが起動しない**(`kLSIncompatibleSystemVersionErr`—
