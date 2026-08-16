@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import type { ReactionKey } from "@/app/lib/mock-data";
+import { isBlockedBy } from "@/app/lib/queries";
 import { prisma } from "@/app/lib/prisma";
 
 // トグル: 既に押していれば取り消し、押していなければReaction行を作る。
@@ -15,12 +16,17 @@ export async function toggleReaction(projectId: string, type: ReactionKey) {
   });
 
   if (existing) {
+    // 既に押している分の取り消しは、ブロックされていても許可する(相手に
+    // ブロックされる前の自分の行動を後から縛る必要は無い)。
     await prisma.reaction.delete({ where: { id: existing.id } });
   } else {
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+    if (!project) return;
+    if (await isBlockedBy(project.authorId, user.id)) return;
+
     await prisma.reaction.create({ data: { projectId, userId: user.id, type } });
 
-    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
-    if (project && project.authorId !== user.id) {
+    if (project.authorId !== user.id) {
       await prisma.notification.create({
         data: { type: "reaction", recipientId: project.authorId, actorId: user.id, projectId, reactionType: type },
       });
@@ -43,10 +49,13 @@ export async function toggleLike(postId: string) {
   if (existing) {
     await prisma.reaction.delete({ where: { id: existing.id } });
   } else {
+    const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+    if (!post) return;
+    if (await isBlockedBy(post.authorId, user.id)) return;
+
     await prisma.reaction.create({ data: { postId, userId: user.id, type: "like" } });
 
-    const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
-    if (post && post.authorId !== user.id) {
+    if (post.authorId !== user.id) {
       await prisma.notification.create({
         data: { type: "reaction", recipientId: post.authorId, actorId: user.id, postId, reactionType: "like" },
       });

@@ -721,6 +721,29 @@ export async function getBlockedUserIds(): Promise<string[]> {
   return blocks.map((b) => b.blockedId);
 }
 
+// authorId(コンテンツの作者)がuserId(書き込もうとしている人)を
+// ブロックしているかどうか。既存のミュート/ブロックは「自分の画面から
+// 相手を消す」だけで、相手が実際に書き込むこと自体は防げていなかった
+// ため、コメント/リアクション/リポストの各Server Actionから書き込み
+// 自体を拒否するために使う共通チェック。
+export async function isBlockedBy(authorId: string, userId: string): Promise<boolean> {
+  if (authorId === userId) return false;
+  const block = await prisma.block.findUnique({
+    where: { blockerId_blockedId: { blockerId: authorId, blockedId: userId } },
+  });
+  return block !== null;
+}
+
+// ページ表示時、「今見ている人」がこのコンテンツの作者にブロックされて
+// いるかどうか。コメント欄・リアクション・リポストのUI自体を出すか
+// どうかの判定に使う(サーバー側の拒否と対になる、先回りで無駄な操作を
+// させないためのもの)。
+export async function isBlockedByAuthor(authorId: string): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  return isBlockedBy(authorId, user.id);
+}
+
 export type UserRef = { id: string; name: string };
 
 // 自分がミュート中のUser(id+表示名)一覧。プロフィールページの

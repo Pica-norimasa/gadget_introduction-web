@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
+import { isBlockedBy } from "@/app/lib/queries";
 import { prisma } from "@/app/lib/prisma";
 
 async function notifyRepost(projectId: string, actorId: string) {
@@ -26,6 +27,10 @@ export async function toggleRepost(projectId: string) {
   if (existing) {
     await prisma.repost.delete({ where: { id: existing.id } });
   } else {
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+    if (!project) return;
+    if (await isBlockedBy(project.authorId, user.id)) return;
+
     await prisma.repost.create({ data: { userId: user.id, projectId } });
     await notifyRepost(projectId, user.id);
   }
@@ -54,6 +59,14 @@ export async function quoteRepost(
   const existing = await prisma.repost.findUnique({
     where: { userId_projectId: { userId: user.id, projectId } },
   });
+
+  // 新規リポストだけブロックの対象にする(既存の引用コメントの書き直しは
+  // ブロックされる前からの自分の行動なので縛らない)。
+  if (!existing) {
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+    if (!project) return { error: "作品が見つかりません" };
+    if (await isBlockedBy(project.authorId, user.id)) return { error: "このリポストはできません" };
+  }
 
   await prisma.repost.upsert({
     where: { userId_projectId: { userId: user.id, projectId } },

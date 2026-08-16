@@ -9,6 +9,7 @@ import {
   getPosts,
   getWorkById,
   incrementViews,
+  isBlockedByAuthor,
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { postsForProject } from "@/app/lib/post-helpers";
@@ -54,15 +55,17 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const [posts, myReactions, comments, currentUser, inspiredItems, inspiredMyReactions] = await Promise.all([
-    getPosts(),
-    getMyReactionsForProject(work.id),
-    getCommentsForProject(work.id),
-    getCurrentUser(),
-    getInspiredByProject(work.id),
-    getMyReactions(),
-    incrementViews(work.id),
-  ]);
+  const [posts, myReactions, comments, currentUser, inspiredItems, inspiredMyReactions, blockedByAuthor] =
+    await Promise.all([
+      getPosts(),
+      getMyReactionsForProject(work.id),
+      getCommentsForProject(work.id),
+      getCurrentUser(),
+      getInspiredByProject(work.id),
+      getMyReactions(),
+      isBlockedByAuthor(work.authorId ?? ""),
+      incrementViews(work.id),
+    ]);
   const timeline = postsForProject(work.id, posts);
 
   // 今の訪問分をその場で足す(再取得はしない)。実際のDB値は次の読み込みから反映される。
@@ -76,6 +79,7 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
       inspiredItems={inspiredItems}
       posts={posts}
       inspiredMyReactions={inspiredMyReactions}
+      blockedByAuthor={blockedByAuthor}
     />
   );
 }

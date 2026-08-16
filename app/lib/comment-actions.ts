@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { isBlockedBy } from "@/app/lib/queries";
 import { prisma } from "@/app/lib/prisma";
 
 export type CreateCommentState = { error?: string; success?: boolean };
@@ -41,6 +42,15 @@ export async function createComment(
     recipientId = post.authorId;
   }
 
+  const author = await getOrCreateCurrentUser();
+
+  // ミュート/ブロックは今まで「自分の画面から相手を消す」だけで、相手が
+  // 実際に書き込むこと自体は防げていなかった。ブロックされている側からの
+  // 新規コメントはここで拒否する。
+  if (await isBlockedBy(recipientId, author.id)) {
+    return { error: "この投稿にはコメントできません" };
+  }
+
   // 返信先(あれば)は今回のtarget(project/post)と同じスレッドに属して
   // いる場合のみ信用する(改ざん対策)。「返信への返信」はUIがボタンを
   // 出さないだけで、データ上は弾いていない(親を辿らせる複雑さを避ける
@@ -66,8 +76,6 @@ export async function createComment(
       return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
     }
   }
-
-  const author = await getOrCreateCurrentUser();
 
   await prisma.comment.create({
     data: { projectId, postId, parentId, body, imageUrl, authorId: author.id },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCommentsForPost, getMyLikeForPost, getPostById } from "@/app/lib/queries";
+import { getCommentsForPost, getMyLikeForPost, getPostById, isBlockedByAuthor } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
@@ -33,7 +33,10 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   ]);
   if (!post) notFound();
 
-  const liked = await getMyLikeForPost(post.id);
+  const [liked, blockedByAuthor] = await Promise.all([
+    getMyLikeForPost(post.id),
+    isBlockedByAuthor(post.authorId),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -90,7 +93,13 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         )}
 
         <div className="mb-6">
-          <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+          {blockedByAuthor ? (
+            <span className="text-[12px] text-[var(--ink-faint)]">
+              この投稿の作者にブロックされているため、反応できません
+            </span>
+          ) : (
+            <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+          )}
         </div>
 
         <div className="mb-6">
@@ -111,7 +120,13 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               ))
             )}
           </div>
-          <CommentForm target={{ type: "post", id: post.id }} />
+          {blockedByAuthor ? (
+            <p className="text-[13px] text-[var(--ink-faint)]">
+              この投稿の作者にブロックされているため、コメントできません
+            </p>
+          ) : (
+            <CommentForm target={{ type: "post", id: post.id }} />
+          )}
         </div>
       </main>
     </div>

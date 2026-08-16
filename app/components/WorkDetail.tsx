@@ -30,6 +30,7 @@ export function WorkDetail({
   inspiredItems,
   posts,
   inspiredMyReactions,
+  blockedByAuthor,
 }: {
   work: Work;
   timeline: Post[];
@@ -41,6 +42,10 @@ export function WorkDetail({
   // そのまま再利用するために必要な、フィードと同じ形の付随データ。
   posts: Post[];
   inspiredMyReactions: Record<string, ReactionKey[]>;
+  // 作者に自分がブロックされているかどうか。trueならリアクション/
+  // リポスト/コメントのUIを出さない(サーバー側でも別途拒否している、
+  // これは無駄な操作を先回りで防ぐためのもの)。
+  blockedByAuthor: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -132,8 +137,16 @@ export function WorkDetail({
 
         <div className="mb-6 flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
-            <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
-            <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+            {blockedByAuthor ? (
+              <span className="text-[12px] text-[var(--ink-faint)]">
+                この作品の作者にブロックされているため、反応できません
+              </span>
+            ) : (
+              <>
+                <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
+                <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+              </>
+            )}
             <Link
               href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
               className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
@@ -199,7 +212,13 @@ export function WorkDetail({
               ))
             )}
           </div>
-          <CommentForm target={{ type: "project", id: work.id }} />
+          {blockedByAuthor ? (
+            <p className="text-[13px] text-[var(--ink-faint)]">
+              この作品の作者にブロックされているため、コメントできません
+            </p>
+          ) : (
+            <CommentForm target={{ type: "project", id: work.id }} />
+          )}
         </div>
 
         <div className="mb-6">
