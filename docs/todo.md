@@ -1077,6 +1077,29 @@
     (2)新規Projectの1本目のタイムライン投稿でも同様に編集→反映を
     確認、をそれぞれ行った後、テスト用の投稿・Projectは削除して
     原状回復した。lint/build clean。
+55. ~~GITHUBカードにREADME・contributorsの情報も載せたい/背景のせいで
+    GitHubの情報っぽく見えない~~ → 実装済み。`app/api/github-preview/
+    route.ts`で、既存のリポジトリメタデータ取得に加えて`/readme`
+    (Markdown生データ)と`/contributors`(Linkヘッダーの`rel="last"`
+    ページ番号から総数だけを取得する定番の手口、一覧を全件取得しない)
+    を`Promise.allSettled`で並行取得。GitHub側の`description`が
+    未設定のリポジトリは意外と多いため、その場合だけREADME冒頭から
+    簡易Markdown除去(コードフェンス・画像・リンク・見出し記号等を
+    正規表現で剥がすだけの雑なパーサ)で代わりの説明文を作る
+    (`description ?? readmeExcerpt`)。README/contributors取得の失敗は
+    リポジトリ本体の表示を妨げない(独立して失敗できる設計)。
+    `GitHubCard.tsx`には⭐の隣に👥(contributors数)を追加。あわせて、
+    見た目がGitHubの情報だと分かりにくいという指摘を受け、GitHub公式
+    Octicon"mark-github"のパスを埋め込んだ小さなロゴ+「GITHUB」
+    ラベルをカード上部に追加(色のトーン(#161b22というGitHubの
+    ダーク配色そのもの)だけでは、単なる暗い箱にしか見えていなかった
+    ため、背景色に依存しない明示的なブランディングにした)。ブラウザで、
+    (1)`/api/github-preview`を直接叩いてcontributorsCountが正しい
+    数字で返ること、(2)description未設定のリポジトリ
+    (`Pica-norimasa/game_assetbundle`)で実際にREADME由来の説明文が
+    返ること、(3)作品詳細ページの主要サムネイル版・画像下の
+    「リポジトリ」小型版どちらでもGitHubロゴ+ラベル+👥人数が正しく
+    表示されることを確認した。lint/build clean。
 
 **開発環境の注意点(このセッション中に発生した実例)**: `next dev`を
 長時間動かしたまま`npm run build`を何度も実行すると、両方が同じ
