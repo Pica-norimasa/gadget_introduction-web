@@ -5,7 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { REACTION_META } from "@/app/lib/mock-data";
 import { formatRelativeHours } from "@/app/lib/format";
 import type { NotificationView } from "@/app/lib/queries";
-import { markNotificationsRead } from "@/app/lib/notification-actions";
+import { fetchNotificationData, markNotificationsRead } from "@/app/lib/notification-actions";
+
+// X/Instagramの通知バッジのような即時性を、WebSocketを持ち込まずに
+// ポーリングだけで近似する。タブがバックグラウンドの間は無駄打ちしない
+// よう、Page Visibility APIで見えている時だけ叩く。
+const POLL_MS = 15000;
 
 // "Aさん" / "Aさん、Bさん" / "Aさん、Bさん他5人" のように、まとめた
 // 通知の主語部分を組み立てる。各名前は個別にプロフィールへリンクする
@@ -75,6 +80,7 @@ export function NotificationBell({
   unreadCount: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [localNotifications, setLocalNotifications] = useState(notifications);
   const [localUnread, setLocalUnread] = useState(unreadCount);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -96,6 +102,20 @@ export function NotificationBell({
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
+  // マウント中(=このページを開いている間)ずっとポーリングし続ける。
+  // ドロワーを閉じていてもバッジの数字が更新されるのが狙いなので、
+  // openの有無に関わらず動かし続ける。
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void fetchNotificationData().then((data) => {
+        setLocalNotifications(data.notifications);
+        setLocalUnread(data.unreadCount);
+      });
+    }, POLL_MS);
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -114,11 +134,11 @@ export function NotificationBell({
 
       {open && (
         <div className="absolute right-0 top-11 z-40 max-h-96 w-80 overflow-y-auto rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-2 shadow-[0_8px_24px_var(--shadow)]">
-          {notifications.length === 0 ? (
+          {localNotifications.length === 0 ? (
             <p className="p-4 text-center text-[13px] text-[var(--ink-faint)]">通知はまだありません</p>
           ) : (
             <ul className="flex flex-col gap-1">
-              {notifications.map((n) => (
+              {localNotifications.map((n) => (
                 <li key={n.id}>
                   <div
                     className={`rounded-xl px-3 py-2 text-[13px] leading-relaxed text-[var(--ink)] ${
