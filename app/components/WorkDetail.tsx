@@ -101,8 +101,7 @@ export function WorkDetail({
           <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
             コメント({comments.length})
           </h2>
-          <CommentForm projectId={work.id} />
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mb-4 flex flex-col gap-3">
             {comments.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
             ) : (
@@ -117,6 +116,7 @@ export function WorkDetail({
               ))
             )}
           </div>
+          <CommentForm projectId={work.id} />
         </div>
 
         <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
