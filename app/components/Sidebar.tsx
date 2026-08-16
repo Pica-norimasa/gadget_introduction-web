@@ -11,61 +11,81 @@ import { CoverImage } from "./CoverImage";
 import { FollowButton } from "./FollowButton";
 import { WorkThumb } from "./WorkThumb";
 
+// 行全体をワークへのリンクにしていたところに作者名リンクを混ぜると
+// <a>のネスト(不正なHTML)になるため、「作品へのリンク」と「作者への
+// リンク」を兄弟要素として分ける形に統一している(以下のPostRow/
+// RepostRow/ActivityRowも同じ理由)。
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
   return (
-    <a
-      href={`#work-${work.id}`}
-      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]"
-    >
+    <div className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
       <span className="w-5 shrink-0 font-mono text-sm font-bold text-[var(--ink-faint)]">{rank}</span>
-      <div className="w-10 shrink-0">
+      <a href={`#work-${work.id}`} className="w-10 shrink-0">
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} compact />
         ) : (
           <WorkThumb hue={work.hue} glyph={work.glyph} compact />
         )}
-      </div>
+      </a>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{work.title}</p>
-        <p className="truncate text-[12px] text-[var(--ink-faint)]">{work.author}</p>
+        <a href={`#work-${work.id}`} className="block truncate text-[13.5px] font-medium text-[var(--ink)] hover:underline">
+          {work.title}
+        </a>
+        <Link
+          href={`/u/${encodeURIComponent(work.author)}`}
+          className="block truncate text-[12px] text-[var(--ink-faint)] hover:underline"
+        >
+          {work.author}
+        </Link>
       </div>
-    </a>
+    </div>
   );
 }
 
 function PostRow({ post, work }: { post: Post; work: Work }) {
   return (
-    <a href={`#work-${post.projectId}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
-        <span className="font-medium text-[var(--ink-soft)]">{work.author}</span> ・{" "}
-        {POST_TYPE_META[post.type].icon}
+        <Link href={`/u/${encodeURIComponent(work.author)}`} className="font-medium text-[var(--ink-soft)] hover:underline">
+          {work.author}
+        </Link>{" "}
+        ・ {POST_TYPE_META[post.type].icon}
         {formatRelativeHours(post.hoursAgo)}・{POST_TYPE_META[post.type].label}
       </p>
-      <p className="text-[13.5px] text-[var(--ink)]">
-        <span className="text-[var(--teal)]">{work.title}</span>
-      </p>
-      <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{post.body}</p>
-    </a>
+      <a href={`#work-${post.projectId}`} className="block">
+        <p className="text-[13.5px] text-[var(--ink)]">
+          <span className="text-[var(--teal)]">{work.title}</span>
+        </p>
+        <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{post.body}</p>
+      </a>
+    </div>
   );
 }
 
 function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
   return (
-    <Link href={`/work/${work.id}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
-        🔁 <span className="font-medium text-[var(--ink-soft)]">{repost.userName}</span>さんが
-        {repost.comment ? "引用リポスト" : "リポスト"} ・ {formatRelativeHours(repost.hoursAgo)}
+        🔁{" "}
+        <Link
+          href={`/u/${encodeURIComponent(repost.userName)}`}
+          className="font-medium text-[var(--ink-soft)] hover:underline"
+        >
+          {repost.userName}
+        </Link>
+        さんが{repost.comment ? "引用リポスト" : "リポスト"} ・ {formatRelativeHours(repost.hoursAgo)}
       </p>
-      {repost.comment && (
-        <p className="line-clamp-2 text-[13px] leading-relaxed text-[var(--ink)]">{repost.comment}</p>
-      )}
-      <p className="text-[13.5px] text-[var(--ink)]">
-        <span className="text-[var(--teal)]">{work.title}</span>
-      </p>
-      {!repost.comment && (
-        <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
-      )}
-    </Link>
+      <Link href={`/work/${work.id}`} className="block">
+        {repost.comment && (
+          <p className="line-clamp-2 text-[13px] leading-relaxed text-[var(--ink)]">{repost.comment}</p>
+        )}
+        <p className="text-[13.5px] text-[var(--ink)]">
+          <span className="text-[var(--teal)]">{work.title}</span>
+        </p>
+        {!repost.comment && (
+          <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+        )}
+      </Link>
+    </div>
   );
 }
 
@@ -113,23 +133,42 @@ function MyProjectRow({ work, posts }: { work: Work; posts: Post[] }) {
 
 function ActivityRow({ item }: { item: ActivityView }) {
   const meta = POST_TYPE_META[item.type];
-  const body = (
+  const rest = (
     <>
-      <p className="text-[12px] text-[var(--ink-faint)]">
-        <span className="font-medium text-[var(--ink-soft)]">{item.authorName}</span> ・{" "}
-        {meta.icon} {formatRelativeHours(item.hoursAgo)}
-        {item.projectTitle ? ` ・ ${item.projectTitle}` : ""}
-      </p>
-      <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{item.body}</p>
+      {meta.icon} {formatRelativeHours(item.hoursAgo)}
+      {item.projectTitle ? ` ・ ${item.projectTitle}` : ""}
     </>
   );
-  // プロジェクトに紐付いた投稿だけ詳細ページへのリンクにする(RecentActivity.tsxと同じ理由)。
-  return item.projectId ? (
-    <Link href={`/work/${item.projectId}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
-      {body}
-    </Link>
-  ) : (
-    <div className="rounded-lg px-2 py-2">{body}</div>
+  const body = (
+    <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{item.body}</p>
+  );
+  return (
+    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+      <p className="text-[12px] text-[var(--ink-faint)]">
+        <Link
+          href={`/u/${encodeURIComponent(item.authorName)}`}
+          className="font-medium text-[var(--ink-soft)] hover:underline"
+        >
+          {item.authorName}
+        </Link>{" "}
+        ・{" "}
+        {/* プロジェクトに紐付いた投稿だけ詳細ページへのリンクにする(RecentActivity.tsxと同じ理由)。 */}
+        {item.projectId ? (
+          <Link href={`/work/${item.projectId}`} className="hover:underline">
+            {rest}
+          </Link>
+        ) : (
+          rest
+        )}
+      </p>
+      {item.projectId ? (
+        <Link href={`/work/${item.projectId}`} className="block">
+          {body}
+        </Link>
+      ) : (
+        body
+      )}
+    </div>
   );
 }
 

@@ -8,21 +8,63 @@ import type { NotificationView } from "@/app/lib/queries";
 import { markNotificationsRead } from "@/app/lib/notification-actions";
 
 // "Aさん" / "Aさん、Bさん" / "Aさん、Bさん他5人" のように、まとめた
-// 通知の主語部分を組み立てる。
-function actorLabel(n: NotificationView): string {
+// 通知の主語部分を組み立てる。各名前は個別にプロフィールへリンクする
+// (「他N人」の部分だけはリンクしようがないのでプレーンテキストのまま)。
+function ActorLabel({ n, onNavigate }: { n: NotificationView; onNavigate: () => void }) {
   const [first, second] = n.actorNames;
-  if (n.actorCount <= 1) return `${first}さん`;
-  if (n.actorCount === 2) return `${first}さん、${second}さん`;
-  return `${first}さん、${second}さん他${n.actorCount - 2}人`;
+  const nameLink = (name: string) => (
+    <Link
+      key={name}
+      href={`/u/${encodeURIComponent(name)}`}
+      onClick={onNavigate}
+      className="font-medium text-[var(--ink)] hover:underline"
+    >
+      {name}さん
+    </Link>
+  );
+  if (n.actorCount <= 1) return nameLink(first);
+  if (n.actorCount === 2) return (
+    <>
+      {nameLink(first)}、{nameLink(second)}
+    </>
+  );
+  return (
+    <>
+      {nameLink(first)}、{nameLink(second)}他{n.actorCount - 2}人
+    </>
+  );
 }
 
-function describe(n: NotificationView): string {
-  const who = actorLabel(n);
-  if (n.type === "follow") return `${who}にフォローされました`;
-  if (n.type === "comment") return `${who}が「${n.projectTitle}」にコメントしました`;
-  if (n.type === "repost") return `${who}が「${n.projectTitle}」をリポストしました`;
-  const meta = REACTION_META.find((m) => m.key === n.reactionType);
-  return `${who}が「${n.projectTitle}」に${meta?.icon ?? ""}リアクションしました`;
+// 通知の行全体を対象Projectへのリンクにしていたところに作者名リンクを
+// 混ぜると<a>のネスト(不正なHTML)になるため、「主語(誰が)」と
+// 「残りの文(何をしたか、対象Projectへのリンクを含む)」を兄弟要素として
+// 分けている。
+function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigate: () => void }) {
+  const actor = <ActorLabel n={n} onNavigate={onNavigate} />;
+
+  if (n.type === "follow") {
+    return <>{actor}にフォローされました</>;
+  }
+
+  const suffix =
+    n.type === "comment"
+      ? `が「${n.projectTitle}」にコメントしました`
+      : n.type === "repost"
+        ? `が「${n.projectTitle}」をリポストしました`
+        : `が「${n.projectTitle}」に${REACTION_META.find((m) => m.key === n.reactionType)?.icon ?? ""}リアクションしました`;
+
+  return (
+    <>
+      {actor}
+      {n.projectId ? (
+        <Link href={`/work/${n.projectId}`} onClick={onNavigate} className="hover:underline">
+          {suffix}
+        </Link>
+      ) : (
+        suffix
+      )}
+    </>
+  );
 }
 
 export function NotificationBell({
@@ -76,35 +118,22 @@ export function NotificationBell({
             <p className="p-4 text-center text-[13px] text-[var(--ink-faint)]">通知はまだありません</p>
           ) : (
             <ul className="flex flex-col gap-1">
-              {notifications.map((n) => {
-                const row = (
+              {notifications.map((n) => (
+                <li key={n.id}>
                   <div
                     className={`rounded-xl px-3 py-2 text-[13px] leading-relaxed text-[var(--ink)] ${
                       n.read ? "" : "bg-[var(--accent-soft)]"
                     }`}
                   >
-                    <p>{describe(n)}</p>
+                    <p>
+                      <NotificationMessage n={n} onNavigate={() => setOpen(false)} />
+                    </p>
                     <p className="mt-0.5 font-mono text-[11px] text-[var(--ink-faint)]">
                       {formatRelativeHours(n.hoursAgo)}
                     </p>
                   </div>
-                );
-                return (
-                  <li key={n.id}>
-                    {n.projectId ? (
-                      <Link
-                        href={`/work/${n.projectId}`}
-                        onClick={() => setOpen(false)}
-                        className="block rounded-xl hover:bg-[var(--bg-sunken)]"
-                      >
-                        {row}
-                      </Link>
-                    ) : (
-                      row
-                    )}
-                  </li>
-                );
-              })}
+                </li>
+              ))}
             </ul>
           )}
         </div>

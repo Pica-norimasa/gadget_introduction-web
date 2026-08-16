@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
@@ -182,10 +183,13 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                 ))}
               </div>
               <div className="mt-2 flex items-center justify-between px-3">
-                <span className="flex items-center gap-1.5 text-sm font-bold text-white">
+                <Link
+                  href={`/u/${encodeURIComponent(current.author)}`}
+                  className="flex items-center gap-1.5 text-sm font-bold text-white hover:underline"
+                >
                   <span aria-hidden>{current.glyph}</span>
                   {current.author}
-                </span>
+                </Link>
                 <button type="button" onClick={close} aria-label="閉じる" className="px-1 text-lg leading-none text-white">
                   ✕
                 </button>
