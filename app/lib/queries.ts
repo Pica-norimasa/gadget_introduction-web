@@ -140,6 +140,7 @@ export type UserProfile = {
   followers: number;
   following: number;
   works: Work[];
+  repostedWorks: Work[];
 };
 
 // ユーザープロフィールページ(/u/[name])向け。フォロワー数はProject.author
@@ -152,7 +153,26 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   });
   if (!user) return null;
 
-  const works = await getWorksWhere({ authorId: user.id });
+  const [works, repostRows] = await Promise.all([
+    getWorksWhere({ authorId: user.id }),
+    prisma.repost.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      select: { projectId: true },
+    }),
+  ]);
+
+  // リポスト日時順を保ちたいので、getWorksWhere()が返すProject.createdAt順
+  // の結果を、repostRowsの並びに合わせて組み直す(Xの自分のタイムラインで
+  // リツイートが自分のリポスト日時順に並ぶのと同じ考え方)。
+  const repostedIds = repostRows.map((r) => r.projectId);
+  const repostedWorksById =
+    repostedIds.length > 0
+      ? new Map((await getWorksWhere({ id: { in: repostedIds } })).map((w) => [w.id, w]))
+      : new Map<string, Work>();
+  const repostedWorks = repostedIds
+    .map((id) => repostedWorksById.get(id))
+    .filter((w): w is Work => w !== undefined);
 
   return {
     id: user.id,
@@ -161,6 +181,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
     followers: user.followersSeed + user._count.followedBy,
     following: user._count.following,
     works,
+    repostedWorks,
   };
 }
 

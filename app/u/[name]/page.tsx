@@ -103,6 +103,26 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           </div>
         )}
 
+        <h2 className="mb-3 mt-8 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+          リポストした作品({profile.repostedWorks.length})
+        </h2>
+        {profile.repostedWorks.length === 0 ? (
+          <p className="text-[13px] text-[var(--ink-faint)]">まだリポストした作品はありません</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {profile.repostedWorks.map((work) => (
+              <WorkCard
+                key={work.id}
+                work={work}
+                posts={posts}
+                myReactions={myReactions}
+                currentUserId={currentUser?.id ?? null}
+                showAnchor={false}
+              />
+            ))}
+          </div>
+        )}
+
         {isOwnProfile && <MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
       </main>
     </div>
