@@ -142,6 +142,11 @@ model Repost {
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
 
+  // 引用リポスト用のコメント。無ければ通常のリポスト。1ユーザーにつき
+  // 1Projectあたり1行(下の@@unique)なので、後から引用コメントを
+  // 付け足す/変更するのもこの行のUPDATEで表現する。
+  comment   String?
+
   @@unique([userId, projectId])
   @@index([projectId])
 }

@@ -209,6 +209,7 @@ export type RepostView = {
   userName: string;
   projectId: string;
   projectTitle: string;
+  comment: string | null;
   hoursAgo: number;
 };
 
@@ -226,6 +227,7 @@ export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
     userName: r.user.name,
     projectId: r.project.id,
     projectTitle: r.project.title,
+    comment: r.comment,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
 }

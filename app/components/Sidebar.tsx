@@ -51,13 +51,18 @@ function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
   return (
     <Link href={`/work/${work.id}`} className="block rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
-        🔁 <span className="font-medium text-[var(--ink-soft)]">{repost.userName}</span>さんがリポスト ・{" "}
-        {formatRelativeHours(repost.hoursAgo)}
+        🔁 <span className="font-medium text-[var(--ink-soft)]">{repost.userName}</span>さんが
+        {repost.comment ? "引用リポスト" : "リポスト"} ・ {formatRelativeHours(repost.hoursAgo)}
       </p>
+      {repost.comment && (
+        <p className="line-clamp-2 text-[13px] leading-relaxed text-[var(--ink)]">{repost.comment}</p>
+      )}
       <p className="text-[13.5px] text-[var(--ink)]">
         <span className="text-[var(--teal)]">{work.title}</span>
       </p>
-      <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+      {!repost.comment && (
+        <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+      )}
     </Link>
   );
 }

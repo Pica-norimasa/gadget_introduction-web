@@ -37,6 +37,17 @@ export function toggleRepost(projectId: string) {
   void toggleRepostAction(projectId);
 }
 
+// 引用リポスト成功後に呼ぶ(quoteRepost自体はServer Action + useActionState
+// 経由でSubmitされるため、toggleと違いここでは呼び出し元が結果を見てから
+// 呼ぶ「常にreposted済みにする」操作になる)。
+export function markReposted(projectId: string) {
+  if (reposted.has(projectId)) return;
+  const next = new Set(reposted);
+  next.add(projectId);
+  reposted = next;
+  emitChange();
+}
+
 function subscribe(listener: Listener) {
   listeners.add(listener);
   return () => listeners.delete(listener);

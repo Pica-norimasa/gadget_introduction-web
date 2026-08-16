@@ -99,7 +99,7 @@ export function WorkDetail({
         <div className="mb-6 flex items-center justify-between">
           <div className="flex flex-wrap items-center gap-1.5">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
-            <RepostButton projectId={work.id} count={work.reposts} size="md" />
+            <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
           </div>
           <span className="font-mono text-[12px] text-[var(--ink-faint)]">
             👁️{formatCount(work.views)} · 💬{work.comments}
