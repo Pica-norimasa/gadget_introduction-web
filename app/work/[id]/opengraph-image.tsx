@@ -4,10 +4,9 @@ import { getWorkById } from "@/app/lib/queries";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// 注意: generateImageMetadataは付けない。親route(app/work/[id]/page.tsx)側の
-// generateStaticParamsが既に全workのidを網羅しているので、ここで別途
-// id付きの画像バリアントを生成すると二重のid解決になり、ビルド後に
-// 違うidのopengraph-imageが紐付くバグになる(実際に発生させて確認済み)。
+// 注意: generateImageMetadataは付けない。親route(app/work/[id]/page.tsx)の
+// paramsをここでも別途解決すると二重のid解決になり、違うidの
+// opengraph-imageが紐付くバグになる(実際に発生させて確認済み)。
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

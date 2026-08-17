@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  getAllProjectIds,
   getCommentsForProject,
   getInspiredByProject,
   getMyReactions,
@@ -15,9 +14,11 @@ import { getCurrentUser } from "@/app/lib/session";
 import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
+// ビルド時点でDBに到達できない環境(CIなど)でも `next build` を通すため、
+// あえて何も返さない。dynamicParamsはデフォルトのtrueのままなので、
+// 各ページは初回アクセス時にオンデマンドで生成・キャッシュされる。
 export async function generateStaticParams() {
-  const ids = await getAllProjectIds();
-  return ids.map((id) => ({ id }));
+  return [];
 }
 
 export async function generateMetadata({

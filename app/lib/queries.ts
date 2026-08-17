@@ -108,17 +108,6 @@ export async function getWorks(): Promise<Work[]> {
   return getWorksWhere(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined);
 }
 
-// generateStaticParams専用の軽量版。ビルド時はリクエストコンテキストが無く
-// cookies()を呼べない(=getCurrentUser()経由のミュート/ブロックフィルタが
-// 使えない)ため、getWorks()とは別に、フィルタ無しでID一覧だけを返す。
-// 静的パラメータの生成は「存在する全ページ」を対象にすべきで、特定の
-// 閲覧者のミュート/ブロック状態とは無関係なので、フィルタが無いこと自体は
-// 正しい挙動でもある。
-export async function getAllProjectIds(): Promise<string[]> {
-  const projects = await prisma.project.findMany({ select: { id: true } });
-  return projects.map((p) => p.id);
-}
-
 // タイトル・キャッチコピー・作者名のいずれかに一致するProjectを検索する。
 // SQLiteのLIKEはASCII文字を大文字小文字区別なく比較するため、日本語主体の
 // このアプリでは追加のcase-insensitive設定は不要。
