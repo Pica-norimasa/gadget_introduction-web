@@ -1166,6 +1166,52 @@
     入力やOAuth許可のクリックを代行することはそもそも安全ルール上
     禁止/要許可の行為であり、この制限とは無関係に私からは行わない。
 
+58. AWSデプロイ準備(コード側)。「デプロイ作業を優先で」との依頼を受けて着手。
+    ホスティング方式はDocker + App Runner(Next.js 16の新機能がAmplifyの
+    ビルド自動検出に正しく対応しているか未検証なリスクを避けるため)。
+    AWSリソース作成(RDS・S3・App Runner等)は利用者自身がAWSコンソールで
+    実行する方針(私はアクセス情報を持たない)。
+
+    やったこと:
+    - `next.config.ts`に`output: "standalone"`を追加。
+    - `Dockerfile`(alpine, multi-stage: deps→builder→runner, 非root実行)・
+      `.dockerignore`を新規作成。
+    - `prisma/schema.prisma`のdatasourceを`sqlite`→`mysql`に変更。MySQLの
+      String既定型VARCHAR(191)を超え得る自由記述系フィールド(`Post.body`・
+      `Comment.body`・`Repost.comment`・`Report.detail`・`Project.catchText`。
+      各コンポーネントの`maxLength`実測値で判断)とOAuthトークン
+      (`Account.refresh_token`/`access_token`/`id_token`)に`@db.Text`を付与。
+    - `app/lib/prisma.ts`のアダプタを`@prisma/adapter-mariadb`
+      (`PrismaMariaDb`、MySQLプロトコルにも対応)に差し替え、
+      `@prisma/adapter-better-sqlite3`は削除。
+    - `app/lib/upload.ts`を書き換え、`S3_BUCKET_NAME`が設定されていれば
+      `@aws-sdk/client-s3`でS3に、未設定ならローカル開発向けに従来通り
+      `/public/uploads`に書き込む2経路構成にした(コントリビューターが
+      画像アップロードを試さないならAWS認証情報の設定は不要のまま)。
+    - `package.json`に`engines.node`、`.nvmrc`を追加(Node 22.14.0固定)。
+    - DBに触れない`/api/health`を追加(App Runnerのヘルスチェック用。
+      `/`のようなDB問い合わせを伴うページを対象にすると、ヘルスチェック
+      自体が負荷になるため)。
+    - 旧SQLite向けマイグレーション履歴(20260815〜20260816分、20個)は
+      MySQLとSQLでは非互換のため削除し、現在のスキーマから単一の初期
+      マイグレーション(`prisma/migrations/20260817000000_init`)を
+      `prisma migrate diff --from-empty`で生成し直した(RDS作成後に適用予定、
+      項目60参照)。
+    - `.env.example`のDATABASE_URLをMySQL形式に更新し、S3関連の変数
+      (`S3_BUCKET_NAME`/`AWS_REGION`/`S3_PUBLIC_URL_BASE`)を追加。
+
+    **ローカル開発への影響(重要)**: Prisma 7はdatasourceのproviderを
+    1つに固定する必要があり、SQLiteとMySQLを同時サポートできないため、
+    今後`npm run dev`にも実際に到達可能なMySQL(RDS)が必須になった
+    (このMacはDocker/Homebrew経由のMySQLが非現実的なため、ローカル開発も
+    RDS上の別データベース(`draftly_dev`)に接続する運用に変更、利用者との
+    合意済み)。RDSが無い間は`npm run dev`/`npm run build`とも動かない
+    (プレースホルダーのDATABASE_URLで`npm run build`を試し、コンパイル・
+    型チェックまでは通り、DB接続タイムアウトでのみ失敗することを確認済み
+    →コード自体は問題ない)。
+    lint/tscはプレースホルダーDATABASE_URLで実行しclean。ブラウザでの
+    実動作確認はRDS接続後(項目60)に行う。
+
 **開発環境の注意点(このセッション中に発生した実例)**: `next dev`を
 長時間動かしたまま`npm run build`を何度も実行すると、両方が同じ
 `.next/`ディレクトリを取り合う形になり、稼働中のdevサーバーの

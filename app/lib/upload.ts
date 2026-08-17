@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 const EXT_BY_TYPE: Record<string, string> = {
@@ -10,9 +11,38 @@ const EXT_BY_TYPE: Record<string, string> = {
   "image/webp": "webp",
 };
 
-// ローカル開発用の実装。/public/uploadsに直接書き込むだけなので、
-// AWS移行時(サーバーレス/複数インスタンス前提)にはS3等の外部ストレージに
-// 差し替える必要がある(MySQL移行と同じく、後で差し替える前提の割り切り)。
+const s3Bucket = process.env.S3_BUCKET_NAME;
+const s3Region = process.env.AWS_REGION;
+// App Runnerのようなインスタンスが使い捨て/複数起動される環境では
+// ローカルファイルシステムへの保存が使えないため、S3_BUCKET_NAMEが
+// 設定されていればS3に、無ければ(ローカル開発向けに)従来通り
+// /public/uploadsに書き込む。
+const s3Client = s3Bucket ? new S3Client({ region: s3Region }) : null;
+
+async function saveToS3(file: File, filename: string): Promise<string> {
+  if (!s3Client || !s3Bucket) throw new Error("S3が設定されていません");
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: s3Bucket,
+      Key: filename,
+      Body: buffer,
+      ContentType: file.type,
+    }),
+  );
+  // カスタムドメイン(CloudFront等)を挟む場合はS3_PUBLIC_URL_BASEで上書きできる。
+  const base = process.env.S3_PUBLIC_URL_BASE ?? `https://${s3Bucket}.s3.${s3Region}.amazonaws.com`;
+  return `${base}/${filename}`;
+}
+
+async function saveToLocalDisk(file: File, filename: string): Promise<string> {
+  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  await mkdir(uploadDir, { recursive: true });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(path.join(uploadDir, filename), buffer);
+  return `/uploads/${filename}`;
+}
+
 export async function saveUploadedImage(file: File): Promise<string> {
   const ext = EXT_BY_TYPE[file.type];
   if (!ext) {
@@ -23,12 +53,7 @@ export async function saveUploadedImage(file: File): Promise<string> {
   }
 
   const filename = `${randomUUID()}.${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, filename), buffer);
-
-  return `/uploads/${filename}`;
+  return s3Client ? saveToS3(file, filename) : saveToLocalDisk(file, filename);
 }
 
 // フォームに画像が選ばれていない場合、ブラウザは空のFileを送ってくることがある。

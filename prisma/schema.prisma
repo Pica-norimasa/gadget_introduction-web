@@ -1,7 +1,11 @@
-// このスキーマは開発中はSQLite、本番はAWS RDS(MySQL)を想定している。
-// 切り替え時は下のdatasource providerを"mysql"に変え、DATABASE_URLをRDSの
-// 接続文字列に差し替えるだけで動く設計にしてある(enumを使わずString+アプリ側の
-// union型で表現しているのも、SQLiteがネイティブenumを持たないための互換対応)。
+// AWS RDS(MySQL)を想定したスキーマ(enumを使わずString+アプリ側のunion型で
+// 表現しているのは、元々SQLiteで開発していた名残)。
+//
+// MySQLではStringは既定でVARCHAR(191)にマップされる(utf8mb4でのインデックス
+// キー長制限に合わせた昔からのPrisma既定値)。UIのmaxLengthが191を超える
+// 自由記述系フィールド(投稿本文・コメント・通報詳細・引用リポストのコメント・
+// catchText)、および長さの見積もりが難しいOAuthトークン(Account.*)には
+// @db.Textを付けている。
 //
 // Follow/Reactionは「誰が」を表すuserIdを必須にしているが、今のアプリにはまだ
 // ログイン機構が無い(follow-store.tsはブラウザ内だけで完結する匿名の状態)。
@@ -13,7 +17,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
 }
 
 model User {
@@ -70,14 +74,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  // 本番のMySQL移行時は、id_token等が長くなり得るので@db.Textの付与を検討する
-  // (SQLiteにはこの注釈が無く、TEXT型として扱われるため今は不要)。
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.Text
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -104,7 +106,7 @@ model VerificationToken {
 model Project {
   id          String   @id
   title       String
-  catchText   String
+  catchText   String   @db.Text
   category    String
   stage       String
   tool        String?
@@ -151,8 +153,8 @@ model Post {
   id        String   @id @default(cuid())
   // idea | making | screenshot | demo | prototype | release | update | question
   type      String
-  body      String
-  // ローカル開発では/public/uploadsへの相対パス。本番はS3等のURLに置き換える想定。
+  body      String   @db.Text
+  // ローカル開発では/public/uploadsへの相対パス。本番はS3のURLに置き換える想定。
   imageUrl  String?
   createdAt DateTime @default(now())
 
@@ -208,7 +210,7 @@ model Reaction {
 
 model Comment {
   id        String   @id @default(cuid())
-  body      String
+  body      String   @db.Text
   imageUrl  String?
   createdAt DateTime @default(now())
 
@@ -251,7 +253,7 @@ model Repost {
   // 引用リポスト用のコメント。無ければ通常のリポスト。1ユーザーにつき
   // 1Projectあたり1行(下の@@unique)なので、後から引用コメントを
   // 付け足す/変更するのもこの行のUPDATEで表現する。
-  comment   String?
+  comment   String? @db.Text
 
   @@unique([userId, projectId])
   @@index([projectId])
@@ -346,7 +348,7 @@ model Report {
   targetType String
   // spam | inappropriate | impersonation | other
   reason     String
-  detail     String?
+  detail     String? @db.Text
 
   reporterId String
   reporter   User   @relation("ReportsFiled", fields: [reporterId], references: [id])
