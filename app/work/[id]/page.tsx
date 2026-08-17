@@ -15,11 +15,17 @@ import { postsForProject } from "@/app/lib/post-helpers";
 import { WorkDetail } from "@/app/components/WorkDetail";
 
 // ビルド時点でDBに到達できない環境(CIなど)でも `next build` を通すため、
-// あえて何も返さない。dynamicParamsはデフォルトのtrueのままなので、
-// 各ページは初回アクセス時にオンデマンドで生成・キャッシュされる。
+// あえて何も返さない。
 export async function generateStaticParams() {
   return [];
 }
+
+// このページはcookies()(自分のリアクション状態・ブロック判定)を読み、
+// 閲覧のたびにincrementViews()で件数を更新するため、本質的に毎回動的。
+// generateStaticParamsと共存させたままcookies()を呼ぶと本番ビルドで
+// DYNAMIC_SERVER_USAGEエラーになるため、明示的に動的レンダリングにする
+// (静的キャッシュは元々このページの実態に合っていなかった)。
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

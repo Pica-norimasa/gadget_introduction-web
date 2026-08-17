@@ -35,6 +35,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   providers: [GitHub],
+  // Vercel以外の環境(App Runner等)では、Auth.jsはデフォルトでリクエストの
+  // Hostヘッダーを信用しない(ホストヘッダーインジェクション対策)。デプロイ先の
+  // ドメインはビルド時点では決まらないため、信用するホストを個別指定する
+  // 代わりにtrustHostで許可する。
+  trustHost: true,
   // DBセッション(Sessionテーブル)を使わず、署名付きCookie(JWT)にセッション
   // 情報を持たせる方式。ユーザー数が少ない今の規模ではDB書き込みが減って
   // シンプル。Account/Userの永続化(アカウント連携)にはadapterが引き続き
