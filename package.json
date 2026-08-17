@@ -12,7 +12,9 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:up": "aws rds start-db-instance --db-instance-identifier gadget-introduction-web-dev --region ap-northeast-1 --query DBInstance.DBInstanceStatus --output text && aws rds wait db-instance-available --db-instance-identifier gadget-introduction-web-dev --region ap-northeast-1 && echo DB is available, ready for npm run dev",
+    "db:down": "aws rds stop-db-instance --db-instance-identifier gadget-introduction-web-dev --region ap-northeast-1 --query DBInstance.DBInstanceStatus --output text"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
