@@ -34,6 +34,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
 
-CMD ["node", "server.js"]
+# App RunnerのようなPaaSはコンテナに独自のHOSTNAME環境変数(インスタンスの
+# ホスト名)を注入することがあり、Dockerfileの`ENV HOSTNAME=0.0.0.0`はそれに
+# 上書きされてしまう。Next.jsのstandaloneサーバーはHOSTNAMEでbindアドレスを
+# 決めるため、起動コマンド自体で明示的に指定して上書きされないようにする
+# (実際にHOSTNAME=<インスタンスのホスト名>にbindされ、ヘルスチェックが
+# 到達できずデプロイに失敗する不具合を確認済み)。
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]
