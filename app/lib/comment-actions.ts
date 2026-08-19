@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
@@ -20,6 +21,13 @@ export async function createComment(
   const body = String(formData.get("body") ?? "").trim();
   const parentIdRaw = String(formData.get("parentId") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
+
+  // コメントは匿名ゲストの荒らし対策としてGitHub/Xログイン必須にした
+  // (CommentForm.tsx側のUIガードとは別に、Server Action直接呼び出しへの
+  // 防御としてここでも検証する)。閲覧・投稿・リアクション等は従来通り
+  // 匿名ゲストのままでも可能。
+  const session = await auth();
+  if (!session?.user) return { error: "コメントするにはログインが必要です" };
 
   if (targetType !== "project" && targetType !== "post") return { error: "投稿先が不明です" };
   if (!targetId) return { error: "投稿先が不明です" };

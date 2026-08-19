@@ -29,6 +29,7 @@ export function WorkDetail({
   myReactions,
   comments,
   currentUserId,
+  isLoggedIn,
   inspiredItems,
   posts,
   inspiredMyReactions,
@@ -39,6 +40,10 @@ export function WorkDetail({
   myReactions: ReactionKey[];
   comments: CommentThreadType[];
   currentUserId: string | null;
+  // コメント投稿にはGitHub/Xログインが必須(荒らし対策)。閲覧・
+  // リアクション等は引き続き匿名ゲストのままでも可能なので、
+  // currentUserId(匿名ゲストも含む)とは別に持つ。
+  isLoggedIn: boolean;
   inspiredItems: InspiredItem[];
   // 「この作品からインスパイアされた投稿」でProjectカード(WorkCard)を
   // そのまま再利用するために必要な、フィードと同じ形の付随データ。
@@ -228,6 +233,7 @@ export function WorkDetail({
                   thread={c}
                   target={{ type: "project", id: work.id }}
                   currentUserId={currentUserId}
+                  isLoggedIn={isLoggedIn}
                 />
               ))
             )}
@@ -237,7 +243,7 @@ export function WorkDetail({
               この作品の作者にブロックされているため、コメントできません
             </p>
           ) : (
-            <CommentForm target={{ type: "project", id: work.id }} />
+            <CommentForm target={{ type: "project", id: work.id }} isLoggedIn={isLoggedIn} />
           )}
         </div>
 

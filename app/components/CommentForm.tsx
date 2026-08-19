@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { createComment, type CreateCommentState } from "@/app/lib/comment-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
@@ -9,12 +10,17 @@ const initialState: CreateCommentState = {};
 export function CommentForm({
   target,
   parentId,
+  isLoggedIn,
   onDone,
 }: {
   target: { type: "project" | "post"; id: string };
   // 指定するとその返信として投稿する(CommentThread.tsxが「返信する」
   // から開くフォームで使う)。
   parentId?: string;
+  // コメントは匿名ゲストの荒らし対策として、GitHub/Xログイン必須にした
+  // (閲覧・投稿・リアクション等は引き続き匿名ゲストのままでも可能)。
+  // 未ログインならフォームの代わりにログイン導線を出す。
+  isLoggedIn: boolean;
   // 送信成功時に呼ばれる(返信フォームを自動で畳むために使う)。
   onDone?: () => void;
 }) {
@@ -52,6 +58,22 @@ export function CommentForm({
   }, [state.success]);
 
   const trimmed = body.trim();
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)] p-3">
+        <span className="text-[13px] text-[var(--ink-soft)]">
+          {parentId ? "返信するにはログインが必要です" : "コメントするにはログインが必要です"}
+        </span>
+        <Link
+          href="/login"
+          className="shrink-0 rounded-full bg-[var(--accent)] px-3 py-1.5 text-[12px] font-medium text-[var(--accent-ink)]"
+        >
+          ログイン
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <form ref={formRef} action={formAction} encType="multipart/form-data" className="flex flex-col gap-2">

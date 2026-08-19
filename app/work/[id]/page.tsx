@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import {
   getCommentsForProject,
   getInspiredByProject,
@@ -62,12 +63,13 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const work = await getWorkById(id);
   if (!work) notFound();
 
-  const [posts, myReactions, comments, currentUser, inspiredItems, inspiredMyReactions, blockedByAuthor] =
+  const [posts, myReactions, comments, currentUser, session, inspiredItems, inspiredMyReactions, blockedByAuthor] =
     await Promise.all([
       getPosts(),
       getMyReactionsForProject(work.id),
       getCommentsForProject(work.id),
       getCurrentUser(),
+      auth(),
       getInspiredByProject(work.id),
       getMyReactions(),
       isBlockedByAuthor(work.authorId ?? ""),
@@ -83,6 +85,7 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
       myReactions={myReactions}
       comments={comments}
       currentUserId={currentUser?.id ?? null}
+      isLoggedIn={!!session?.user}
       inspiredItems={inspiredItems}
       posts={posts}
       inspiredMyReactions={inspiredMyReactions}

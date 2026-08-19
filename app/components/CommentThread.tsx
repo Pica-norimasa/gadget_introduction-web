@@ -59,10 +59,12 @@ export function CommentThread({
   thread,
   target,
   currentUserId,
+  isLoggedIn,
 }: {
   thread: CommentThreadType;
   target: { type: "project" | "post"; id: string };
   currentUserId: string | null;
+  isLoggedIn: boolean;
 }) {
   const [replying, setReplying] = useState(false);
 
@@ -88,7 +90,12 @@ export function CommentThread({
 
       {replying && (
         <div className="ml-9">
-          <CommentForm target={target} parentId={thread.id} onDone={() => setReplying(false)} />
+          <CommentForm
+            target={target}
+            parentId={thread.id}
+            isLoggedIn={isLoggedIn}
+            onDone={() => setReplying(false)}
+          />
         </div>
       )}
     </div>
