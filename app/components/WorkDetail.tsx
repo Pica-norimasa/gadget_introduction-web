@@ -238,7 +238,6 @@ export function WorkDetail({
                   key={c.id}
                   thread={c}
                   target={{ type: "project", id: work.id }}
-                  targetTitle={work.title}
                   currentUserId={currentUserId}
                   isLoggedIn={isLoggedIn}
                 />

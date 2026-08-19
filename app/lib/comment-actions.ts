@@ -8,6 +8,7 @@ import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
 import { rateLimitWindowStart } from "@/app/lib/rate-limit";
 import { sendCommentNotificationEmail, SITE_URL } from "@/app/lib/email";
+import { inferPostType } from "@/app/lib/infer-post-type";
 import { prisma } from "@/app/lib/prisma";
 
 // 通知メール送信はレスポンスをブロックしたくない(post-actions.tsの
@@ -182,4 +183,69 @@ export async function deleteComment(commentId: string): Promise<void> {
   if (comment.projectId) revalidatePath(`/work/${comment.projectId}`);
   if (comment.postId) revalidatePath(`/post/${comment.postId}`);
   revalidatePath("/");
+}
+
+export type ShareCommentState = { error?: string; success?: boolean; postId?: string };
+
+// 自分のコメントを、そのまま独立したつぶやき(Post)として複製投稿する。
+// post-actions.tsのcreatePost(projectTarget未指定=つぶやきの場合)と
+// 同じ形のPostを作る。単独投稿へのコメントはinspiredByProjectIdの
+// 紐付け先が無いため対象外(CommentThread.tsx側もprojectのコメントに
+// しかボタンを出さないが、Server Action直接呼び出しへの防御として
+// ここでも弾く)。
+export async function shareCommentAsPost(commentId: string): Promise<ShareCommentState> {
+  const session = await auth();
+  if (!session?.user) return { error: "シェアするにはログインが必要です" };
+
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { authorId: true, body: true, imageUrl: true, projectId: true },
+  });
+  if (!comment) return { error: "コメントが見つかりません" };
+
+  const user = await getOrCreateCurrentUser();
+  if (comment.authorId !== user.id) return { error: "自分のコメントのみシェアできます" };
+  if (!comment.projectId) return { error: "この投稿にはシェアできません" };
+  if (!comment.body) return { error: "本文のないコメントはシェアできません" };
+
+  // 荒らし・スパム対策の簡易レート制限(createPostと同じ、直近10分に10件まで)。
+  const recentPostCount = await prisma.post.count({
+    where: { authorId: user.id, createdAt: { gte: rateLimitWindowStart(10) } },
+  });
+  if (recentPostCount >= 10) {
+    return { error: "投稿が多すぎます。少し時間をおいてから試してください" };
+  }
+
+  const project = await prisma.project.findUnique({
+    where: { id: comment.projectId },
+    select: { id: true, authorId: true },
+  });
+
+  const post = await prisma.post.create({
+    data: {
+      type: inferPostType(comment.body),
+      body: comment.body,
+      imageUrl: comment.imageUrl,
+      authorId: user.id,
+      inspiredByProjectId: comment.projectId,
+    },
+  });
+
+  // 自分以外の作品からのシェアの場合だけ、元の作者に通知する
+  // (createPostのインスパイア通知と同じ考え方)。
+  if (project && project.authorId !== user.id) {
+    await prisma.notification.create({
+      data: {
+        type: "inspired",
+        recipientId: project.authorId,
+        actorId: user.id,
+        sourceProjectId: project.id,
+        postId: post.id,
+      },
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/work/${comment.projectId}`);
+  return { success: true, postId: post.id };
 }
