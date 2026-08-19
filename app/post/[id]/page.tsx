@@ -53,13 +53,14 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
         <div className="mb-4 flex items-center gap-2">
           <Link
-            href={`/u/${encodeURIComponent(post.authorName)}`}
+            href={`/u/${encodeURIComponent(post.authorHandle)}`}
             className="flex min-w-0 flex-1 items-center gap-2"
           >
             <AuthorAvatar name={post.authorName} size={36} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {post.authorName}
+                <span className="ml-1 font-normal text-[var(--ink-faint)]">@{post.authorHandle}</span>
               </p>
               <p className="text-[12px] text-[var(--ink-faint)]">{formatRelativeHours(post.hoursAgo)}</p>
             </div>

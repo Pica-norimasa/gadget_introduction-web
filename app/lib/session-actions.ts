@@ -10,18 +10,16 @@ export async function updateDisplayName(
   _prevState: UpdateNameState,
   formData: FormData,
 ): Promise<UpdateNameState> {
-  const name = String(formData.get("name") ?? "").trim();
-  if (!name) return { error: "名前を入力してください" };
-  if (name.length > 20) return { error: "20文字以内で入力してください" };
+  const displayName = String(formData.get("name") ?? "").trim();
+  if (!displayName) return { error: "名前を入力してください" };
+  if (displayName.length > 20) return { error: "20文字以内で入力してください" };
 
   const user = await getOrCreateCurrentUser();
-  if (name === user.name) return { success: true };
+  if (displayName === (user.displayName ?? user.name)) return { success: true };
 
-  try {
-    await prisma.user.update({ where: { id: user.id }, data: { name } });
-  } catch {
-    return { error: "その名前は既に使われています" };
-  }
+  // 表示名(displayName)はXの表示名と同じく重複可。一意なハンドル(name、
+  // /u/[name]のURLにも使う)はここでは変更しない。
+  await prisma.user.update({ where: { id: user.id }, data: { displayName } });
 
   // フォロー中一覧・自分のProject一覧など、名前を参照する箇所は全ページに
   // またがるためlayout単位で無効化する。

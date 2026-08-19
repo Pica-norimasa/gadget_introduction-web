@@ -20,7 +20,7 @@ export async function generateMetadata({
   const { name } = await params;
   const profile = await getUserProfile(decodeURIComponent(name));
   if (!profile) return { title: "ユーザーが見つかりません | Draftly" };
-  return { title: `${profile.name} | Draftly` };
+  return { title: `${profile.displayName} | Draftly` };
 }
 
 export default async function UserProfilePage({ params }: { params: Promise<{ name: string }> }) {
@@ -55,11 +55,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
         </Link>
 
         <div className="mb-8 flex items-start gap-3">
-          <AuthorAvatar name={profile.name} size={56} />
+          <AuthorAvatar name={profile.displayName} size={56} />
           <div className="min-w-0 flex-1">
             <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
-              {profile.name}
+              {profile.displayName}
             </h1>
+            <p className="truncate text-[13px] text-[var(--ink-faint)]">@{profile.name}</p>
             <p className="text-[13px] text-[var(--ink-faint)]">
               フォロワー{profile.followers} ・ フォロー中{profile.following}
             </p>

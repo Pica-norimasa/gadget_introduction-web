@@ -85,14 +85,24 @@ export function WorkDetail({
         </div>
 
         <div className="mb-4 flex items-center gap-2">
-          <Link href={`/u/${encodeURIComponent(work.author)}`} className="flex min-w-0 flex-1 items-center gap-2">
+          <Link
+            href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
+            className="flex min-w-0 flex-1 items-center gap-2"
+          >
             <AuthorAvatar name={work.author} size={36} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">{work.author}</p>
+              <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
+                {work.author}
+                {work.authorHandle && (
+                  <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorHandle}</span>
+                )}
+              </p>
               <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
             </div>
           </Link>
-          {work.authorId !== currentUserId && <FollowButton author={work.author} size="md" />}
+          {work.authorId !== currentUserId && (
+            <FollowButton author={work.authorHandle ?? work.author} size="md" />
+          )}
         </div>
 
         <div className="mb-4">

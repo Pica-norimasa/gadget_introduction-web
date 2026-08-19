@@ -13,18 +13,19 @@ function CommentRow({ comment, currentUserId }: { comment: CommentView; currentU
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
       <div className="flex items-start gap-2">
-        <Link href={`/u/${encodeURIComponent(comment.authorName)}`} className="shrink-0">
+        <Link href={`/u/${encodeURIComponent(comment.authorHandle)}`} className="shrink-0">
           <AuthorAvatar name={comment.authorName} size={28} />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center justify-between gap-2">
             <p className="text-[12px] text-[var(--ink-faint)]">
               <Link
-                href={`/u/${encodeURIComponent(comment.authorName)}`}
+                href={`/u/${encodeURIComponent(comment.authorHandle)}`}
                 className="font-medium text-[var(--ink-soft)] hover:underline"
               >
                 {comment.authorName}
-              </Link>{" "}
+              </Link>
+              <span className="text-[var(--ink-faint)]"> @{comment.authorHandle}</span>{" "}
               ・ {formatRelativeHours(comment.hoursAgo)}
             </p>
             {comment.authorId === currentUserId ? (

@@ -11,7 +11,7 @@ import { AuthorAvatar } from "./AuthorAvatar";
 export function StandalonePostCard({
   post,
 }: {
-  post: Pick<StandalonePostView, "id" | "authorName" | "body" | "hoursAgo">;
+  post: Pick<StandalonePostView, "id" | "authorName" | "authorHandle" | "body" | "hoursAgo">;
 }) {
   return (
     <Link
@@ -21,8 +21,8 @@ export function StandalonePostCard({
       <AuthorAvatar name={post.authorName} size={28} />
       <div className="min-w-0 flex-1">
         <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
-          <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span> ・{" "}
-          {formatRelativeHours(post.hoursAgo)}
+          <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
+          <span>@{post.authorHandle}</span> ・ {formatRelativeHours(post.hoursAgo)}
         </p>
         {post.body && <p className="text-[13px] leading-relaxed text-[var(--ink)]">{post.body}</p>}
       </div>

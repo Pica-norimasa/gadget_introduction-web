@@ -34,6 +34,10 @@ export type Work = {
   tool: AiTool;
   platforms: Platform[];
   author: string;
+  // Xの@handleに相当する一意なハンドル(User.name)。表示名(author)とは別に、
+  // 「表示名 @ハンドル」の形で小さく添える。mock-data.ts由来のシードWorkには
+  // 無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
+  authorHandle?: string;
   // 「自分のProject一覧」を絞り込むためのUser.id。mock-data.ts由来のシード
   // Workには無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
   authorId?: string;

@@ -45,9 +45,14 @@ type ProjectWithAuthor = {
   reactionUsefulSeed: number;
   reactionIdeaSeed: number;
   reactionWantToTrySeed: number;
-  author: { name: string; followersSeed: number; _count: { followedBy: number } };
+  author: { name: string; displayName: string | null; followersSeed: number; _count: { followedBy: number } };
   _count: { comments: number; reposts: number };
 };
+
+// Xの「表示名」に相当。未設定(displayName無し)ならハンドル(name)を使う。
+function displayNameOf(user: { name: string; displayName: string | null }): string {
+  return user.displayName ?? user.name;
+}
 
 function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
   return {
@@ -58,7 +63,8 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     stage: project.stage as Stage,
     tool: project.tool as AiTool,
     platforms: project.platforms as unknown as Platform[],
-    author: project.author.name,
+    author: displayNameOf(project.author),
+    authorHandle: project.author.name,
     authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
@@ -125,6 +131,7 @@ export async function searchWorks(query: string): Promise<Work[]> {
 export type UserProfile = {
   id: string;
   name: string;
+  displayName: string;
   bio: string | null;
   followers: number;
   following: number;
@@ -166,6 +173,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   return {
     id: user.id,
     name: user.name,
+    displayName: displayNameOf(user),
     bio: user.bio,
     followers: user.followersSeed + user._count.followedBy,
     following: user._count.following,
@@ -216,7 +224,10 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
   const rows = await prisma.post.findMany({
     where: { inspiredByProjectId: projectId },
     orderBy: { createdAt: "desc" },
-    include: { author: { select: { name: true } }, _count: { select: { comments: true, reactions: true } } },
+    include: {
+      author: { select: { name: true, displayName: true } },
+      _count: { select: { comments: true, reactions: true } },
+    },
   });
   if (rows.length === 0) return [];
 
@@ -234,7 +245,8 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
         kind: "post",
         post: {
           id: r.id,
-          authorName: r.author.name,
+          authorName: displayNameOf(r.author),
+          authorHandle: r.author.name,
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
           hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
@@ -311,6 +323,7 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
 export type StandalonePostView = {
   id: string;
   authorName: string;
+  authorHandle: string;
   body: string;
   imageUrl?: string;
   hoursAgo: number;
@@ -331,11 +344,15 @@ async function loadStandalonePosts(
     },
     orderBy: { createdAt: "desc" },
     ...(limit ? { take: limit } : {}),
-    include: { author: { select: { name: true } }, _count: { select: { comments: true, reactions: true } } },
+    include: {
+      author: { select: { name: true, displayName: true } },
+      _count: { select: { comments: true, reactions: true } },
+    },
   });
   return rows.map((r) => ({
     id: r.id,
-    authorName: r.author.name,
+    authorName: displayNameOf(r.author),
+    authorHandle: r.author.name,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
@@ -476,6 +493,7 @@ export type CommentView = {
   imageUrl?: string;
   authorId: string;
   authorName: string;
+  authorHandle: string;
   hoursAgo: number;
 };
 
@@ -487,7 +505,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.comment.findMany({
     where: { ...where, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
-    include: { author: { select: { name: true } } },
+    include: { author: { select: { name: true, displayName: true } } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -496,7 +514,8 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     authorId: r.authorId,
-    authorName: r.author.name,
+    authorName: displayNameOf(r.author),
+    authorHandle: r.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   });
 
@@ -528,6 +547,7 @@ export type PostDetailView = {
   imageUrl?: string;
   authorId: string;
   authorName: string;
+  authorHandle: string;
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
@@ -540,7 +560,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
-      author: { select: { id: true, name: true } },
+      author: { select: { id: true, name: true, displayName: true } },
       _count: { select: { comments: true, reactions: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
@@ -552,7 +572,8 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     body: post.body,
     imageUrl: post.imageUrl ?? undefined,
     authorId: post.author.id,
-    authorName: post.author.name,
+    authorName: displayNameOf(post.author),
+    authorHandle: post.author.name,
     hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,

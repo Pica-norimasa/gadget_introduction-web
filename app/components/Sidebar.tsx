@@ -32,7 +32,7 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
           {work.title}
         </a>
         <Link
-          href={`/u/${encodeURIComponent(work.author)}`}
+          href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
           className="block truncate text-[12px] text-[var(--ink-faint)] hover:underline"
         >
           {work.author}
@@ -46,7 +46,10 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
   return (
     <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
-        <Link href={`/u/${encodeURIComponent(work.author)}`} className="font-medium text-[var(--ink-soft)] hover:underline">
+        <Link
+          href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
+          className="font-medium text-[var(--ink-soft)] hover:underline"
+        >
           {work.author}
         </Link>{" "}
         ・ {POST_TYPE_META[post.type].icon}

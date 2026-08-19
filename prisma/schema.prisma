@@ -22,7 +22,11 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
+  // プロフィールURL(/u/[name])やフォロー等の内部参照に使う一意なハンドル。
+  // Xでいう@handleに相当し、表示は基本的にdisplayNameを優先する。
   name      String   @unique
+  // Xの「表示名」に相当するフリーテキスト(重複可、未設定ならnameを表示に使う)。
+  displayName String?
   // Xのプロフィール文のようなフリーテキストの自己紹介。未設定はnull。
   bio       String?
   createdAt DateTime @default(now())

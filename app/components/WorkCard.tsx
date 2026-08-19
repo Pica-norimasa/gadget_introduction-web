@@ -52,18 +52,23 @@ export function WorkCard({
 
       <div className="mb-2 flex items-center gap-2">
         <Link
-          href={`/u/${encodeURIComponent(work.author)}`}
+          href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
           className="relative z-20 flex min-w-0 flex-1 items-center gap-2"
         >
           <AuthorAvatar name={work.author} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">{work.author}</p>
+            <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">
+              {work.author}
+              {work.authorHandle && (
+                <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorHandle}</span>
+              )}
+            </p>
             <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
           </div>
         </Link>
         {work.authorId !== currentUserId && (
           <div className="relative z-20">
-            <FollowButton author={work.author} />
+            <FollowButton author={work.authorHandle ?? work.author} />
           </div>
         )}
       </div>

@@ -30,7 +30,10 @@ export function MurmurStrip({
             <Link href={`/post/${post.id}`} className="flex flex-1 flex-col gap-2">
               <div className="flex items-center gap-2">
                 <AuthorAvatar name={post.authorName} size={24} />
-                <span className="truncate text-[12px] font-medium text-[var(--ink-soft)]">{post.authorName}</span>
+                <span className="min-w-0 truncate text-[12px]">
+                  <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
+                  <span className="text-[var(--ink-faint)]">@{post.authorHandle}</span>
+                </span>
                 <span className="ml-auto shrink-0 text-[11px] text-[var(--ink-faint)]">
                   {formatRelativeHours(post.hoursAgo)}
                 </span>

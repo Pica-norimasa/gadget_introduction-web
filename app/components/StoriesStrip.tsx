@@ -6,21 +6,29 @@ import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 
 type StoryEntry = { post: Post; projectTitle: string };
-type AuthorStory = { author: string; hue: number; glyph: string; entries: StoryEntry[] };
+type AuthorStory = { author: string; authorHandle: string; hue: number; glyph: string; entries: StoryEntry[] };
 
+// グループ化・フォロー判定・URL生成には一意なauthorHandle(=User.name)を
+// キーとして使う。author(表示名)は重複し得るため、キーには使えない。
 function groupByAuthor(postsList: Post[], works: Work[]): AuthorStory[] {
   const order: string[] = [];
   const map = new Map<string, AuthorStory>();
   for (const post of postsList) {
     const work = works.find((w) => w.id === post.projectId);
-    if (!work) continue;
-    if (!map.has(work.author)) {
-      map.set(work.author, { author: work.author, hue: work.hue, glyph: work.glyph ?? "📝", entries: [] });
-      order.push(work.author);
+    if (!work || !work.authorHandle) continue;
+    if (!map.has(work.authorHandle)) {
+      map.set(work.authorHandle, {
+        author: work.author,
+        authorHandle: work.authorHandle,
+        hue: work.hue,
+        glyph: work.glyph ?? "📝",
+        entries: [],
+      });
+      order.push(work.authorHandle);
     }
-    map.get(work.author)!.entries.push({ post, projectTitle: work.title });
+    map.get(work.authorHandle)!.entries.push({ post, projectTitle: work.title });
   }
-  return order.map((author) => map.get(author)!);
+  return order.map((handle) => map.get(handle)!);
 }
 
 const STORY_MS = 4500;
@@ -31,7 +39,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
   const stories = useMemo(() => {
     const followedPosts = posts.filter((p) => {
       const work = works.find((w) => w.id === p.projectId);
-      return !!work && followedAuthors.has(work.author);
+      return !!work && !!work.authorHandle && followedAuthors.has(work.authorHandle);
     });
     return groupByAuthor(followedPosts, works);
   }, [posts, works, followedAuthors]);
@@ -44,7 +52,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
   const currentEntry = current?.entries[entryIndex];
 
   function markSeen(i: number) {
-    setSeen((s) => new Set(s).add(stories[i].author));
+    setSeen((s) => new Set(s).add(stories[i].authorHandle));
   }
 
   function openStory(i: number) {
@@ -128,13 +136,13 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
         </p>
         <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:thin]">
           {stories.map((story, i) => {
-            const isSeen = seen.has(story.author);
+            const isSeen = seen.has(story.authorHandle);
             return (
               // アイコン部分(タップでストーリーズを開く)と作者名部分(タップで
               // プロフィールへ遷移)は役割が違うので、<button>の中に<Link>を
               // 入れる(=インタラクティブ要素の入れ子)のではなく兄弟要素として
               // 分けている。
-              <div key={story.author} className="flex w-16 shrink-0 flex-col items-center gap-1 text-center">
+              <div key={story.authorHandle} className="flex w-16 shrink-0 flex-col items-center gap-1 text-center">
                 <button
                   type="button"
                   onClick={() => openStory(i)}
@@ -156,7 +164,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                   </span>
                 </button>
                 <Link
-                  href={`/u/${encodeURIComponent(story.author)}`}
+                  href={`/u/${encodeURIComponent(story.authorHandle)}`}
                   className="max-w-full truncate text-[11px] text-[var(--ink-soft)] hover:underline"
                 >
                   {story.author}
@@ -194,7 +202,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
               </div>
               <div className="mt-2 flex items-center justify-between px-3">
                 <Link
-                  href={`/u/${encodeURIComponent(current.author)}`}
+                  href={`/u/${encodeURIComponent(current.authorHandle)}`}
                   className="flex items-center gap-1.5 text-sm font-bold text-white hover:underline"
                 >
                   <span aria-hidden>{current.glyph}</span>
