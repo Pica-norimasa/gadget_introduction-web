@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS base
+# Docker Hubの匿名pullレート制限(429)でCodeBuildのビルドが不安定に
+# 落ちることがあったため、ECR Publicのミラー経由で取得する。
+FROM public.ecr.aws/docker/library/node:22-alpine AS base
 
 # --- Dependencies ---
 FROM base AS deps
