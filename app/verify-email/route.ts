@@ -1,11 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { SITE_URL } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
 
 // メール内の確認リンクの遷移先。トークンを検証してemailVerifiedを立て、
 // 使い捨てなのでVerificationTokenは消費後に削除する。
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token");
-  const settingsUrl = new URL("/settings", request.url);
+  // request.url由来だとApp Runner環境でホスト名が0.0.0.0:3000に化ける
+  // (auth.tsがtrustHost:trueで回避しているのと同じ問題)ため、SITE_URL
+  // (AUTH_URL固定値)を明示的に使う。
+  const settingsUrl = new URL("/settings", SITE_URL);
 
   if (!token) {
     settingsUrl.searchParams.set("verify", "error");
