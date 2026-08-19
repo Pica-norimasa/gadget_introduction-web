@@ -32,13 +32,15 @@ export function IdentityBadge({
     // WorkCard等と同じく<a>の入れ子を避けて兄弟要素として分けている。
     const avatar = image ? (
       // eslint-disable-next-line @next/next/no-img-element -- GitHubのアバター画像、next/imageのドメイン設定不要な簡易表示
-      <img src={image} alt="" className="h-4 w-4 rounded-full" />
+      <img src={image} alt="" className="h-4 w-4 shrink-0 rounded-full" />
     ) : (
-      <span aria-hidden>👤</span>
+      <span aria-hidden className="shrink-0">
+        👤
+      </span>
     );
 
     return (
-      <div className="flex items-center gap-1 rounded-full border border-[var(--line)] pl-2.5 pr-1 py-1 sm:pl-3">
+      <div className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--line)] pl-2.5 pr-1 py-1 sm:pl-3">
         {handle ? (
           <Link
             href={`/u/${encodeURIComponent(handle)}`}
@@ -60,7 +62,7 @@ export function IdentityBadge({
           onClick={() => setEditing(true)}
           title="表示名を変更"
           aria-label="表示名を変更"
-          className="rounded-full p-1 text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
+          className="shrink-0 rounded-full p-1 text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
         >
           <span aria-hidden>✏️</span>
         </button>

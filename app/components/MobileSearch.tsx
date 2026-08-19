@@ -44,7 +44,7 @@ export function MobileSearch({ defaultQuery }: { defaultQuery?: string }) {
       type="button"
       aria-label="検索"
       onClick={() => setOpen(true)}
-      className="grid h-9 w-9 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
     >
       🔍
     </button>

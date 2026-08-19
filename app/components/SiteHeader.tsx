@@ -64,18 +64,24 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
                 "use server";
                 await signOut();
               }}
+              className="shrink-0"
             >
               <button
                 type="submit"
-                className="rounded-full px-2.5 py-1.5 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] sm:px-3 sm:py-2"
+                aria-label="ログアウト"
+                title="ログアウト"
+                className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)] sm:h-auto sm:w-auto sm:px-3 sm:py-2 sm:text-[13px]"
               >
-                ログアウト
+                <span aria-hidden className="sm:hidden">
+                  🚪
+                </span>
+                <span className="hidden sm:inline">ログアウト</span>
               </button>
             </form>
           ) : (
             <Link
               href="/login"
-              className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+              className="shrink-0 whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
             >
               ログイン
             </Link>

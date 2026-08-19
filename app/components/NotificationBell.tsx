@@ -192,7 +192,7 @@ export function NotificationBell({
         type="button"
         aria-label="通知"
         onClick={toggle}
-        className="relative grid h-9 w-9 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
+        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
       >
         🔔
         {localUnread > 0 && (
