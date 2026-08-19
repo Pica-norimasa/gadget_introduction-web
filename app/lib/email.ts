@@ -13,13 +13,16 @@ async function sendEmail(params: { to: string; subject: string; html: string }):
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
     },
     body: JSON.stringify({
       from: fromAddress,
       to: params.to,
       subject: params.subject,
-      html: params.html,
+      // <meta charset>が無いHTML断片だと、一部のメールクライアントが
+      // 文字コードを推測しそこねて文字化けする(件名の文字化けもこれが
+      // 誘因になっているケースが多い)。完全なHTML文書として送る。
+      html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${params.html}</body></html>`,
     }),
   });
 
