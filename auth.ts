@@ -32,7 +32,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         suffix += 1;
         name = `${desired}${suffix}`;
       }
-      return baseAdapter.createUser!({ ...user, name });
+      // GitHubが返すメールは既にGitHub側で確認済みのものなので、Draftly
+      // 独自の確認メールを重ねて要求しない(Xはそもそもメールを返さない
+      // ので該当しない)。/settingsで後から手動入力するメールは対象外
+      // (updateEmailが別途emailVerifiedをnullに戻す)。
+      return baseAdapter.createUser!({ ...user, name, emailVerified: user.email ? new Date() : null });
     },
   },
   providers: [GitHub, Twitter],

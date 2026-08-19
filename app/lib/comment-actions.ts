@@ -7,10 +7,8 @@ import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
 import { rateLimitWindowStart } from "@/app/lib/rate-limit";
-import { sendCommentNotificationEmail } from "@/app/lib/email";
+import { sendCommentNotificationEmail, SITE_URL } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
-
-const SITE_URL = process.env.AUTH_URL ?? "http://localhost:3000";
 
 // 通知メール送信はレスポンスをブロックしたくない(post-actions.tsの
 // postAiEncouragementCommentと同じ理由)のでafter()の中で行い、失敗しても
@@ -25,9 +23,11 @@ async function notifyByEmail(params: {
   try {
     const recipient = await prisma.user.findUnique({
       where: { id: params.recipientId },
-      select: { email: true, emailNotificationsEnabled: true },
+      select: { email: true, emailNotificationsEnabled: true, emailVerified: true },
     });
-    if (!recipient?.email || !recipient.emailNotificationsEnabled) return;
+    // 未確認のメールアドレス(他人のアドレスが誤って/悪意で登録された
+    // 可能性がある)には送らない。verify-email/route.tsで確認済みにする。
+    if (!recipient?.email || !recipient.emailNotificationsEnabled || !recipient.emailVerified) return;
 
     await sendCommentNotificationEmail({
       to: recipient.email,

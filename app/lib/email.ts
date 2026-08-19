@@ -1,5 +1,7 @@
 const RESEND_API_ENDPOINT = "https://api.resend.com/emails";
 
+export const SITE_URL = process.env.AUTH_URL ?? "http://localhost:3000";
+
 // Resend REST APIを直接fetchで叩くだけの薄いクライアント(cloudflare-analytics.ts
 // と同じ考え方)。専用SDKを追加するほどの複雑さが無いための判断。
 async function sendEmail(params: { to: string; subject: string; html: string }): Promise<void> {
@@ -54,6 +56,18 @@ export async function sendCommentNotificationEmail(params: {
     subject: `${params.actorName}さんがコメントしました - Draftly`,
     html,
   });
+}
+
+// 手動登録したメールアドレスの確認リンク。クリックされるまでnotifyByEmail
+// (comment-actions.ts)は送信をスキップする。
+export async function sendVerificationEmail(params: { to: string; verifyUrl: string }): Promise<void> {
+  const html = `
+    <p>Draftlyでこのメールアドレスが通知先として登録されました。</p>
+    <p>あなたの操作でなければ、このメールは無視してください(登録は反映されません)。</p>
+    <p><a href="${params.verifyUrl}">メールアドレスを確認する →</a></p>
+    <p style="color:#999; font-size:12px;">このリンクは24時間で無効になります。</p>
+  `;
+  await sendEmail({ to: params.to, subject: "メールアドレスの確認 - Draftly", html });
 }
 
 function escapeHtml(text: string): string {

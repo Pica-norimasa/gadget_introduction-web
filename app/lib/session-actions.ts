@@ -1,9 +1,31 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { randomUUID } from "node:crypto";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { sendVerificationEmail, SITE_URL } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
+
+const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
+// 確認メールの送信自体はフォーム送信をブロックしたくないのでafter()の
+// 中で行い、失敗してもメールアドレスの保存自体は成功したままにする。
+async function sendVerification(email: string): Promise<void> {
+  const token = randomUUID();
+  try {
+    await prisma.verificationToken.create({
+      data: { identifier: email, token, expires: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS) },
+    });
+    await sendVerificationEmail({
+      to: email,
+      verifyUrl: `${SITE_URL}/verify-email?token=${token}`,
+    });
+  } catch (e) {
+    console.error("確認メールの送信に失敗しました", e);
+  }
+}
 
 export type UpdateNameState = { error?: string; success?: boolean };
 
@@ -50,8 +72,9 @@ export type UpdateEmailState = { error?: string; success?: boolean };
 
 // Xログインはメールアドレスを返さない(users.readスコープの範囲外)ため、
 // GitHub連携もしていないユーザーは通知の送り先が無い。ここで手動入力
-// できるようにする(確認メールでの検証はしない軽量な実装。あくまで
-// 通知の送り先として使うだけで、ログイン識別には使わない)。
+// できるようにする。他人のアドレスを勝手に登録されると通知メールが
+// その人に届いてしまうため、確認リンクを踏むまでemailVerifiedはnullの
+// ままにし、notifyByEmail(comment-actions.ts)側で送信をブロックする。
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function updateEmail(_prevState: UpdateEmailState, formData: FormData): Promise<UpdateEmailState> {
@@ -59,14 +82,24 @@ export async function updateEmail(_prevState: UpdateEmailState, formData: FormDa
   if (email && !EMAIL_PATTERN.test(email)) return { error: "メールアドレスの形式が正しくありません" };
 
   const user = await getOrCreateCurrentUser();
+  if (email === user.email) return { success: true };
+
   try {
-    await prisma.user.update({ where: { id: user.id }, data: { email: email || null } });
+    await prisma.user.update({ where: { id: user.id }, data: { email: email || null, emailVerified: null } });
   } catch {
     return { error: "このメールアドレスは既に別のアカウントで使われています" };
   }
 
+  if (email) after(() => sendVerification(email));
+
   revalidatePath("/settings");
   return { success: true };
+}
+
+export async function resendVerificationEmail(): Promise<void> {
+  const user = await getOrCreateCurrentUser();
+  if (!user.email || user.emailVerified) return;
+  await sendVerification(user.email);
 }
 
 // トグルUIから直接呼ぶだけなのでuseActionStateは使わず、戻り値も持たない
