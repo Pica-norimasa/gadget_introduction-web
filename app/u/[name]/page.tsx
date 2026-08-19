@@ -54,7 +54,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
-          ← 発見に戻る
+          ← ホームに戻る
         </Link>
 
         <div className="mb-8 flex items-start gap-3">

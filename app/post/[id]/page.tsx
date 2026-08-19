@@ -52,7 +52,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
-          ← 発見に戻る
+          ← ホームに戻る
         </Link>
 
         <div className="mb-4 flex items-center gap-2">
