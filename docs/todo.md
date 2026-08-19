@@ -1235,3 +1235,114 @@
   別のマシン(特に新しいmacOSやLinux)であればDocker Desktopや
   Homebrewが素直に使える可能性が高いので、次に触る環境によっては
   この節は無視してよい。
+
+59. AWSデプロイ実行(項目58の続き、項目60として予告していたもの)。
+    Windows機に移行後、実際にRDS作成〜App Runner公開まで完了した。
+
+    **RDS(MySQL)**: `db.t4g.micro`・20GB gp3・Single-AZ・ap-northeast-1で
+    作成(識別子`gadget-introduction-web-dev`)。デフォルトVPCのサブネット3つ
+    (1a/1c/1d)でDBサブネットグループを構成。セキュリティグループは
+    パブリックアクセス可にした上で、開発者の自宅IPからの3306のみ許可、
+    加えて後述のApp Runner VPCコネクタのセキュリティグループも許可。
+
+    **S3**: アップロード画像用に`gadget-introduction-web-dev-uploads-<account-id>`
+    を作成。`app/lib/upload.ts`が署名なしの直接URLでオブジェクトを返す実装
+    のため、バケットポリシーで`s3:GetObject`を全体公開(パブリックアクセス
+    ブロックのうち`BlockPublicPolicy`/`RestrictPublicBuckets`のみ解除)。
+
+    **IAM権限まわりでの躓き**: 個人アカウントなので概ねAWS管理の
+    `*FullAccess`ポリシーで済ませる方針にしたが、以下で時間を溶かした。
+    - `AmazonRDSFullAccess`と`AmazonRDSDataFullAccess`は別物(後者は
+      Aurora Serverless向けRDS Data API専用で、通常の`CreateDBInstance`等には
+      効かない)。名前が紛らわしいので要注意。
+    - IAMユーザーに直接アタッチできる管理ポリシーは既定で**最大10個**という
+      クォータがあり、作業を進めるうちにすぐ到達した。CloudWatch Logs閲覧や
+      EventBridge Schedulerなど、追加のAWS管理ポリシーが用意されていない/
+      枠が無いサービスは`put-user-policy`でインラインポリシーとして
+      individual に付与する方が枠を消費せず楽(今回はCodeStar Connections用の
+      カスタムポリシーも管理ポリシーとして作ってしまい枠を圧迫したので、
+      次にやるならインライン一本化でよい)。
+
+    **CodeBuild(Dockerビルド)**: ローカルDockerが使えない問題は前回の
+    Macに続きWindows機でも発生(WSL2にはCPU仮想化支援(VT-x)がBIOS/UEFI
+    レベルで必要で、このPCでは無効だった。BIOS変更は手間がかかるため
+    見送り、AWS CodeBuildでのクラウドビルドに倒した)。`buildspec.yml`を
+    追加(リポジトリ直下)。
+    - リポジトリが非公開のため、CodeBuildのGitHubソース認証が必要。
+      最初はCodeStar Connections(`CODECONNECTIONS`認証)を試したが、
+      接続ステータスが`AVAILABLE`でGitHub App(AWS Connector for GitHub)も
+      正しくインストール・全リポジトリ許可済みなのに、
+      `CreateProject`が毎回`OAuthProviderException: User is not authorized
+      to access connection`で失敗する謎の不具合に遭遇(接続の作り直し、
+      IAM権限の総ざらいでも解決せず)。原因追求を諦め、GitHub Personal
+      Access Token(classic、`repo`スコープ)を`codebuild
+      import-source-credentials`で登録する方式に切り替えたところ即解決。
+      Fine-grainedトークンは一度`authorization failed`で弾かれたので、
+      CodeBuildと組み合わせるならclassicトークンが無難。
+
+    **本番ビルドでしか出ない不具合(`next dev`では気づけなかった)**:
+    ローカルの`next dev`だけで確認して「動く」と判断するのは危険だと
+    今回学んだ。`npm run build && npm start`で一度本番相当の動作確認を
+    してからデプロイする運用に変えるべき。
+    - `app/work/[id]/page.tsx`の`generateStaticParams`(空配列を返すだけ)が
+      `cookies()`の呼び出しと共存できず、本番ビルドで
+      `DYNAMIC_SERVER_USAGE`エラーになり全`/work/[id]`ページが500に
+      なっていた。`export const dynamic = "force-dynamic"`を明示して解決
+      (このページは閲覧数カウントや自分のリアクション状態表示があり、
+      元々キャッシュに向かない実態だったので、静的化を諦める判断は妥当)。
+    - `public/`が中身(`uploads/`)ごとgitignore対象で、リポジトリを
+      cloneすると`public/`ディレクトリ自体が存在しない。Dockerfileの
+      `COPY --from=builder /app/public ./public`がそこで失敗する。
+      `public/.gitkeep`を追加して解決。
+    - App Runnerが独自の`HOSTNAME`環境変数(インスタンスのホスト名)を
+      コンテナに注入し、Dockerfileの`ENV HOSTNAME=0.0.0.0`を上書きして
+      しまうため、Next.js standaloneサーバーが`0.0.0.0`ではなく
+      インスタンス固有のホスト名にbindしてヘルスチェックが失敗する不具合
+      あり。`CMD`自体で`HOSTNAME=0.0.0.0 node server.js`のように明示的に
+      上書きすることで解決(Dockerfileの`ENV`はPaaS側の注入に負けるが、
+      起動コマンド自体での代入は勝つ)。
+    - Auth.js(NextAuth v5)は非Vercel環境だとデフォルトでリクエストの
+      Hostヘッダーを信用せず`UntrustedHost`エラーになる。`auth.ts`に
+      `trustHost: true`を追加して解決。放置するとGitHubログインが
+      本番でだけ壊れていた。
+
+    **App Runner**: `0.5 vCPU / 1GB`→動作確認後に最小構成`0.25 vCPU / 0.5GB`
+    へ変更(コスト優先、個人プロトタイプの負荷では十分)。VPCコネクタ
+    経由でRDSにプライベート接続(RDSのセキュリティグループにコネクタの
+    セキュリティグループを許可)。機密情報(`DATABASE_URL`/`GITHUB_TOKEN`/
+    `AUTH_GITHUB_SECRET`/`AUTH_SECRET`)はSecrets Manager経由で注入
+    (`RuntimeEnvironmentSecrets`)。ヘルスチェックは`/api/health`。
+    - デプロイ当初、このAWSアカウントが「無料プラン(Free Plan、$120
+      クレジット/183日間、一部サービスへのアクセス制限あり)」だったため
+      App RunnerのどのAerロール操作も`SubscriptionRequiredException`で
+      弾かれた。支払い方法の確認だけでは直らず、アカウントを通常の
+      従量課金プランへアップグレードして解決。似た症状(読み取り専用API
+      すら弾かれる)に当たったら、まずアカウントのプラン状態を疑うとよい。
+    - 2026年4月30日付でApp Runnerは新規顧客の受付を終了しており(既存
+      サービスは動き続けるが新機能追加はない)、AWSはAmazon ECS Express
+      Modeへの移行を推奨している。今すぐ困らないが、次に大きく触る時は
+      ECS Express Modeへの移行を検討してよい。
+
+    **GitHub OAuth**: 本番ドメイン(`*.awsapprunner.com`)が確定するのは
+    デプロイ後なので、GitHub OAuth Appのリダイレクトにデプロイ後改めて
+    本番URLを追加した(1つのOAuth Appで最大10個のリダイレクトURIを
+    登録できるので、localhost用と本番用を共存させられる)。
+
+    **コスト管理**: 個人プロトタイプなので稼働時間を絞ってコストを抑える
+    方針にした。EventBridge Schedulerで毎日09:55にRDS起動→10:00に
+    App Runner再開、20:00にApp Runner一時停止(`pause-service`)→20:05に
+    RDS停止、という自動化を組んだ(実行ロールは`scheduler.amazonaws.com`を
+    信頼するIAMロール、ターゲットは`arn:aws:scheduler:::aws-sdk:{service}:
+    {action}`形式のuniversal targetでLambda不要)。ローカル開発が稼働時間外
+    でも困らないよう、`npm run db:up`/`db:down`でRDSを個別に起動・停止
+    できるようにした(`package.json`参照)。
+
+    **その他の環境固有の問題**: このPCではNorton Antivirusの「Web/Mail
+    Shield」機能がSSL/TLS通信を検査しており、独自ルート証明書をWindowsの
+    証明書ストアには追加している(そのためPowerShellの`Invoke-WebRequest`
+    等は問題なく通る)が、Python製のAWS CLIは自前の証明書バンドルしか
+    見ないため信頼できず、`CERTIFICATE_VERIFY_FAILED`で全AWS CLI操作が
+    失敗する状態になった。Windowsの証明書ストア(Root)を丸ごとPEMに
+    エクスポートして`AWS_CA_BUNDLE`環境変数(ユーザー環境変数として永続化)
+    に設定することで解決。同じ現象(PowerShellは繋がるがPython製CLIだけ
+    証明書エラー)に当たったら、まずウイルス対策ソフトのHTTPS検査機能を疑うとよい。
