@@ -81,9 +81,14 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           ) : (
             <Link
               href="/login"
-              className="shrink-0 whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+              aria-label="ログイン"
+              title="ログイン"
+              className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
             >
-              ログイン
+              <span aria-hidden className="sm:hidden">
+                🔑
+              </span>
+              <span className="hidden sm:inline">ログイン</span>
             </Link>
           )}
           <ComposerButton />

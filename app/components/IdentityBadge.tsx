@@ -57,12 +57,14 @@ export function IdentityBadge({
             <span className="hidden sm:inline">{name ?? "ゲスト"}</span>
           </span>
         )}
+        {/* 表示名の変更ボタンは頻度の低い操作なので、幅の厳しいモバイルでは
+            隠す(プロフィールページの自己紹介編集等、他の導線に任せる)。 */}
         <button
           type="button"
           onClick={() => setEditing(true)}
           title="表示名を変更"
           aria-label="表示名を変更"
-          className="shrink-0 rounded-full p-1 text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
+          className="hidden shrink-0 rounded-full p-1 text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)] sm:block"
         >
           <span aria-hidden>✏️</span>
         </button>

@@ -5,7 +5,19 @@ import { usePathname } from "next/navigation";
 import { openComposer } from "@/app/lib/composer-store";
 
 const CLASS_NAME =
-  "shrink-0 whitespace-nowrap rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-medium text-[var(--bg)] hover:opacity-90";
+  "shrink-0 whitespace-nowrap rounded-full bg-[var(--ink)] px-3 py-2 text-sm font-medium text-[var(--bg)] hover:opacity-90 sm:px-4";
+
+// 一番幅の厳しいモバイルでは「投稿する」の4文字でもヘッダーからはみ出す
+// ことがあったため、狭い画面だけ「投稿」の2文字に短縮する(sm以上は
+// フルの文言に戻す)。
+function Label() {
+  return (
+    <>
+      <span className="sm:hidden">投稿</span>
+      <span className="hidden sm:inline">投稿する</span>
+    </>
+  );
+}
 
 // ホームにいる間は、composer-store.tsを直接叩いて投稿フォームを開く
 // (同一ページ内のハッシュ遷移はnext/linkのscrollIntoView頼みで
@@ -27,14 +39,14 @@ export function ComposerButton() {
         }}
         className={CLASS_NAME}
       >
-        投稿する
+        <Label />
       </button>
     );
   }
 
   return (
     <Link href="/#composer" className={CLASS_NAME}>
-      投稿する
+      <Label />
     </Link>
   );
 }
