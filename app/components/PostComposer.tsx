@@ -141,8 +141,8 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
             onChange={(e) => setProjectTarget(e.target.value)}
             className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] focus:outline-none"
           >
-            <option value="new">🆕 新しいプロジェクトとして</option>
             <option value="">💬 つぶやき(プロジェクトに紐付けない)</option>
+            <option value="new">🆕 新しいプロジェクトとして</option>
             {myProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 📁 {p.title}
