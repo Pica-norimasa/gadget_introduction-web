@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getBlockedUsers, getMutedUsers, getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
+import { AvatarEditor } from "@/app/components/AvatarEditor";
 import { BioEditor } from "@/app/components/BioEditor";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
@@ -55,7 +56,11 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
         </Link>
 
         <div className="mb-8 flex items-start gap-3">
-          <AuthorAvatar name={profile.displayName} size={56} />
+          {isOwnProfile ? (
+            <AvatarEditor name={profile.displayName} image={profile.image} size={56} />
+          ) : (
+            <AuthorAvatar name={profile.displayName} image={profile.image} size={56} />
+          )}
           <div className="min-w-0 flex-1">
             <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
               {profile.displayName}

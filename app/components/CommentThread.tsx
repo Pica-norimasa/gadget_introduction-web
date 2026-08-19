@@ -14,7 +14,7 @@ function CommentRow({ comment, currentUserId }: { comment: CommentView; currentU
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
       <div className="flex items-start gap-2">
         <Link href={`/u/${encodeURIComponent(comment.authorHandle)}`} className="shrink-0">
-          <AuthorAvatar name={comment.authorName} size={28} />
+          <AuthorAvatar name={comment.authorName} image={comment.authorImage} size={28} />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center justify-between gap-2">

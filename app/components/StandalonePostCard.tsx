@@ -11,14 +11,14 @@ import { AuthorAvatar } from "./AuthorAvatar";
 export function StandalonePostCard({
   post,
 }: {
-  post: Pick<StandalonePostView, "id" | "authorName" | "authorHandle" | "body" | "hoursAgo">;
+  post: Pick<StandalonePostView, "id" | "authorName" | "authorHandle" | "authorImage" | "body" | "hoursAgo">;
 }) {
   return (
     <Link
       href={`/post/${post.id}`}
       className="flex items-start gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 hover:border-[var(--accent)]"
     >
-      <AuthorAvatar name={post.authorName} size={28} />
+      <AuthorAvatar name={post.authorName} image={post.authorImage} size={28} />
       <div className="min-w-0 flex-1">
         <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
           <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}

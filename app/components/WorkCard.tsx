@@ -55,7 +55,7 @@ export function WorkCard({
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
           className="relative z-20 flex min-w-0 flex-1 items-center gap-2"
         >
-          <AuthorAvatar name={work.author} />
+          <AuthorAvatar name={work.author} image={work.authorImage} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">
               {work.author}

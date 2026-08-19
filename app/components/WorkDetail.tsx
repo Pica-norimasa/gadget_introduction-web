@@ -89,7 +89,7 @@ export function WorkDetail({
             href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
             className="flex min-w-0 flex-1 items-center gap-2"
           >
-            <AuthorAvatar name={work.author} size={36} />
+            <AuthorAvatar name={work.author} image={work.authorImage} size={36} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {work.author}

@@ -45,7 +45,13 @@ type ProjectWithAuthor = {
   reactionUsefulSeed: number;
   reactionIdeaSeed: number;
   reactionWantToTrySeed: number;
-  author: { name: string; displayName: string | null; followersSeed: number; _count: { followedBy: number } };
+  author: {
+    name: string;
+    displayName: string | null;
+    image: string | null;
+    followersSeed: number;
+    _count: { followedBy: number };
+  };
   _count: { comments: number; reposts: number };
 };
 
@@ -65,6 +71,7 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     platforms: project.platforms as unknown as Platform[],
     author: displayNameOf(project.author),
     authorHandle: project.author.name,
+    authorImage: project.author.image ?? undefined,
     authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
@@ -132,6 +139,7 @@ export type UserProfile = {
   id: string;
   name: string;
   displayName: string;
+  image: string | null;
   bio: string | null;
   followers: number;
   following: number;
@@ -174,6 +182,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
     id: user.id,
     name: user.name,
     displayName: displayNameOf(user),
+    image: user.image,
     bio: user.bio,
     followers: user.followersSeed + user._count.followedBy,
     following: user._count.following,
@@ -225,7 +234,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
     where: { inspiredByProjectId: projectId },
     orderBy: { createdAt: "desc" },
     include: {
-      author: { select: { name: true, displayName: true } },
+      author: { select: { name: true, displayName: true, image: true } },
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -247,6 +256,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           id: r.id,
           authorName: displayNameOf(r.author),
           authorHandle: r.author.name,
+          authorImage: r.author.image,
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
           hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
@@ -324,6 +334,7 @@ export type StandalonePostView = {
   id: string;
   authorName: string;
   authorHandle: string;
+  authorImage: string | null;
   body: string;
   imageUrl?: string;
   hoursAgo: number;
@@ -345,7 +356,7 @@ async function loadStandalonePosts(
     orderBy: { createdAt: "desc" },
     ...(limit ? { take: limit } : {}),
     include: {
-      author: { select: { name: true, displayName: true } },
+      author: { select: { name: true, displayName: true, image: true } },
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -353,6 +364,7 @@ async function loadStandalonePosts(
     id: r.id,
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
+    authorImage: r.author.image,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
@@ -494,6 +506,7 @@ export type CommentView = {
   authorId: string;
   authorName: string;
   authorHandle: string;
+  authorImage: string | null;
   hoursAgo: number;
 };
 
@@ -505,7 +518,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.comment.findMany({
     where: { ...where, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
-    include: { author: { select: { name: true, displayName: true } } },
+    include: { author: { select: { name: true, displayName: true, image: true } } },
     orderBy: { createdAt: "asc" },
   });
 
@@ -516,6 +529,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     authorId: r.authorId,
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
+    authorImage: r.author.image,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   });
 
@@ -548,6 +562,7 @@ export type PostDetailView = {
   authorId: string;
   authorName: string;
   authorHandle: string;
+  authorImage: string | null;
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
@@ -560,7 +575,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
-      author: { select: { id: true, name: true, displayName: true } },
+      author: { select: { id: true, name: true, displayName: true, image: true } },
       _count: { select: { comments: true, reactions: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
@@ -574,6 +589,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     authorId: post.author.id,
     authorName: displayNameOf(post.author),
     authorHandle: post.author.name,
+    authorImage: post.author.image,
     hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,

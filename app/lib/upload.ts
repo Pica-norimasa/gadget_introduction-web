@@ -31,7 +31,10 @@ async function saveToS3(file: File, filename: string): Promise<string> {
     }),
   );
   // カスタムドメイン(CloudFront等)を挟む場合はS3_PUBLIC_URL_BASEで上書きできる。
-  const base = process.env.S3_PUBLIC_URL_BASE ?? `https://${s3Bucket}.s3.${s3Region}.amazonaws.com`;
+  // .envの慣習で未設定は空文字("")なので、??ではなく||で空文字も
+  // フォールバック対象にする(??だと空文字を「設定済みの値」として使ってしまい、
+  // バケットドメイン無しの壊れたURLになる)。
+  const base = process.env.S3_PUBLIC_URL_BASE || `https://${s3Bucket}.s3.${s3Region}.amazonaws.com`;
   return `${base}/${filename}`;
 }
 

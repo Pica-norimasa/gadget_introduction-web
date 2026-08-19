@@ -8,7 +8,29 @@ function authorHue(name: string): number {
   return hash;
 }
 
-export function AuthorAvatar({ name, size = 28 }: { name: string; size?: number }) {
+export function AuthorAvatar({
+  name,
+  image,
+  size = 28,
+}: {
+  name: string;
+  // GitHubログインのアバター、またはアップロードした画像。未設定なら
+  // 従来通り名前から生成した色付きイニシャルにフォールバックする。
+  image?: string | null;
+  size?: number;
+}) {
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- 外部URL(GitHub)またはS3の画像、next/imageのドメイン設定不要な簡易表示
+      <img
+        src={image}
+        alt=""
+        className="shrink-0 rounded-full object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
   const hue = authorHue(name);
   return (
     <span

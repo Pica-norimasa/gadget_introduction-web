@@ -56,7 +56,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             href={`/u/${encodeURIComponent(post.authorHandle)}`}
             className="flex min-w-0 flex-1 items-center gap-2"
           >
-            <AuthorAvatar name={post.authorName} size={36} />
+            <AuthorAvatar name={post.authorName} image={post.authorImage} size={36} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {post.authorName}
