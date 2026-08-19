@@ -20,6 +20,7 @@ import { HeroRail } from "@/app/components/HeroRail";
 import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
+import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
 import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
@@ -73,26 +74,21 @@ export default async function Home() {
             スクロールさせて見せるのは事実上たどり着けず、アンカーリンクで
             ジャンプさせても着地点がずれる(ジャンプの最中に無限スクロールの
             IntersectionObserverが発火し、上にコンテンツが追加されて位置が
-            狂う)。そのため、lg未満ではその場で開閉できるdetailsに同じ
-            Sidebarをもう1つ描画して回避する(lg以上ではこちらを隠し、
+            狂う)。そのため、lg未満では右からスライドインするドロワーに
+            同じSidebarをもう1つ描画して回避する(lg以上ではこちらを隠し、
             2カラム側だけを表示する)。 */}
-        <details className="mx-auto max-w-[1180px] px-4 pt-4 sm:px-6 lg:hidden">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)] [&::-webkit-details-marker]:hidden">
-            🏆 ランキング・おすすめを見る
-          </summary>
-          <div className="pt-4">
-            <Sidebar
-              ranking={rankingWorks}
-              posts={posts}
-              works={works}
-              activity={activity}
-              myProjects={myProjects}
-              currentUserName={currentUser?.name ?? null}
-              reposts={reposts}
-              suggestedAuthors={suggestedAuthors}
-            />
-          </div>
-        </details>
+        <MobileSidebarDrawer>
+          <Sidebar
+            ranking={rankingWorks}
+            posts={posts}
+            works={works}
+            activity={activity}
+            myProjects={myProjects}
+            currentUserName={currentUser?.name ?? null}
+            reposts={reposts}
+            suggestedAuthors={suggestedAuthors}
+          />
+        </MobileSidebarDrawer>
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
           <FeedSection
