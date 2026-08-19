@@ -65,6 +65,14 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
         requestAnimationFrame(() => {
           window.location.hash = `work-${projectId}`;
         });
+      } else {
+        // つぶやき(プロジェクト無し)の投稿はカード単体へのアンカーが無いので、
+        // 一覧セクション(MurmurStrip)自体へジャンプする。location.hashだと
+        // 連続投稿時に同じハッシュへの再代入になり動かないため、
+        // scrollIntoViewで直接スクロールする。
+        requestAnimationFrame(() => {
+          document.getElementById("murmurs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
       }
     }
   }, [state.success, state.projectId, defaultProjectTarget]);
