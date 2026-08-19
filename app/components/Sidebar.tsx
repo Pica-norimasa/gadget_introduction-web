@@ -266,6 +266,21 @@ export function Sidebar({
         )}
       </div>
 
+      <Link
+        href="/guide/build"
+        className="block rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 hover:border-[var(--accent)]"
+      >
+        <h3 className="mb-1 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+          🔧 プロダクトの作り方
+        </h3>
+        <p className="text-[12.5px] leading-relaxed text-[var(--ink-faint)]">
+          「自分にも作れるかも」と思ったら。GitHubのセットアップからAIツールでの作り方まで
+        </p>
+        <span className="mt-2 inline-flex items-center gap-1 text-[12.5px] font-medium text-[var(--accent)]">
+          はじめての一本を作る →
+        </span>
+      </Link>
+
       <div id="ranking" className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24">
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
           週間ランキング
