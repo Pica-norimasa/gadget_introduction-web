@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { EmailAddressForm } from "@/app/components/EmailAddressForm";
 import { EmailNotificationToggle } from "@/app/components/EmailNotificationToggle";
 
 export const metadata: Metadata = { title: "設定 | Draftly" };
@@ -25,12 +26,21 @@ export default async function SettingsPage() {
             してください
           </p>
         ) : (
-          <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
-            <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+            <div>
+              <p className="mb-1 text-[14px] font-medium text-[var(--ink)]">メールアドレス</p>
+              <p className="mb-2 text-[12px] text-[var(--ink-faint)]">
+                Xログインはメールアドレスを取得できないため、通知を受け取るにはここで登録してください。確認メールでの検証は行わないので、自分のものを正確に入力してください。
+              </p>
+              <EmailAddressForm email={user.email} />
+            </div>
+
+            <div className="flex items-center justify-between gap-4 border-t border-[var(--line)] pt-4">
               <div>
                 <p className="text-[14px] font-medium text-[var(--ink)]">コメント通知メール</p>
                 <p className="text-[12px] text-[var(--ink-faint)]">
-                  自分の作品・投稿にコメントが付いたとき、{user.email ?? "登録メールアドレス"}宛にメールで知らせます
+                  自分の作品・投稿にコメントが付いたとき、上記のメールアドレス宛に知らせます
+                  {!user.email && "(メールアドレス未登録のため現在は送信されません)"}
                 </p>
               </div>
               <EmailNotificationToggle initialEnabled={user.emailNotificationsEnabled} />
