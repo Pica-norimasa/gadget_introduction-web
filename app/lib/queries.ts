@@ -293,7 +293,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
           youtubeUrl: r.youtubeUrl ?? undefined,
-          hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+          hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
           commentsCount: r._count.comments,
           likesCount: r._count.reactions,
         },
@@ -324,7 +324,7 @@ export async function getPosts(): Promise<Post[]> {
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     youtubeUrl: r.youtubeUrl ?? undefined,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
   }));
 }
 
@@ -361,7 +361,7 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
     authorName: r.author.name,
     projectId: r.project?.id ?? null,
     projectTitle: r.project?.title ?? null,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
   }));
 }
 
@@ -406,7 +406,7 @@ async function loadStandalonePosts(
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     youtubeUrl: r.youtubeUrl ?? undefined,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
   }));
@@ -454,7 +454,7 @@ export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
     projectId: r.project.id,
     projectTitle: r.project.title,
     comment: r.comment,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
   }));
 }
 
@@ -573,7 +573,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     authorHandle: r.author.name,
     authorSocialHandle: socialHandleOf(r.author) ?? undefined,
     authorImage: r.author.image,
-    hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
   });
 
   const repliesByParent = new Map<string, CommentView[]>();
@@ -639,7 +639,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     authorHandle: post.author.name,
     authorSocialHandle: socialHandleOf(post.author) ?? undefined,
     authorImage: post.author.image,
-    hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
+    hoursAgo: Math.max(0, (Date.now() - post.createdAt.getTime()) / HOUR_MS),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,
     inspiredByProjectId: post.inspiredByProject?.id,
@@ -728,7 +728,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
       reactionType: latest.reactionType as ReactionKey | null,
       sourceProjectId: latest.sourceProject?.id ?? null,
       sourceProjectTitle: latest.sourceProject?.title ?? null,
-      hoursAgo: Math.max(0, Math.round((Date.now() - latest.createdAt.getTime()) / HOUR_MS)),
+      hoursAgo: Math.max(0, (Date.now() - latest.createdAt.getTime()) / HOUR_MS),
       read: group.every((r) => r.readAt !== null),
     };
   });

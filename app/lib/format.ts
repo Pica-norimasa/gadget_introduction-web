@@ -1,5 +1,6 @@
 export function formatRelativeHours(hoursAgo: number): string {
-  if (hoursAgo < 24) return `${hoursAgo}時間前`;
+  if (hoursAgo < 1) return `${Math.max(1, Math.round(hoursAgo * 60))}分前`;
+  if (hoursAgo < 24) return `${Math.round(hoursAgo)}時間前`;
   return `${Math.round(hoursAgo / 24)}日前`;
 }
 
