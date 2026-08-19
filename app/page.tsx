@@ -61,6 +61,25 @@ export default async function Home() {
         <PostComposerToggle myProjects={myProjects} isLoggedIn={!!session?.user} />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
+
+        {/* 「プロダクトの作り方」ガイドは元々サイドバーにあったが、lg未満だと
+            ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
+            Xからの初見の非ログインユーザーに一番見てほしい導線が埋もれて
+            いた。ここに小さなピルボタンとして複製し、常時見える位置に出す
+            (lg以上はサイドバーに既にあるので重複させない)。 */}
+        <div className="mx-auto max-w-[1180px] px-4 pt-3 sm:px-6 lg:hidden">
+          <Link
+            href="/guide/build"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
+          >
+            <span aria-hidden>🔧</span>
+            プロダクトの作り方
+            <span aria-hidden className="text-[var(--accent)]">
+              →
+            </span>
+          </Link>
+        </div>
+
         <HeroRail
           works={heroWorks}
           posts={posts}
