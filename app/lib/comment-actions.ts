@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
+import { rateLimitWindowStart } from "@/app/lib/rate-limit";
 import { prisma } from "@/app/lib/prisma";
 
 export type CreateCommentState = { error?: string; success?: boolean };
@@ -51,6 +52,14 @@ export async function createComment(
   }
 
   const author = await getOrCreateCurrentUser();
+
+  // 荒らし・スパム対策の簡易レート制限(直近10分に20件まで)。
+  const recentCommentCount = await prisma.comment.count({
+    where: { authorId: author.id, createdAt: { gte: rateLimitWindowStart(10) } },
+  });
+  if (recentCommentCount >= 20) {
+    return { error: "コメントが多すぎます。少し時間をおいてから試してください" };
+  }
 
   // ミュート/ブロックは今まで「自分の画面から相手を消す」だけで、相手が
   // 実際に書き込むこと自体は防げていなかった。ブロックされている側からの

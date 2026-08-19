@@ -9,6 +9,7 @@ import { inferPostType } from "@/app/lib/infer-post-type";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
+import { rateLimitWindowStart } from "@/app/lib/rate-limit";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
@@ -64,6 +65,14 @@ export async function createPost(
   }
 
   const author = await getOrCreateCurrentUser();
+
+  // 荒らし・スパム対策の簡易レート制限(直近10分に10件まで)。
+  const recentPostCount = await prisma.post.count({
+    where: { authorId: author.id, createdAt: { gte: rateLimitWindowStart(10) } },
+  });
+  if (recentPostCount >= 10) {
+    return { error: "投稿が多すぎます。少し時間をおいてから試してください" };
+  }
 
   // 「これにインスパイアされて投稿する」ボタン経由でのみ渡ってくる想定だが、
   // フォーム改ざん対策として実在チェックだけはする(著者チェックは無し、

@@ -4,7 +4,17 @@ import { revalidatePath } from "next/cache";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import type { ReactionKey } from "@/app/lib/mock-data";
 import { isBlockedBy } from "@/app/lib/queries";
+import { rateLimitWindowStart } from "@/app/lib/rate-limit";
 import { prisma } from "@/app/lib/prisma";
+
+// 荒らし・スパム対策の簡易レート制限(直近10分に60件まで)。トレンド
+// スコアはリアクション数に連動するため、大量連打による操作も抑止する。
+async function isReactionRateLimited(userId: string): Promise<boolean> {
+  const count = await prisma.reaction.count({
+    where: { userId, createdAt: { gte: rateLimitWindowStart(10) } },
+  });
+  return count >= 60;
+}
 
 // トグル: 既に押していれば取り消し、押していなければReaction行を作る。
 // 認証が無いので軽量セッション(app/lib/session.ts)のUser名義で行う。
@@ -23,6 +33,7 @@ export async function toggleReaction(projectId: string, type: ReactionKey) {
     const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
     if (!project) return;
     if (await isBlockedBy(project.authorId, user.id)) return;
+    if (await isReactionRateLimited(user.id)) return;
 
     await prisma.reaction.create({ data: { projectId, userId: user.id, type } });
 
@@ -52,6 +63,7 @@ export async function toggleLike(postId: string) {
     const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
     if (!post) return;
     if (await isBlockedBy(post.authorId, user.id)) return;
+    if (await isReactionRateLimited(user.id)) return;
 
     await prisma.reaction.create({ data: { postId, userId: user.id, type: "like" } });
 
