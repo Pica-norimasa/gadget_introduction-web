@@ -14,7 +14,16 @@ export function StandalonePostCard({
 }: {
   post: Pick<
     StandalonePostView,
-    "id" | "authorName" | "authorHandle" | "authorSocialHandle" | "authorImage" | "body" | "hoursAgo" | "youtubeUrl"
+    | "id"
+    | "authorName"
+    | "authorHandle"
+    | "authorSocialHandle"
+    | "authorImage"
+    | "body"
+    | "hoursAgo"
+    | "youtubeUrl"
+    | "inspiredByProjectId"
+    | "inspiredByProjectTitle"
   >;
 }) {
   return (
@@ -31,6 +40,11 @@ export function StandalonePostCard({
         </p>
         {post.body && <p className="text-[13px] leading-relaxed text-[var(--ink)]">{post.body}</p>}
         {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} className="mt-2 max-w-[220px]" />}
+        {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+          <span className="mt-1.5 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">
+            🌱 {post.inspiredByProjectTitle}
+          </span>
+        )}
       </div>
     </Link>
   );

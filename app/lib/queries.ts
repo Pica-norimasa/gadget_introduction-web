@@ -377,6 +377,12 @@ export type StandalonePostView = {
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
+  // コメントを「つぶやきとしてもシェア」した投稿(shareCommentAsPost)や
+  // 「これにインスパイアされて投稿する」経由の投稿で埋まる。ホーム画面の
+  // 普通のつぶやきと見分けが付かないという指摘を受け、対象作品への
+  // リンクを表示できるようにした。
+  inspiredByProjectId?: string;
+  inspiredByProjectTitle?: string;
 };
 
 async function loadStandalonePosts(
@@ -395,6 +401,7 @@ async function loadStandalonePosts(
     include: {
       author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
       _count: { select: { comments: true, reactions: true } },
+      inspiredByProject: { select: { id: true, title: true } },
     },
   });
   return rows.map((r) => ({
@@ -409,6 +416,8 @@ async function loadStandalonePosts(
     hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
+    inspiredByProjectId: r.inspiredByProject?.id,
+    inspiredByProjectTitle: r.inspiredByProject?.title,
   }));
 }
 

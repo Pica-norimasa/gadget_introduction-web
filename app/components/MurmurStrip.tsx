@@ -49,6 +49,11 @@ export function MurmurStrip({
                 <img src={post.imageUrl} alt="" className="h-20 w-full rounded-lg object-cover" />
               )}
               {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} />}
+              {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+                <span className="inline-flex max-w-full items-center gap-1 truncate self-start rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">
+                  🌱 {post.inspiredByProjectTitle}
+                </span>
+              )}
             </Link>
             <div className="mt-auto flex items-center gap-3">
               <LikeButton postId={post.id} liked={likedPostIds.has(post.id)} count={post.likesCount} />
