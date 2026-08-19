@@ -39,10 +39,12 @@ export function PostComposerToggle({
     const params = new URLSearchParams(window.location.search);
     const inspiredById = params.get("inspiredById");
     const inspiredByTitle = params.get("inspiredByTitle");
+    const initialBody = params.get("initialBody");
     if (inspiredById && inspiredByTitle) {
-      openComposerWithInspiration({ id: inspiredById, title: inspiredByTitle });
+      openComposerWithInspiration({ id: inspiredById, title: inspiredByTitle, initialBody: initialBody ?? undefined });
       params.delete("inspiredById");
       params.delete("inspiredByTitle");
+      params.delete("initialBody");
       const query = params.toString();
       window.history.replaceState(
         null,

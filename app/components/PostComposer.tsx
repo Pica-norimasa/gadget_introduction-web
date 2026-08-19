@@ -35,6 +35,21 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
     el.style.height = `${el.scrollHeight}px`;
   }
 
+  // 「コメントをつぶやきとしてシェア」から来た場合だけ、本文を事前入力し
+  // 投稿先もつぶやきに固定する(通常の「これにインスパイアされて
+  // 投稿する」ではinitialBodyが無いので何もしない)。
+  useEffect(() => {
+    if (!inspiredBy?.initialBody) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- composer-storeからの遷移を受けて事前入力する必要がある
+    setBody(inspiredBy.initialBody);
+    setProjectTarget("");
+    if (textareaRef.current) {
+      textareaRef.current.value = inspiredBy.initialBody;
+      autoGrow(textareaRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- inspiredBy参照全体ではなくinitialBodyの変化だけで発火させたい
+  }, [inspiredBy?.initialBody]);
+
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setImagePreview((prev) => {

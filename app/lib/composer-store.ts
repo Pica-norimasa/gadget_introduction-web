@@ -10,7 +10,10 @@
 
 import { useSyncExternalStore } from "react";
 
-export type InspiredBy = { id: string; title: string };
+// initialBodyは「コメントをつぶやきとしてシェア」からの遷移時だけ使う
+// (この場合だけ本文を事前入力し、投稿先も既定でつぶやきにする)。
+// 通常の「これにインスパイアされて投稿する」ではundefinedのまま。
+export type InspiredBy = { id: string; title: string; initialBody?: string };
 
 let open = false;
 let inspiredBy: InspiredBy | null = null;

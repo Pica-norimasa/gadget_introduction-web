@@ -9,7 +9,17 @@ import { CommentForm } from "./CommentForm";
 import { DeleteCommentButton } from "./DeleteCommentButton";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 
-function CommentRow({ comment, currentUserId }: { comment: CommentView; currentUserId: string | null }) {
+function CommentRow({
+  comment,
+  currentUserId,
+  target,
+  targetTitle,
+}: {
+  comment: CommentView;
+  currentUserId: string | null;
+  target: { type: "project" | "post"; id: string };
+  targetTitle?: string;
+}) {
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
       <div className="flex items-start gap-2">
@@ -48,6 +58,18 @@ function CommentRow({ comment, currentUserId }: { comment: CommentView; currentU
               className="mt-2 max-h-64 max-w-full rounded-xl border border-[var(--line)] object-contain"
             />
           )}
+          {/* 自分のコメントだけ、後から「つぶやきとしてもシェア」できるように
+              する。他人のコメントの引用防止と、単独投稿にはinspiredByの
+              紐付け先が無い(Post.inspiredByProjectIdはプロジェクト限定)
+              ためprojectのコメントのみに絞っている。 */}
+          {comment.authorId === currentUserId && comment.body && target.type === "project" && targetTitle && (
+            <Link
+              href={`/?inspiredById=${target.id}&inspiredByTitle=${encodeURIComponent(targetTitle)}&initialBody=${encodeURIComponent(comment.body)}#composer`}
+              className="mt-1.5 inline-block text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+            >
+              🌱 つぶやきとしてもシェア
+            </Link>
+          )}
         </div>
       </div>
     </div>
@@ -60,11 +82,14 @@ function CommentRow({ comment, currentUserId }: { comment: CommentView; currentU
 export function CommentThread({
   thread,
   target,
+  targetTitle,
   currentUserId,
   isLoggedIn,
 }: {
   thread: CommentThreadType;
   target: { type: "project" | "post"; id: string };
+  // "つぶやきとしてもシェア"リンクの文言に使う(projectのときだけ必要)。
+  targetTitle?: string;
   currentUserId: string | null;
   isLoggedIn: boolean;
 }) {
@@ -72,7 +97,7 @@ export function CommentThread({
 
   return (
     <div className="flex flex-col gap-2">
-      <CommentRow comment={thread} currentUserId={currentUserId} />
+      <CommentRow comment={thread} currentUserId={currentUserId} target={target} targetTitle={targetTitle} />
 
       <button
         type="button"
@@ -85,7 +110,13 @@ export function CommentThread({
       {thread.replies.length > 0 && (
         <div className="ml-9 flex flex-col gap-2 border-l-2 border-[var(--line)] pl-3">
           {thread.replies.map((reply) => (
-            <CommentRow key={reply.id} comment={reply} currentUserId={currentUserId} />
+            <CommentRow
+              key={reply.id}
+              comment={reply}
+              currentUserId={currentUserId}
+              target={target}
+              targetTitle={targetTitle}
+            />
           ))}
         </div>
       )}
