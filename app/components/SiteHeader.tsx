@@ -72,19 +72,34 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
               </button>
             </form>
           ) : (
-            <form
-              action={async () => {
-                "use server";
-                await signIn("github");
-              }}
-            >
-              <button
-                type="submit"
-                className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+            <div className="flex items-center gap-1.5">
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("github");
+                }}
               >
-                GitHubでログイン
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+                >
+                  GitHubでログイン
+                </button>
+              </form>
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("twitter");
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+                >
+                  Xでログイン
+                </button>
+              </form>
+            </div>
           )}
           <ComposerButton />
         </nav>

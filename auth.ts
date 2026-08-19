@@ -1,5 +1,6 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
+import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/app/lib/prisma";
 
@@ -34,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return baseAdapter.createUser!({ ...user, name });
     },
   },
-  providers: [GitHub],
+  providers: [GitHub, Twitter],
   // Vercel以外の環境(App Runner等)では、Auth.jsはデフォルトでリクエストの
   // Hostヘッダーを信用しない(ホストヘッダーインジェクション対策)。デプロイ先の
   // ドメインはビルド時点では決まらないため、信用するホストを個別指定する
