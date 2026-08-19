@@ -52,7 +52,11 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           </Link>
           <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
-          <IdentityBadge name={user ? (user.displayName ?? user.name) : null} image={user?.image} />
+          <IdentityBadge
+            name={user ? (user.displayName ?? user.name) : null}
+            handle={user?.name ?? null}
+            image={user?.image}
+          />
           {authed ? (
             <form
               action={async () => {
