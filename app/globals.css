@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f6f3ec;
-  --bg-raised: #ffffff;
-  --bg-sunken: #efe9db;
-  --ink: #211c16;
-  --ink-soft: #6b6255;
-  --ink-faint: #9c9284;
-  --line: #e7e1d3;
+  --bg: #17140f;
+  --bg-raised: #211c15;
+  --bg-sunken: #0f0d09;
+  --ink: #f3eee3;
+  --ink-soft: #b7ac9a;
+  --ink-faint: #857b6c;
+  --line: #332920;
 
-  --accent: #ff5a2e;
-  --accent-ink: #fff9f5;
-  --accent-soft: #ffe7db;
+  --accent: #ff7a4d;
+  --accent-ink: #1a1108;
+  --accent-soft: #3a2013;
 
-  --teal: #1f8a76;
-  --teal-soft: #dcf3ec;
+  --teal: #4fc0a8;
+  --teal-soft: #163530;
 
-  --violet: #6e5bc6;
-  --violet-soft: #e9e4fb;
+  --violet: #a797f0;
+  --violet-soft: #241e3e;
 
-  --amber: #b9800f;
-  --amber-soft: #fbebce;
+  --amber: #e3a93d;
+  --amber-soft: #362508;
 
-  --shadow: rgba(33, 28, 22, 0.08);
+  --shadow: rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
@@ -48,30 +48,32 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
+/* デフォルトをダーク基調(X風)にしたので、明示的にライトを選好している
+   OS設定の場合だけ、元の明るい配色を使う。 */
+@media (prefers-color-scheme: light) {
   :root {
-    --bg: #17140f;
-    --bg-raised: #211c15;
-    --bg-sunken: #0f0d09;
-    --ink: #f3eee3;
-    --ink-soft: #b7ac9a;
-    --ink-faint: #857b6c;
-    --line: #332920;
+    --bg: #f6f3ec;
+    --bg-raised: #ffffff;
+    --bg-sunken: #efe9db;
+    --ink: #211c16;
+    --ink-soft: #6b6255;
+    --ink-faint: #9c9284;
+    --line: #e7e1d3;
 
-    --accent: #ff7a4d;
-    --accent-ink: #1a1108;
-    --accent-soft: #3a2013;
+    --accent: #ff5a2e;
+    --accent-ink: #fff9f5;
+    --accent-soft: #ffe7db;
 
-    --teal: #4fc0a8;
-    --teal-soft: #163530;
+    --teal: #1f8a76;
+    --teal-soft: #dcf3ec;
 
-    --violet: #a797f0;
-    --violet-soft: #241e3e;
+    --violet: #6e5bc6;
+    --violet-soft: #e9e4fb;
 
-    --amber: #e3a93d;
-    --amber-soft: #362508;
+    --amber: #b9800f;
+    --amber-soft: #fbebce;
 
-    --shadow: rgba(0, 0, 0, 0.4);
+    --shadow: rgba(33, 28, 22, 0.08);
   }
 }
 
