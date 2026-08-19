@@ -4,6 +4,7 @@ import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { BrandMark } from "./BrandMark";
 import { ComposerButton } from "./ComposerButton";
+import { FeedNavLink } from "./FeedNavLink";
 import { IdentityBadge } from "./IdentityBadge";
 import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
@@ -28,6 +29,40 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           </span>
         </Link>
 
+        {authed ? (
+          <form
+            action={async () => {
+              "use server";
+              await signOut();
+            }}
+            className="shrink-0"
+          >
+            <button
+              type="submit"
+              aria-label="ログアウト"
+              title="ログアウト"
+              className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)] sm:h-auto sm:w-auto sm:px-3 sm:py-2 sm:text-[13px]"
+            >
+              <span aria-hidden className="sm:hidden">
+                🚪
+              </span>
+              <span className="hidden sm:inline">ログアウト</span>
+            </button>
+          </form>
+        ) : (
+          <Link
+            href="/login"
+            aria-label="ログイン"
+            title="ログイン"
+            className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
+          >
+            <span aria-hidden className="sm:hidden">
+              🔑
+            </span>
+            <span className="hidden sm:inline">ログイン</span>
+          </Link>
+        )}
+
         <form action="/search" method="GET" className="relative hidden flex-1 max-w-md sm:block">
           <input
             type="text"
@@ -39,12 +74,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
         </form>
 
         <nav className="ml-auto flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/#feed"
-            className="hidden rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
-          >
-            発見する
-          </Link>
+          <FeedNavLink />
           <Link
             href="/#ranking"
             className="hidden rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
@@ -58,39 +88,6 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
             handle={user?.name ?? null}
             image={user?.image}
           />
-          {authed ? (
-            <form
-              action={async () => {
-                "use server";
-                await signOut();
-              }}
-              className="shrink-0"
-            >
-              <button
-                type="submit"
-                aria-label="ログアウト"
-                title="ログアウト"
-                className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)] sm:h-auto sm:w-auto sm:px-3 sm:py-2 sm:text-[13px]"
-              >
-                <span aria-hidden className="sm:hidden">
-                  🚪
-                </span>
-                <span className="hidden sm:inline">ログアウト</span>
-              </button>
-            </form>
-          ) : (
-            <Link
-              href="/login"
-              aria-label="ログイン"
-              title="ログイン"
-              className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
-            >
-              <span aria-hidden className="sm:hidden">
-                🔑
-              </span>
-              <span className="hidden sm:inline">ログイン</span>
-            </Link>
-          )}
           <ComposerButton />
         </nav>
       </div>
