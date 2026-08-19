@@ -59,14 +59,13 @@ export default async function Home() {
 
       <main className="flex-1">
         <PostComposerToggle myProjects={myProjects} isLoggedIn={!!session?.user} />
-        <StoriesStrip posts={posts} works={works} />
-        <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
 
         {/* 「プロダクトの作り方」ガイドは元々サイドバーにあったが、lg未満だと
             ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
             Xからの初見の非ログインユーザーに一番見てほしい導線が埋もれて
             いた。ここに小さなピルボタンとして複製し、常時見える位置に出す
-            (lg以上はサイドバーに既にあるので重複させない)。 */}
+            (lg以上はサイドバーに既にあるので重複させない)。投稿欄のすぐ下、
+            スワイプで発見の直前という並びにしている。 */}
         <div className="mx-auto max-w-[1180px] px-4 pt-3 sm:px-6 lg:hidden">
           <Link
             href="/guide/build"
@@ -80,6 +79,8 @@ export default async function Home() {
           </Link>
         </div>
 
+        <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
+        <StoriesStrip posts={posts} works={works} />
         <HeroRail
           works={heroWorks}
           posts={posts}
