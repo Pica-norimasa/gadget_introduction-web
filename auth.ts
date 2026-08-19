@@ -62,16 +62,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // 毎回更新するのは、後から改名されても追従できるようにするため)。
     // profileはprofile()でのマッピング前の生データなので、GitHubは
     // profile.login、X(Twitter API v2)はprofile.data.usernameで取れる。
+    //
+    // ここはあくまで付随的な記録であり、失敗してもログイン自体をブロック
+    // してはいけない(実際に、初回サインアップ直後のタイミングでUserの
+    // 書き込みがまだ反映しきっていないと思われるP2025で失敗し、ログイン
+    // 全体がAccessDeniedになる事故が起きたため、try/catchで握りつぶす)。
     async signIn({ user, account, profile }) {
       if (!user.id || !profile) return true;
 
-      if (account?.provider === "github") {
-        const login = (profile as { login?: string }).login;
-        if (login) await prisma.user.update({ where: { id: user.id }, data: { githubUsername: login } });
-      }
-      if (account?.provider === "twitter") {
-        const username = (profile as { data?: { username?: string } }).data?.username;
-        if (username) await prisma.user.update({ where: { id: user.id }, data: { xUsername: username } });
+      try {
+        if (account?.provider === "github") {
+          const login = (profile as { login?: string }).login;
+          if (login) await prisma.user.update({ where: { id: user.id }, data: { githubUsername: login } });
+        }
+        if (account?.provider === "twitter") {
+          const username = (profile as { data?: { username?: string } }).data?.username;
+          if (username) await prisma.user.update({ where: { id: user.id }, data: { xUsername: username } });
+        }
+      } catch (e) {
+        console.error("連携ユーザー名の保存に失敗しました(ログインは継続します)", e);
       }
       return true;
     },
