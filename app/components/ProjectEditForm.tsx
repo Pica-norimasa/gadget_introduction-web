@@ -15,6 +15,7 @@ const CATEGORIES = [
   "AI Agent",
   "拡張機能",
   "プロトタイプ",
+  "その他",
 ] as const;
 const STAGES = ["アイデア", "プロトタイプ", "ベータ", "公開中"] as const;
 const TOOL_OPTIONS: { value: string; label: string }[] = [
@@ -26,6 +27,7 @@ const TOOL_OPTIONS: { value: string; label: string }[] = [
   { value: "Bolt", label: "Bolt" },
   { value: "v0", label: "v0" },
   { value: "Cursor", label: "Cursor" },
+  { value: "multiple", label: "複数のAIツール" },
 ];
 
 const initialState: UpdateProjectState = {};
@@ -123,16 +125,25 @@ export function ProjectEditForm({ work }: { work: Work }) {
       <fieldset className="flex flex-col gap-1.5">
         <legend className={labelClass}>対応環境</legend>
         <div className="flex flex-wrap gap-1.5">
-          {PLATFORM_ORDER.map((p) => (
-            <label
-              key={p}
-              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] has-[:checked]:border-[var(--accent)] has-[:checked]:bg-[var(--accent-soft)] has-[:checked]:text-[var(--accent)]"
-            >
-              <input type="checkbox" name="platforms" value={p} defaultChecked={work.platforms.includes(p)} className="sr-only" />
-              <span aria-hidden>{PLATFORM_META[p].icon}</span>
-              {PLATFORM_META[p].label}
-            </label>
-          ))}
+          {PLATFORM_ORDER.map((p) => {
+            const { Icon, label } = PLATFORM_META[p];
+            return (
+              <label
+                key={p}
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] has-[:checked]:border-[var(--accent)] has-[:checked]:bg-[var(--accent-soft)] has-[:checked]:text-[var(--accent)]"
+              >
+                <input
+                  type="checkbox"
+                  name="platforms"
+                  value={p}
+                  defaultChecked={work.platforms.includes(p)}
+                  className="sr-only"
+                />
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </label>
+            );
+          })}
         </div>
       </fieldset>
 
@@ -155,6 +166,17 @@ export function ProjectEditForm({ work }: { work: Work }) {
           name="githubUrl"
           defaultValue={work.githubUrl ?? ""}
           placeholder="https://github.com/your/repo"
+          className={inputClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>YouTube動画(空欄可)</span>
+        <input
+          type="text"
+          name="youtubeUrl"
+          defaultValue={work.youtubeUrl ?? ""}
+          placeholder="https://www.youtube.com/watch?v=..."
           className={inputClass}
         />
       </label>

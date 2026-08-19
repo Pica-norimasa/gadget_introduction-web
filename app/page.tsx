@@ -10,6 +10,7 @@ import {
   getWorks,
 } from "@/app/lib/queries";
 import Link from "next/link";
+import { auth } from "@/auth";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposerToggle } from "@/app/components/PostComposerToggle";
@@ -33,6 +34,7 @@ export default async function Home() {
     standalonePosts,
     likedPostIds,
     inspirations,
+    session,
   ] = await Promise.all([
     getWorks(),
     getPosts(),
@@ -44,6 +46,7 @@ export default async function Home() {
     getRecentStandalonePosts(),
     getMyLikedPostIds(),
     getRecentInspirations(),
+    auth(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -54,7 +57,7 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <PostComposerToggle myProjects={myProjects} />
+        <PostComposerToggle myProjects={myProjects} isLoggedIn={!!session?.user} />
         <StoriesStrip posts={posts} works={works} />
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
         <HeroRail

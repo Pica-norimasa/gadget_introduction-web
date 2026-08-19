@@ -188,6 +188,7 @@ export function FeedSection({
         <span className="mr-1 text-[12px] text-[var(--ink-faint)]">対応環境</span>
         {PLATFORM_ORDER.map((p) => {
           const active = platformFilter.has(p);
+          const { Icon, label } = PLATFORM_META[p];
           return (
             <button
               key={p}
@@ -200,8 +201,8 @@ export function FeedSection({
                   : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
               }`}
             >
-              <span aria-hidden>{PLATFORM_META[p].icon}</span>
-              {PLATFORM_META[p].label}
+              <Icon className="h-3.5 w-3.5" />
+              {label}
             </button>
           );
         })}

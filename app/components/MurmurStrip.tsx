@@ -3,6 +3,7 @@ import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LikeButton } from "./LikeButton";
+import { YouTubeCard } from "./YouTubeCard";
 
 // プロジェクトに紐付けない気軽な投稿専用の、横スクロールの帯。
 // プロダクト一覧(HeroRail/FeedSection)を主役の座から動かしたくない
@@ -32,7 +33,9 @@ export function MurmurStrip({
                 <AuthorAvatar name={post.authorName} image={post.authorImage} size={24} />
                 <span className="min-w-0 truncate text-[12px]">
                   <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
-                  <span className="text-[var(--ink-faint)]">@{post.authorHandle}</span>
+                  {post.authorSocialHandle && (
+                    <span className="text-[var(--ink-faint)]">@{post.authorSocialHandle}</span>
+                  )}
                 </span>
                 <span className="ml-auto shrink-0 text-[11px] text-[var(--ink-faint)]">
                   {formatRelativeHours(post.hoursAgo)}
@@ -45,6 +48,7 @@ export function MurmurStrip({
                 // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
                 <img src={post.imageUrl} alt="" className="h-20 w-full rounded-lg object-cover" />
               )}
+              {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} />}
             </Link>
             <div className="mt-auto flex items-center gap-3">
               <LikeButton postId={post.id} liked={likedPostIds.has(post.id)} count={post.likesCount} />

@@ -57,5 +57,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    // プロフィールページに「GitHub/Xに連携済み」のリンクバッジを出すため、
+    // ログインのたびに連携先のユーザー名を保存する(新規登録時だけでなく
+    // 毎回更新するのは、後から改名されても追従できるようにするため)。
+    // profileはprofile()でのマッピング前の生データなので、GitHubは
+    // profile.login、X(Twitter API v2)はprofile.data.usernameで取れる。
+    async signIn({ user, account, profile }) {
+      if (!user.id || !profile) return true;
+
+      if (account?.provider === "github") {
+        const login = (profile as { login?: string }).login;
+        if (login) await prisma.user.update({ where: { id: user.id }, data: { githubUsername: login } });
+      }
+      if (account?.provider === "twitter") {
+        const username = (profile as { data?: { username?: string } }).data?.username;
+        if (username) await prisma.user.update({ where: { id: user.id }, data: { xUsername: username } });
+      }
+      return true;
+    },
   },
 });

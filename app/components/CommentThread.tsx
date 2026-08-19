@@ -25,7 +25,9 @@ function CommentRow({ comment, currentUserId }: { comment: CommentView; currentU
               >
                 {comment.authorName}
               </Link>
-              <span className="text-[var(--ink-faint)]"> @{comment.authorHandle}</span>{" "}
+              {comment.authorSocialHandle && (
+                <span className="text-[var(--ink-faint)]"> @{comment.authorSocialHandle}</span>
+              )}{" "}
               ・ {formatRelativeHours(comment.hoursAgo)}
             </p>
             {comment.authorId === currentUserId ? (

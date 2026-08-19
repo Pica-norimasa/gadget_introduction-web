@@ -5,6 +5,7 @@ import { POST_TYPE_META } from "@/app/lib/mock-data";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
+import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
 const initialState: CreatePostState = {};
 
@@ -15,6 +16,8 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [resetCount, setResetCount] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,6 +43,8 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
       setBody("");
       formRef.current?.reset();
       clearImage();
+      setYoutubeUrl("");
+      setResetCount((c) => c + 1);
     }
   }, [state.success]);
 
@@ -63,13 +68,14 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
         maxLength={280}
         className="w-full resize-none border-none bg-transparent text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
       />
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <ImagePickerButton
           fileInputRef={fileInputRef}
           preview={imagePreview}
           onChange={handleImageChange}
           onClear={clearImage}
         />
+        <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span

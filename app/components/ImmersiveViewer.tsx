@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
+import { toolLabel } from "@/app/lib/tool-meta";
 import { ReactionBar } from "./ReactionBar";
 
 const BATCH_SIZE = 5;
@@ -57,10 +58,14 @@ function Slide({
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-5 pb-8 pt-28 text-white">
-        <p className="text-[12px] text-white/70">
-          {work.stage} ・{" "}
-          {work.tool === "self" ? "AIを使わず自作" : work.tool ? `${work.tool}で制作` : "アイデアのみ"} ・{" "}
-          {work.platforms.map((p) => PLATFORM_META[p].icon).join(" ")}
+        <p className="flex flex-wrap items-center gap-1 text-[12px] text-white/70">
+          {work.stage} ・ {toolLabel(work.tool)} ・
+          <span className="inline-flex items-center gap-1">
+            {work.platforms.map((p) => {
+              const { Icon } = PLATFORM_META[p];
+              return <Icon key={p} className="h-3 w-3" />;
+            })}
+          </span>
         </p>
         <h2 className="text-xl font-bold leading-snug">{work.title}</h2>
         <p className="text-[14px] leading-relaxed text-white/85">{work.catch}</p>

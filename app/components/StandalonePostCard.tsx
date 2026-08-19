@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { YouTubeCard } from "./YouTubeCard";
 
 // 単独投稿(つぶやき)を縦積みの一覧で見せるための簡易カード。
 // MurmurStripの横スクロールカードとは表示文脈が違う(あちらは
@@ -11,7 +12,10 @@ import { AuthorAvatar } from "./AuthorAvatar";
 export function StandalonePostCard({
   post,
 }: {
-  post: Pick<StandalonePostView, "id" | "authorName" | "authorHandle" | "authorImage" | "body" | "hoursAgo">;
+  post: Pick<
+    StandalonePostView,
+    "id" | "authorName" | "authorHandle" | "authorSocialHandle" | "authorImage" | "body" | "hoursAgo" | "youtubeUrl"
+  >;
 }) {
   return (
     <Link
@@ -22,9 +26,11 @@ export function StandalonePostCard({
       <div className="min-w-0 flex-1">
         <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
           <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
-          <span>@{post.authorHandle}</span> ・ {formatRelativeHours(post.hoursAgo)}
+          {post.authorSocialHandle && <span>@{post.authorSocialHandle}</span>} ・{" "}
+          {formatRelativeHours(post.hoursAgo)}
         </p>
         {post.body && <p className="text-[13px] leading-relaxed text-[var(--ink)]">{post.body}</p>}
+        {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} className="mt-2 max-w-[220px]" />}
       </div>
     </Link>
   );

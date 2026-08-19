@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { isBlockedBy } from "@/app/lib/queries";
 import { prisma } from "@/app/lib/prisma";
@@ -10,6 +11,13 @@ import { prisma } from "@/app/lib/prisma";
 // 見つからなければ何もしない。自分自身のフォローも無視する
 // (表示名は訪問者ごとに変わるため、名前ではなくidで比較する)。
 export async function toggleFollowAction(authorName: string) {
+  // フォローは匿名ゲストの使い捨てアカウントによるフォロー水増し対策として
+  // ログイン必須にした(FollowButton.tsx側のUIガードとは別に、Server Action
+  // 直接呼び出しへの防御としてここでも検証する)。閲覧・リアクション等は
+  // 従来通り匿名ゲストのままでも可能。
+  const session = await auth();
+  if (!session?.user) return;
+
   const [follower, following] = await Promise.all([
     getOrCreateCurrentUser(),
     prisma.user.findUnique({ where: { name: authorName } }),

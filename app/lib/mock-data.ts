@@ -1,7 +1,7 @@
 export type Stage = "アイデア" | "プロトタイプ" | "ベータ" | "公開中";
-// "self" = AIツールを使わず自作。null = アイデア段階でまだ何も作っていない(ツール未定)。
-// この2つは意味が違うので明確に分ける。
-export type AiTool = "Claude" | "ChatGPT" | "Gemini" | "Bolt" | "v0" | "Cursor" | "self" | null;
+// "self" = AIツールを使わず自作。"multiple" = 単一のツール名では言い表せない
+// 複数ツール併用。null = アイデア段階でまだ何も作っていない(ツール未定)。
+export type AiTool = "Claude" | "ChatGPT" | "Gemini" | "Bolt" | "v0" | "Cursor" | "self" | "multiple" | null;
 export type Category =
   | "Webアプリ"
   | "スマホアプリ"
@@ -10,7 +10,8 @@ export type Category =
   | "AIツール"
   | "AI Agent"
   | "拡張機能"
-  | "プロトタイプ";
+  | "プロトタイプ"
+  | "その他";
 
 // 対応プラットフォーム。自由記述タグではなく固定語彙にして、
 // 表記ゆれなしにフィルタできるようにする。
@@ -34,10 +35,15 @@ export type Work = {
   tool: AiTool;
   platforms: Platform[];
   author: string;
-  // Xの@handleに相当する一意なハンドル(User.name)。表示名(author)とは別に、
-  // 「表示名 @ハンドル」の形で小さく添える。mock-data.ts由来のシードWorkには
+  // 内部的に一意なハンドル(User.name)。プロフィールURL(/u/[name])や
+  // フォロー等の内部参照にのみ使う。mock-data.ts由来のシードWorkには
   // 無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
   authorHandle?: string;
+  // 実際にXまたはGitHubに連携している場合だけ、そのユーザー名を「表示名
+  // @ハンドル」の形で添える(queries.tsのsocialHandleOf()参照)。連携が
+  // 無ければ表示しない。authorHandleとは別物(内部ハンドル≠実際のSNSの
+  // ハンドル)。
+  authorSocialHandle?: string;
   // GitHubログインのアバター、またはアップロードした画像。未設定ならAuthorAvatarが
   // 生成イニシャルにフォールバックする。mock-data.ts由来のシードWorkには無意味。
   authorImage?: string;
@@ -48,6 +54,7 @@ export type Work = {
   glyph: string | null; // 1-2 char thumbnail mark. null = 作者が画像・動画を用意しなかった投稿
   coverImageUrl?: string; // アップロードされた実写真。あればglyph/hueより優先して表示
   githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する
+  youtubeUrl?: string; // 設定されていればサムネイルカードを表示する
   hasMotion?: boolean; // true = 動画/GIFを添付した投稿。ホバー/スクロール時にミュート再生風プレビューを見せる
   reactions: {
     like: number;
@@ -467,6 +474,7 @@ export type Post = {
   type: PostType;
   body: string;
   imageUrl?: string;
+  youtubeUrl?: string;
   hoursAgo: number;
 };
 

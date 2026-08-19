@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { BrandMark } from "./BrandMark";
 import { ComposerButton } from "./ComposerButton";
 import { IdentityBadge } from "./IdentityBadge";
 import { MobileSearch } from "./MobileSearch";
@@ -19,8 +20,8 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
       <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--accent)] text-[15px] text-[var(--accent-ink)]">
-            芽
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--teal)] text-[var(--teal-soft)]">
+            <BrandMark className="h-[19px] w-[19px]" />
           </span>
           <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
             Draftly

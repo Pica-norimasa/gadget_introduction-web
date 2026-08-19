@@ -12,6 +12,7 @@ import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { PostEditor } from "@/app/components/PostEditor";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { YouTubeCard } from "@/app/components/YouTubeCard";
 
 export async function generateMetadata({
   params,
@@ -63,7 +64,9 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {post.authorName}
-                <span className="ml-1 font-normal text-[var(--ink-faint)]">@{post.authorHandle}</span>
+                {post.authorSocialHandle && (
+                  <span className="ml-1 font-normal text-[var(--ink-faint)]">@{post.authorSocialHandle}</span>
+                )}
               </p>
               <p className="text-[12px] text-[var(--ink-faint)]">{formatRelativeHours(post.hoursAgo)}</p>
             </div>
@@ -102,6 +105,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             className="mb-4 max-h-[480px] w-full rounded-2xl border border-[var(--line)] object-contain"
           />
         )}
+        {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} className="mb-4 max-w-md" />}
 
         <div className="mb-6">
           {blockedByAuthor ? (

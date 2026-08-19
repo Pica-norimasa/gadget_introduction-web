@@ -35,6 +35,7 @@ type ProjectWithAuthor = {
   glyph: string | null;
   coverImageUrl: string | null;
   githubUrl: string | null;
+  youtubeUrl: string | null;
   hasMotion: boolean;
   views: number;
   trendScore: number;
@@ -49,6 +50,8 @@ type ProjectWithAuthor = {
     name: string;
     displayName: string | null;
     image: string | null;
+    githubUsername: string | null;
+    xUsername: string | null;
     followersSeed: number;
     _count: { followedBy: number };
   };
@@ -58,6 +61,14 @@ type ProjectWithAuthor = {
 // Xの「表示名」に相当。未設定(displayName無し)ならハンドル(name)を使う。
 function displayNameOf(user: { name: string; displayName: string | null }): string {
   return user.displayName ?? user.name;
+}
+
+// 「@handle」として表示する連携済みSNSのユーザー名。User.name(内部の一意な
+// ハンドル、/u/[name]のURLに使うだけの値)とは別物で、実際にXまたはGitHubに
+// 連携していない限りは何も返さない(表示自体をしない)。両方連携していれば
+// Xを優先する(このアプリのメインのソーシャルログインという位置付けのため)。
+function socialHandleOf(user: { xUsername: string | null; githubUsername: string | null }): string | null {
+  return user.xUsername ?? user.githubUsername ?? null;
 }
 
 function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
@@ -71,12 +82,14 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     platforms: project.platforms as unknown as Platform[],
     author: displayNameOf(project.author),
     authorHandle: project.author.name,
+    authorSocialHandle: socialHandleOf(project.author) ?? undefined,
     authorImage: project.author.image ?? undefined,
     authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
     coverImageUrl: project.coverImageUrl ?? undefined,
     githubUrl: project.githubUrl ?? undefined,
+    youtubeUrl: project.youtubeUrl ?? undefined,
     hasMotion: project.hasMotion,
     reactions: {
       like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
@@ -121,17 +134,32 @@ export async function getWorks(): Promise<Work[]> {
   return getWorksWhere(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined);
 }
 
+export type SearchFilters = { category?: Category; tool?: AiTool; platform?: Platform };
+
 // タイトル・キャッチコピー・作者名のいずれかに一致するProjectを検索する。
 // SQLiteのLIKEはASCII文字を大文字小文字区別なく比較するため、日本語主体の
 // このアプリでは追加のcase-insensitive設定は不要。
-export async function searchWorks(query: string): Promise<Work[]> {
+// category/tool/platformはDB(JSON列のplatformsを含む)でクエリを組み立てる
+// より、取得済みのWork[]をJSで絞り込む方がシンプルなので、FeedSection.tsxの
+// 対応環境フィルタと同じ方式にしている。
+export async function searchWorks(query: string, filters: SearchFilters = {}): Promise<Work[]> {
   const q = query.trim();
-  if (!q) return [];
+  const hasFilters = Boolean(filters.category || filters.tool || filters.platform);
+  if (!q && !hasFilters) return [];
 
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
-  return getWorksWhere({
-    OR: [{ title: { contains: q } }, { catchText: { contains: q } }, { author: { name: { contains: q } } }],
+  const works = await getWorksWhere({
+    ...(q
+      ? { OR: [{ title: { contains: q } }, { catchText: { contains: q } }, { author: { name: { contains: q } } }] }
+      : {}),
     ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+  });
+
+  return works.filter((w) => {
+    if (filters.category && w.category !== filters.category) return false;
+    if (filters.tool && w.tool !== filters.tool) return false;
+    if (filters.platform && !w.platforms.includes(filters.platform)) return false;
+    return true;
   });
 }
 
@@ -141,6 +169,8 @@ export type UserProfile = {
   displayName: string;
   image: string | null;
   bio: string | null;
+  githubUsername: string | null;
+  xUsername: string | null;
   followers: number;
   following: number;
   works: Work[];
@@ -184,6 +214,8 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
     displayName: displayNameOf(user),
     image: user.image,
     bio: user.bio,
+    githubUsername: user.githubUsername,
+    xUsername: user.xUsername,
     followers: user.followersSeed + user._count.followedBy,
     following: user._count.following,
     works,
@@ -234,7 +266,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
     where: { inspiredByProjectId: projectId },
     orderBy: { createdAt: "desc" },
     include: {
-      author: { select: { name: true, displayName: true, image: true } },
+      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -256,9 +288,11 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           id: r.id,
           authorName: displayNameOf(r.author),
           authorHandle: r.author.name,
+          authorSocialHandle: socialHandleOf(r.author) ?? undefined,
           authorImage: r.author.image,
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
+          youtubeUrl: r.youtubeUrl ?? undefined,
           hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
           commentsCount: r._count.comments,
           likesCount: r._count.reactions,
@@ -289,6 +323,7 @@ export async function getPosts(): Promise<Post[]> {
     type: r.type as PostType,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
+    youtubeUrl: r.youtubeUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   }));
 }
@@ -334,9 +369,11 @@ export type StandalonePostView = {
   id: string;
   authorName: string;
   authorHandle: string;
+  authorSocialHandle?: string;
   authorImage: string | null;
   body: string;
   imageUrl?: string;
+  youtubeUrl?: string;
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
@@ -356,7 +393,7 @@ async function loadStandalonePosts(
     orderBy: { createdAt: "desc" },
     ...(limit ? { take: limit } : {}),
     include: {
-      author: { select: { name: true, displayName: true, image: true } },
+      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -364,9 +401,11 @@ async function loadStandalonePosts(
     id: r.id,
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
+    authorSocialHandle: socialHandleOf(r.author) ?? undefined,
     authorImage: r.author.image,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
+    youtubeUrl: r.youtubeUrl ?? undefined,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
@@ -506,6 +545,7 @@ export type CommentView = {
   authorId: string;
   authorName: string;
   authorHandle: string;
+  authorSocialHandle?: string;
   authorImage: string | null;
   hoursAgo: number;
 };
@@ -518,7 +558,9 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.comment.findMany({
     where: { ...where, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
-    include: { author: { select: { name: true, displayName: true, image: true } } },
+    include: {
+      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 
@@ -529,6 +571,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     authorId: r.authorId,
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
+    authorSocialHandle: socialHandleOf(r.author) ?? undefined,
     authorImage: r.author.image,
     hoursAgo: Math.max(0, Math.round((Date.now() - r.createdAt.getTime()) / HOUR_MS)),
   });
@@ -559,9 +602,11 @@ export type PostDetailView = {
   id: string;
   body: string;
   imageUrl?: string;
+  youtubeUrl?: string;
   authorId: string;
   authorName: string;
   authorHandle: string;
+  authorSocialHandle?: string;
   authorImage: string | null;
   hoursAgo: number;
   commentsCount: number;
@@ -575,7 +620,9 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
-      author: { select: { id: true, name: true, displayName: true, image: true } },
+      author: {
+        select: { id: true, name: true, displayName: true, image: true, githubUsername: true, xUsername: true },
+      },
       _count: { select: { comments: true, reactions: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
@@ -586,9 +633,11 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     id: post.id,
     body: post.body,
     imageUrl: post.imageUrl ?? undefined,
+    youtubeUrl: post.youtubeUrl ?? undefined,
     authorId: post.author.id,
     authorName: displayNameOf(post.author),
     authorHandle: post.author.name,
+    authorSocialHandle: socialHandleOf(post.author) ?? undefined,
     authorImage: post.author.image,
     hoursAgo: Math.max(0, Math.round((Date.now() - post.createdAt.getTime()) / HOUR_MS)),
     commentsCount: post._count.comments,

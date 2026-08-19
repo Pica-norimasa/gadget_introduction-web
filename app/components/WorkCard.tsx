@@ -14,6 +14,7 @@ import { RepostButton } from "./RepostButton";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
 import { WorkThumb } from "./WorkThumb";
+import { YouTubeCard } from "./YouTubeCard";
 
 function isUnderdog(w: Work) {
   return w.followers < 50 && w.trendScore >= 70;
@@ -59,8 +60,8 @@ export function WorkCard({
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">
               {work.author}
-              {work.authorHandle && (
-                <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorHandle}</span>
+              {work.authorSocialHandle && (
+                <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
               )}
             </p>
             <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
@@ -76,6 +77,13 @@ export function WorkCard({
       <div className="relative">
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} size={size} />
+        ) : work.youtubeUrl ? (
+          <div className="relative z-20">
+            <YouTubeCard
+              youtubeUrl={work.youtubeUrl}
+              aspect={size === "lg" ? "aspect-[4/3]" : "aspect-square"}
+            />
+          </div>
         ) : !work.glyph && work.githubUrl ? (
           <div className="relative z-20">
             <GitHubCard githubUrl={work.githubUrl} size={size} />

@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { randomUUID } from "node:crypto";
+import { auth } from "@/auth";
 import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
@@ -28,17 +30,28 @@ export async function createPost(
   _prevState: CreatePostState,
   formData: FormData,
 ): Promise<CreatePostState> {
+  // 投稿は匿名ゲストの使い捨てアカウントによる荒らし・スパム対策として
+  // ログイン必須にした(PostComposerToggle.tsx側のUIガードとは別に、
+  // Server Action直接呼び出しへの防御としてここでも検証する)。閲覧・
+  // リアクション等は従来通り匿名ゲストのままでも可能。
+  const session = await auth();
+  if (!session?.user) return { error: "投稿するにはログインが必要です" };
+
   const body = String(formData.get("body") ?? "").trim();
   const projectTarget = String(formData.get("projectTarget") ?? "");
   const newProjectTitle = String(formData.get("newProjectTitle") ?? "").trim();
   const inspiredByProjectIdRaw = String(formData.get("inspiredByProjectId") ?? "").trim();
+  const youtubeUrl = String(formData.get("youtubeUrl") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
-  if (!body && !imageFile) {
-    return { error: "本文か画像のどちらかを入力してください" };
+  if (!body && !imageFile && !youtubeUrl) {
+    return { error: "本文・画像・YouTubeリンクのいずれかを入力してください" };
   }
   if (body.length > 280) {
     return { error: "280文字以内で入力してください" };
+  }
+  if (youtubeUrl && !extractYouTubeVideoId(youtubeUrl)) {
+    return { error: "YouTube URLの形式が正しくありません" };
   }
 
   let imageUrl: string | null = null;
@@ -97,6 +110,7 @@ export async function createPost(
       type,
       body,
       imageUrl,
+      youtubeUrl: youtubeUrl || null,
       authorId: author.id,
       projectId,
       inspiredByProjectId: inspiredByProject?.id ?? null,

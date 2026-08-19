@@ -1,15 +1,26 @@
+import type { ComponentType } from "react";
 import type { Platform } from "./mock-data";
+import {
+  AndroidMark,
+  AppleMark,
+  ExtensionPuzzleMark,
+  LinuxMark,
+  UnityMark,
+  UnrealEngineMark,
+  WebGlobeMark,
+  WindowsMark,
+} from "@/app/components/PlatformIcons";
 
-export const PLATFORM_META: Record<Platform, { label: string; icon: string }> = {
-  iOS: { label: "iOS", icon: "🍎" },
-  Android: { label: "Android", icon: "🤖" },
-  Windows: { label: "Windows", icon: "🪟" },
-  macOS: { label: "macOS", icon: "💻" },
-  Linux: { label: "Linux", icon: "🐧" },
-  Web: { label: "Web", icon: "🌐" },
-  拡張機能: { label: "拡張機能", icon: "🧩" },
-  Unity: { label: "Unity", icon: "🎮" },
-  "Unreal Engine": { label: "Unreal Engine", icon: "🕹️" },
+export const PLATFORM_META: Record<Platform, { label: string; Icon: ComponentType<{ className?: string }> }> = {
+  iOS: { label: "iOS", Icon: AppleMark },
+  Android: { label: "Android", Icon: AndroidMark },
+  Windows: { label: "Windows", Icon: WindowsMark },
+  macOS: { label: "macOS", Icon: AppleMark },
+  Linux: { label: "Linux", Icon: LinuxMark },
+  Web: { label: "Web", Icon: WebGlobeMark },
+  拡張機能: { label: "拡張機能", Icon: ExtensionPuzzleMark },
+  Unity: { label: "Unity", Icon: UnityMark },
+  "Unreal Engine": { label: "Unreal Engine", Icon: UnrealEngineMark },
 };
 
 export const PLATFORM_ORDER: Platform[] = [

@@ -40,6 +40,10 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  // 連携済みのGitHub/Xのユーザー名(プロフィールへの外部リンク表示用)。
+  // auth.tsのsignInコールバックでログインのたびに更新する(未連携ならnull)。
+  githubUsername String?
+  xUsername      String?
   accounts      Account[]
   sessions      Session[]
 
@@ -121,6 +125,7 @@ model Project {
   // ベースのプレースホルダーより優先して表示する。
   coverImageUrl String?
   githubUrl   String?
+  youtubeUrl  String?
   hasMotion   Boolean  @default(false)
   views       Int      @default(0)
   trendScore  Int      @default(0)
@@ -160,6 +165,7 @@ model Post {
   body      String   @db.Text
   // ローカル開発では/public/uploadsへの相対パス。本番はS3のURLに置き換える想定。
   imageUrl  String?
+  youtubeUrl String?
   createdAt DateTime @default(now())
 
   authorId  String

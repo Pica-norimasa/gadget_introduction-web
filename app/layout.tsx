@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { auth } from "@/auth";
 import {
   getBlockedUserIds,
   getFollowedAuthors,
   getMutedUserIds,
   getRepostedProjectIds,
 } from "@/app/lib/queries";
+import { AuthHydrator } from "@/app/components/AuthHydrator";
 import { BlockHydrator } from "@/app/components/BlockHydrator";
 import { FollowHydrator } from "@/app/components/FollowHydrator";
 import { MuteHydrator } from "@/app/components/MuteHydrator";
@@ -21,16 +23,18 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [followedAuthors, repostedProjectIds, mutedUserIds, blockedUserIds] = await Promise.all([
+  const [followedAuthors, repostedProjectIds, mutedUserIds, blockedUserIds, session] = await Promise.all([
     getFollowedAuthors(),
     getRepostedProjectIds(),
     getMutedUserIds(),
     getBlockedUserIds(),
+    auth(),
   ]);
 
   return (
     <html lang="ja" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <AuthHydrator isLoggedIn={!!session?.user} />
         <FollowHydrator initial={followedAuthors} />
         <RepostHydrator initial={repostedProjectIds} />
         <MuteHydrator initial={mutedUserIds} />

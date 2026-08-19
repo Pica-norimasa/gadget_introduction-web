@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { getBlockedUsers, getMutedUsers, getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
+import { AuthorStats } from "@/app/components/AuthorStats";
 import { AvatarEditor } from "@/app/components/AvatarEditor";
 import { BioEditor } from "@/app/components/BioEditor";
+import { GitHubMark, XMark } from "@/app/components/BrandIcons";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { MutedBlockedList } from "@/app/components/MutedBlockedList";
@@ -66,6 +68,32 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               {profile.displayName}
             </h1>
             <p className="truncate text-[13px] text-[var(--ink-faint)]">@{profile.name}</p>
+            {(profile.githubUsername || profile.xUsername) && (
+              <p className="mt-0.5 flex items-center gap-2.5">
+                {profile.githubUsername && (
+                  <a
+                    href={`https://github.com/${profile.githubUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`GitHub: @${profile.githubUsername}`}
+                    className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
+                  >
+                    <GitHubMark />@{profile.githubUsername}
+                  </a>
+                )}
+                {profile.xUsername && (
+                  <a
+                    href={`https://x.com/${profile.xUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`X: @${profile.xUsername}`}
+                    className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
+                  >
+                    <XMark />@{profile.xUsername}
+                  </a>
+                )}
+              </p>
+            )}
             <p className="text-[13px] text-[var(--ink-faint)]">
               フォロワー{profile.followers} ・ フォロー中{profile.following}
             </p>
@@ -89,6 +117,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             </div>
           )}
         </div>
+
+        {isOwnProfile && <AuthorStats works={profile.works} />}
 
         <ProfileTabs
           postedLabel={`投稿した作品(${profile.works.length})`}

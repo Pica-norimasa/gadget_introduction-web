@@ -20,14 +20,10 @@ export function ImmersiveEntry({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-5 py-3 text-left transition-colors hover:border-[var(--accent)]"
+        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
       >
-        <span>
-          <span className="block text-[15px] font-bold text-[var(--ink)]">🎬 没入で発見する</span>
-          <span className="block text-[12px] text-[var(--ink-faint)]">
-            次々に作品が流れてきます。スクロールするだけ
-          </span>
-        </span>
+        <span aria-hidden>🎬</span>
+        スワイプで発見
         <span aria-hidden className="text-[var(--accent)]">
           →
         </span>

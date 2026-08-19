@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import { prisma } from "@/app/lib/prisma";
 import type { AiTool, Category, Platform, Stage } from "@/app/lib/mock-data";
 
@@ -18,9 +19,19 @@ const CATEGORIES: Category[] = [
   "AI Agent",
   "拡張機能",
   "プロトタイプ",
+  "その他",
 ];
 const STAGES: Stage[] = ["アイデア", "プロトタイプ", "ベータ", "公開中"];
-const TOOLS: Exclude<AiTool, null>[] = ["Claude", "ChatGPT", "Gemini", "Bolt", "v0", "Cursor", "self"];
+const TOOLS: Exclude<AiTool, null>[] = [
+  "Claude",
+  "ChatGPT",
+  "Gemini",
+  "Bolt",
+  "v0",
+  "Cursor",
+  "self",
+  "multiple",
+];
 const PLATFORMS: Platform[] = [
   "iOS",
   "Android",
@@ -46,6 +57,7 @@ export async function updateProject(
   const tool = toolRaw === "" ? null : toolRaw;
   const glyph = String(formData.get("glyph") ?? "").trim();
   const githubUrl = String(formData.get("githubUrl") ?? "").trim();
+  const youtubeUrl = String(formData.get("youtubeUrl") ?? "").trim();
   const platforms = formData.getAll("platforms").map(String);
   const coverImageFile = extractImageFile(formData, "image");
   const removeCoverImage = formData.get("removeCoverImage") === "1";
@@ -61,6 +73,9 @@ export async function updateProject(
   if (glyph.length > 4) return { error: "アイコンは4文字以内で入力してください" };
   if (githubUrl && !/^https:\/\/github\.com\/.+/.test(githubUrl)) {
     return { error: "GitHub URLの形式が正しくありません(https://github.com/... の形にしてください)" };
+  }
+  if (youtubeUrl && !extractYouTubeVideoId(youtubeUrl)) {
+    return { error: "YouTube URLの形式が正しくありません" };
   }
   if (platforms.length === 0) return { error: "対応環境を1つ以上選んでください" };
   if (!platforms.every((p) => PLATFORMS.includes(p as Platform))) return { error: "対応環境が不正です" };
@@ -94,6 +109,7 @@ export async function updateProject(
       tool,
       glyph: glyph || null,
       githubUrl: githubUrl || null,
+      youtubeUrl: youtubeUrl || null,
       platforms,
       ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
     },

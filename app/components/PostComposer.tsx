@@ -6,6 +6,7 @@ import { inferPostType } from "@/app/lib/infer-post-type";
 import { clearInspiredBy, useInspiredBy } from "@/app/lib/composer-store";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
+import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
 const initialState: CreatePostState = {};
 
@@ -19,6 +20,10 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const defaultProjectTarget = myProjects.length > 0 ? myProjects[0].id : "new";
   const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  // 送信成功のたびに増やし、YouTubeUrlInputのkeyに使う。ボタン⇄入力欄の
+  // 開閉状態(その部品のuseState)を投稿後に強制的に初期化するため。
+  const [resetCount, setResetCount] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -54,6 +59,8 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       formRef.current?.reset();
       if (textareaRef.current) textareaRef.current.style.height = "auto";
       clearImage();
+      setYoutubeUrl("");
+      setResetCount((c) => c + 1);
       clearInspiredBy();
 
       if (state.projectId) {
@@ -117,13 +124,14 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           maxLength={280}
           className="w-full resize-none overflow-hidden border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <ImagePickerButton
             fileInputRef={fileInputRef}
             preview={imagePreview}
             onChange={handleImageChange}
             onClear={clearImage}
           />
+          <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="text-[11px] text-[var(--ink-faint)]">投稿先</span>

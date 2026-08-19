@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import type { Work } from "@/app/lib/mock-data";
 import { openComposer, openComposerWithInspiration, useComposerOpen } from "@/app/lib/composer-store";
 import { PostComposer } from "./PostComposer";
@@ -15,7 +16,16 @@ import { PostComposer } from "./PostComposer";
 // ハッシュを見て開く。既にホームにいる場合はComposerButton.tsxが
 // このストアを直接呼ぶ(同一ページ内のハッシュ遷移はnext/linkが
 // hashchangeを発火しないため、ハッシュ監視だけには頼れない)。
-export function PostComposerToggle({ myProjects }: { myProjects: Work[] }) {
+export function PostComposerToggle({
+  myProjects,
+  isLoggedIn,
+}: {
+  myProjects: Work[];
+  // 投稿は匿名ゲストの荒らし・スパム対策としてログイン必須にした
+  // (閲覧・リアクション等は引き続き匿名ゲストのままでも可能)。
+  // 未ログインなら投稿フォームの代わりにログイン導線を出す。
+  isLoggedIn: boolean;
+}) {
   const expanded = useComposerOpen();
 
   useEffect(() => {
@@ -41,6 +51,20 @@ export function PostComposerToggle({ myProjects }: { myProjects: Work[] }) {
       );
     }
   }, []);
+
+  if (!isLoggedIn) {
+    return (
+      <div id="composer" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-6 sm:px-6">
+        <Link
+          href="/login"
+          className="flex w-full items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[15px] text-[var(--ink-faint)] transition-colors hover:border-[var(--accent)]"
+        >
+          <span aria-hidden>✎</span>
+          投稿するにはログインが必要です
+        </Link>
+      </div>
+    );
+  }
 
   if (expanded) {
     return <PostComposer myProjects={myProjects} />;

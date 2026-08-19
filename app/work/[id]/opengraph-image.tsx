@@ -4,6 +4,36 @@ import { getWorkById } from "@/app/lib/queries";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+// app/icon.tsx/app/components/BrandMark.tsxと同じマーク。satoriはCSS
+// カスタムプロパティを解決できないため、ここでも直接ハードコードする。
+function BrandMarkBadge({ size }: { size: number }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#4fc0a8",
+        borderRadius: "50%",
+      }}
+    >
+      <svg width={size * 0.6} height={size * 0.6} viewBox="0 0 32 32" fill="#163530">
+        <line x1="16" y1="25" x2="10" y2="18" stroke="#163530" strokeWidth="2" strokeLinecap="round" />
+        <line x1="10" y1="18" x2="8" y2="10" stroke="#163530" strokeWidth="2" strokeLinecap="round" />
+        <line x1="16" y1="25" x2="22" y2="18" stroke="#163530" strokeWidth="2" strokeLinecap="round" />
+        <line x1="22" y1="18" x2="24" y2="10" stroke="#163530" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="16" cy="25" r="2" />
+        <circle cx="10" cy="18" r="2.3" />
+        <circle cx="22" cy="18" r="2.3" />
+        <circle cx="8" cy="10" r="3" />
+        <circle cx="24" cy="10" r="3" />
+      </svg>
+    </div>
+  );
+}
+
 // 注意: generateImageMetadataは付けない。親route(app/work/[id]/page.tsx)の
 // paramsをここでも別途解決すると二重のid解決になり、違うidの
 // opengraph-imageが紐付くバグになる(実際に発生させて確認済み)。
@@ -22,12 +52,14 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: 20,
             background: "#14181A",
             color: "#F1EFE9",
             fontSize: 56,
             fontWeight: 700,
           }}
         >
+          <BrandMarkBadge size={64} />
           Draftly
         </div>
       ),
@@ -65,7 +97,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
         ) : null}
 
-        <div style={{ display: "flex", fontSize: 28, color: "rgba(20,18,14,0.6)", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 28, color: "rgba(20,18,14,0.6)", marginBottom: 16 }}>
+          <BrandMarkBadge size={36} />
           Draftly ・ {work.stage}
         </div>
         <div

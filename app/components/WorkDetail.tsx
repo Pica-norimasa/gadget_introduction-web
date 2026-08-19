@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
@@ -21,7 +22,9 @@ import { StandalonePostCard } from "./StandalonePostCard";
 import { TimelinePostForm } from "./TimelinePostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkCard } from "./WorkCard";
+import { WorkMediaTabs } from "./WorkMediaTabs";
 import { WorkThumb } from "./WorkThumb";
+import { YouTubeCard } from "./YouTubeCard";
 
 export function WorkDetail({
   work,
@@ -54,6 +57,18 @@ export function WorkDetail({
   // これは無駄な操作を先回りで防ぐためのもの)。
   blockedByAuthor: boolean;
 }) {
+  // 表紙画像・GitHub・YouTubeのうち設定されているものだけをタブとして
+  // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
+  // ならタブを出さずそのまま表示する(0個ならglyph/motionのプレース
+  // ホルダーにフォールバック、これは呼び出し側のJSXで扱う)。
+  const mediaTabs: { id: string; label: string; content: ReactNode }[] = [
+    ...(work.coverImageUrl ? [{ id: "image", label: "画像", content: <CoverImage src={work.coverImageUrl} size="lg" /> }] : []),
+    ...(work.githubUrl ? [{ id: "github", label: "リポジトリ", content: <GitHubCard githubUrl={work.githubUrl} size="lg" /> }] : []),
+    ...(work.youtubeUrl
+      ? [{ id: "youtube", label: "動画", content: <YouTubeCard youtubeUrl={work.youtubeUrl} aspect="aspect-[4/3]" /> }]
+      : []),
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
@@ -98,8 +113,8 @@ export function WorkDetail({
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {work.author}
-                {work.authorHandle && (
-                  <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorHandle}</span>
+                {work.authorSocialHandle && (
+                  <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
                 )}
               </p>
               <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
@@ -111,27 +126,18 @@ export function WorkDetail({
         </div>
 
         <div className="mb-4">
-          {work.coverImageUrl ? (
-            <CoverImage src={work.coverImageUrl} size="lg" />
-          ) : !work.glyph && work.githubUrl ? (
-            <GitHubCard githubUrl={work.githubUrl} size="lg" />
-          ) : work.glyph && work.hasMotion ? (
-            <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
+          {mediaTabs.length === 0 ? (
+            work.glyph && work.hasMotion ? (
+              <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
+            ) : (
+              <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size="lg" />
+            )
+          ) : mediaTabs.length === 1 ? (
+            mediaTabs[0].content
           ) : (
-            <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size="lg" />
+            <WorkMediaTabs tabs={mediaTabs} />
           )}
         </div>
-
-        {/* カバー画像がある場合、上の分岐でGitHubCardは表示されない
-            (画像が優先される)。それだと編集で後からGitHub URLを追加/
-            変更しても反映が確認できないため、画像がある場合でも下に
-            小さめのカードで両方表示する。 */}
-        {work.coverImageUrl && work.githubUrl && (
-          <div className="mb-4">
-            <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">リポジトリ</p>
-            <GitHubCard githubUrl={work.githubUrl} size="md" />
-          </div>
-        )}
 
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
           <StageBadge stage={work.stage} />
@@ -209,6 +215,7 @@ export function WorkDetail({
                     className="mt-2 max-h-80 max-w-full rounded-xl border border-[var(--line)] object-contain"
                   />
                 )}
+                {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} className="mt-2 max-w-xs" />}
               </li>
             ))}
           </ol>
