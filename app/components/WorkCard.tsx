@@ -91,10 +91,17 @@ export function WorkCard({
           </span>
         )}
         {isUnderdog(work) && (
-          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
-            無名の逆転枠
+          <span
+            title="無名の逆転枠"
+            aria-label="無名の逆転枠"
+            className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] text-[var(--accent)]"
+          >
+            💎
           </span>
         )}
+        <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
+          👁️{formatCount(work.views)}
+        </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-2 pt-3">
@@ -133,9 +140,7 @@ export function WorkCard({
             <RepostButton projectId={work.id} count={work.reposts} />
           </div>
           <div className="flex items-center justify-end text-[12px] text-[var(--ink-faint)]">
-            <span className="font-mono">
-              👁️{formatCount(work.views)} · 💬{work.comments}
-            </span>
+            <span className="font-mono">💬{work.comments}</span>
           </div>
         </div>
       </div>
