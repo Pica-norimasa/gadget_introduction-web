@@ -1242,8 +1242,9 @@
     **RDS(MySQL)**: `db.t4g.micro`・20GB gp3・Single-AZ・ap-northeast-1で
     作成(識別子`gadget-introduction-web-dev`)。デフォルトVPCのサブネット3つ
     (1a/1c/1d)でDBサブネットグループを構成。セキュリティグループは
-    パブリックアクセス可にした上で、開発者の自宅IPからの3306のみ許可、
-    加えて後述のApp Runner VPCコネクタのセキュリティグループも許可。
+    パブリックアクセス可。当初は開発者の自宅IPのみ許可していたが、
+    後述の理由でApp Runner側がVPC外(NAT Gateway無し)からの接続に
+    なったため、最終的に3306番ポートを`0.0.0.0/0`に開放している。
 
     **S3**: アップロード画像用に`gadget-introduction-web-dev-uploads-<account-id>`
     を作成。`app/lib/upload.ts`が署名なしの直接URLでオブジェクトを返す実装
@@ -1307,11 +1308,10 @@
       本番でだけ壊れていた。
 
     **App Runner**: `0.5 vCPU / 1GB`→動作確認後に最小構成`0.25 vCPU / 0.5GB`
-    へ変更(コスト優先、個人プロトタイプの負荷では十分)。VPCコネクタ
-    経由でRDSにプライベート接続(RDSのセキュリティグループにコネクタの
-    セキュリティグループを許可)。機密情報(`DATABASE_URL`/`GITHUB_TOKEN`/
-    `AUTH_GITHUB_SECRET`/`AUTH_SECRET`)はSecrets Manager経由で注入
-    (`RuntimeEnvironmentSecrets`)。ヘルスチェックは`/api/health`。
+    へ変更(コスト優先、個人プロトタイプの負荷では十分)。機密情報
+    (`DATABASE_URL`/`GITHUB_TOKEN`/`AUTH_GITHUB_SECRET`/`AUTH_SECRET`)は
+    Secrets Manager経由で注入(`RuntimeEnvironmentSecrets`)。ヘルスチェック
+    は`/api/health`。
     - デプロイ当初、このAWSアカウントが「無料プラン(Free Plan、$120
       クレジット/183日間、一部サービスへのアクセス制限あり)」だったため
       App RunnerのどのAerロール操作も`SubscriptionRequiredException`で
@@ -1322,11 +1322,28 @@
       サービスは動き続けるが新機能追加はない)、AWSはAmazon ECS Express
       Modeへの移行を推奨している。今すぐ困らないが、次に大きく触る時は
       ECS Express Modeへの移行を検討してよい。
+    - **ネットワーク構成は最終的にVPCコネクタをやめた。** 当初はRDSに
+      プライベート接続するためNetworkConfiguration.EgressTypeを`VPC`
+      (VPCコネクタ経由)にしていたが、これだとインスタンスに外向きの
+      インターネット経路(NAT Gateway)が無いため、GitHub OAuthの
+      トークン交換のようなVPC外のAPI呼び出しが軒並み`ConnectTimeoutError`
+      で失敗した(RDSのようなVPC内リソースへは繋がるが、それ以外は
+      一切繋がらない)。NAT Gatewayを足す($45/月程度)と予算超過になる
+      ため、`EgressType`を`DEFAULT`(通常のインターネット経由)に戻し、
+      代わりにRDSのセキュリティグループの3306番ポートを`0.0.0.0/0`に
+      開放する方針にした(強力なランダムパスワードのみで保護。個人
+      プロトタイプでの妥協で、正式な構成ではない)。
 
     **GitHub OAuth**: 本番ドメイン(`*.awsapprunner.com`)が確定するのは
     デプロイ後なので、GitHub OAuth Appのリダイレクトにデプロイ後改めて
     本番URLを追加した(1つのOAuth Appで最大10個のリダイレクトURIを
-    登録できるので、localhost用と本番用を共存させられる)。
+    登録できるので、localhost用と本番用を共存させられる)。上のネットワーク
+    構成変更でGitHub APIには到達できるようになったが、今度は
+    `redirect_uri_mismatch`が発生した。App Runnerがエッジ側でTLSを終端し
+    コンテナへは平文HTTPで転送する構成のため、`trustHost: true`だけでは
+    Auth.jsがリクエストを`http://`と誤認識し、GitHubに登録した`https://`の
+    URLと一致しなくなっていた。`AUTH_URL`環境変数に本番URLを明示的に
+    設定して解決(ヘッダーベースの自動検出に頼らず固定する方が確実)。
 
     **コスト管理**: 個人プロトタイプなので稼働時間を絞ってコストを抑える
     方針にした。EventBridge Schedulerで毎日09:55にRDS起動→10:00に
