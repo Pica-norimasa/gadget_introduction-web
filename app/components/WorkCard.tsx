@@ -99,8 +99,9 @@ export function WorkCard({
             💎
           </span>
         )}
-        <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
-          👁️{formatCount(work.views)}
+        {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く */}
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
+          👁️{formatCount(work.views)} 💬{work.comments}
         </span>
       </div>
 
@@ -138,9 +139,6 @@ export function WorkCard({
           <div className="relative z-20 flex flex-wrap items-center gap-1.5">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
             <RepostButton projectId={work.id} count={work.reposts} />
-          </div>
-          <div className="flex items-center justify-end text-[12px] text-[var(--ink-faint)]">
-            <span className="font-mono">💬{work.comments}</span>
           </div>
         </div>
       </div>
