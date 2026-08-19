@@ -11,6 +11,7 @@ import { CommentThread } from "@/app/components/CommentThread";
 import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { PostEditor } from "@/app/components/PostEditor";
+import { PostXShareButton } from "@/app/components/PostXShareButton";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { YouTubeCard } from "@/app/components/YouTubeCard";
 
@@ -107,13 +108,16 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         )}
         {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} className="mb-4 max-w-md" />}
 
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center gap-2">
           {blockedByAuthor ? (
             <span className="text-[12px] text-[var(--ink-faint)]">
               この投稿の作者にブロックされているため、反応できません
             </span>
           ) : (
             <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+          )}
+          {post.authorId === currentUser?.id && currentUser?.xUsername && (
+            <PostXShareButton text={post.body} />
           )}
         </div>
 
