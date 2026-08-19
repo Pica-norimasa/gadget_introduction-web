@@ -21,7 +21,14 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inspiredBy = useInspiredBy();
+
+  // 行数固定だと複数行書きたい時に窮屈なので、内容に合わせて高さを伸ばす。
+  function autoGrow(el: HTMLTextAreaElement) {
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -45,6 +52,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
       setBody("");
       setProjectTarget(defaultProjectTarget);
       formRef.current?.reset();
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
       clearImage();
       clearInspiredBy();
 
@@ -89,13 +97,17 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           </div>
         )}
         <textarea
+          ref={textareaRef}
           name="body"
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onChange={(e) => {
+            setBody(e.target.value);
+            autoGrow(e.target);
+          }}
           placeholder="思いついたこと、気になってること、なんでもどうぞ(未完成・アイデアだけでもOK)"
           rows={2}
           maxLength={280}
-          className="w-full resize-none border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
+          className="w-full resize-none overflow-hidden border-none bg-transparent text-[15px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
         />
         <div className="mt-2">
           <ImagePickerButton
@@ -114,7 +126,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
             className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] focus:outline-none"
           >
             <option value="new">🆕 新しいプロジェクトとして</option>
-            <option value="">単独の投稿(プロジェクトに紐付けない)</option>
+            <option value="">💬 つぶやき(プロジェクトに紐付けない)</option>
             {myProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 📁 {p.title}
