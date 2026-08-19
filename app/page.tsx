@@ -107,6 +107,7 @@ export default async function Home() {
             currentUserName={currentUser?.name ?? null}
             reposts={reposts}
             suggestedAuthors={suggestedAuthors}
+            showRankingAnchor={false}
           />
         </MobileSidebarDrawer>
 

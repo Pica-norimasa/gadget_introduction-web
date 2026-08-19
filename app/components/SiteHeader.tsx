@@ -8,6 +8,7 @@ import { FeedNavLink } from "./FeedNavLink";
 import { IdentityBadge } from "./IdentityBadge";
 import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
+import { RankingNavLink } from "./RankingNavLink";
 
 export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
   const [user, { notifications, unreadCount }, session] = await Promise.all([
@@ -85,12 +86,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
 
         <nav className="ml-auto flex items-center gap-2 sm:gap-3">
           <FeedNavLink />
-          <Link
-            href="/#ranking"
-            className="hidden rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
-          >
-            ランキング
-          </Link>
+          <RankingNavLink />
           <MobileSearch defaultQuery={defaultQuery} />
           <NotificationBell notifications={notifications} unreadCount={unreadCount} />
         </nav>

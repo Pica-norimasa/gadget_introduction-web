@@ -14,7 +14,7 @@ export function FeedNavLink() {
       href="/#feed"
       className="hidden shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] sm:inline-block"
     >
-      フィード
+      ホーム
     </Link>
   );
 }

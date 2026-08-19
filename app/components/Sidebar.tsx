@@ -189,6 +189,13 @@ export function Sidebar({
   currentUserName,
   reposts,
   suggestedAuthors,
+  // ホームではSidebarをモバイルドロワー用とデスクトップ用の2箇所に描画
+  // している(MobileSidebarDrawer.tsx参照)。id="ranking"を両方に付けると
+  // 同じidがDOM内に2つできてしまい、ヘッダーの「ランキング」リンクが
+  // 常に最初(=ドロワー側、fixedで画面外にいることが多い)にジャンプ
+  // しようとして無反応になる。アンカーとして機能させたい側だけ
+  // showRankingAnchor=trueを渡す(デフォルトtrue、ドロワー側だけfalse)。
+  showRankingAnchor = true,
 }: {
   ranking: Work[];
   posts: Post[];
@@ -198,6 +205,7 @@ export function Sidebar({
   currentUserName: string | null;
   reposts: RepostView[];
   suggestedAuthors: SuggestedAuthor[];
+  showRankingAnchor?: boolean;
 }) {
   const followedAuthors = useFollowedAuthors();
 
@@ -281,7 +289,10 @@ export function Sidebar({
         </span>
       </Link>
 
-      <div id="ranking" className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24">
+      <div
+        id={showRankingAnchor ? "ranking" : undefined}
+        className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24"
+      >
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
           週間ランキング
         </h3>
