@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth, signIn, signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { getNotificationData } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { ComposerButton } from "./ComposerButton";
@@ -72,34 +72,12 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
               </button>
             </form>
           ) : (
-            <div className="flex items-center gap-1.5">
-              <form
-                action={async () => {
-                  "use server";
-                  await signIn("github");
-                }}
-              >
-                <button
-                  type="submit"
-                  className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
-                >
-                  GitHubでログイン
-                </button>
-              </form>
-              <form
-                action={async () => {
-                  "use server";
-                  await signIn("twitter");
-                }}
-              >
-                <button
-                  type="submit"
-                  className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
-                >
-                  Xでログイン
-                </button>
-              </form>
-            </div>
+            <Link
+              href="/login"
+              className="rounded-full border border-[var(--line)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:px-3"
+            >
+              ログイン
+            </Link>
           )}
           <ComposerButton />
         </nav>
