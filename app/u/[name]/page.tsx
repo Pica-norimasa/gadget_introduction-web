@@ -107,7 +107,15 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               )
             )}
           </div>
-          {!isOwnProfile && (
+          {isOwnProfile ? (
+            <Link
+              href="/settings"
+              title="設定"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
+            >
+              ⚙️
+            </Link>
+          ) : (
             <div className="flex items-center gap-1">
               <FollowButton author={profile.name} size="md" />
               <MoreActionsMenu

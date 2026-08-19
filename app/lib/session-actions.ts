@@ -46,6 +46,14 @@ export async function updateBio(
   return { success: true };
 }
 
+// トグルUIから直接呼ぶだけなのでuseActionStateは使わず、戻り値も持たない
+// (revalidatePathで/settingsを再描画すればチェック状態は自然に反映される)。
+export async function updateEmailNotificationsEnabled(enabled: boolean): Promise<void> {
+  const user = await getOrCreateCurrentUser();
+  await prisma.user.update({ where: { id: user.id }, data: { emailNotificationsEnabled: enabled } });
+  revalidatePath("/settings");
+}
+
 export type UpdateAvatarState = { error?: string; success?: boolean };
 
 // GitHubログイン済みUserは元々GitHubのアバターURLがimageに入っているが、

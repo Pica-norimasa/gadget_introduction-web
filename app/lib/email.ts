@@ -1,0 +1,62 @@
+const RESEND_API_ENDPOINT = "https://api.resend.com/emails";
+
+// Resend REST APIを直接fetchで叩くだけの薄いクライアント(cloudflare-analytics.ts
+// と同じ考え方)。専用SDKを追加するほどの複雑さが無いための判断。
+async function sendEmail(params: { to: string; subject: string; html: string }): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
+  if (!apiKey || !fromAddress) {
+    throw new Error("RESEND_API_KEY または EMAIL_FROM_ADDRESS が設定されていません");
+  }
+
+  const res = await fetch(RESEND_API_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromAddress,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Resend API error: ${res.status} ${detail}`);
+  }
+}
+
+// コメント通知メール本文。プレーンテキストで十分な情報量なので装飾は
+// 最小限にしている(HTMLメールクライアント間の見た目差異を気にしなくて済む)。
+export async function sendCommentNotificationEmail(params: {
+  to: string;
+  actorName: string;
+  commentPreview: string;
+  targetTitle: string;
+  targetUrl: string;
+}): Promise<void> {
+  const preview = params.commentPreview.length > 140 ? `${params.commentPreview.slice(0, 140)}…` : params.commentPreview;
+  const html = `
+    <p>${escapeHtml(params.actorName)}さんが「${escapeHtml(params.targetTitle)}」にコメントしました。</p>
+    <p style="color:#555; border-left:3px solid #ddd; padding-left:12px;">${escapeHtml(preview)}</p>
+    <p><a href="${params.targetUrl}">Draftlyで見る →</a></p>
+    <p style="color:#999; font-size:12px;">この通知が不要な場合は、Draftlyの設定ページからメール通知をオフにできます。</p>
+  `;
+
+  await sendEmail({
+    to: params.to,
+    subject: `${params.actorName}さんがコメントしました - Draftly`,
+    html,
+  });
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}

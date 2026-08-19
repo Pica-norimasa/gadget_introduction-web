@@ -1,12 +1,45 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { auth } from "@/auth";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
 import { rateLimitWindowStart } from "@/app/lib/rate-limit";
+import { sendCommentNotificationEmail } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
+
+const SITE_URL = process.env.AUTH_URL ?? "http://localhost:3000";
+
+// 通知メール送信はレスポンスをブロックしたくない(post-actions.tsの
+// postAiEncouragementCommentと同じ理由)のでafter()の中で行い、失敗しても
+// コメント投稿自体は成功したままにする(try/catchで握りつぶす)。
+async function notifyByEmail(params: {
+  recipientId: string;
+  actorName: string;
+  commentPreview: string;
+  targetTitle: string;
+  targetUrl: string;
+}): Promise<void> {
+  try {
+    const recipient = await prisma.user.findUnique({
+      where: { id: params.recipientId },
+      select: { email: true, emailNotificationsEnabled: true },
+    });
+    if (!recipient?.email || !recipient.emailNotificationsEnabled) return;
+
+    await sendCommentNotificationEmail({
+      to: recipient.email,
+      actorName: params.actorName,
+      commentPreview: params.commentPreview,
+      targetTitle: params.targetTitle,
+      targetUrl: params.targetUrl,
+    });
+  } catch (e) {
+    console.error("コメント通知メールの送信に失敗しました", e);
+  }
+}
 
 export type CreateCommentState = { error?: string; success?: boolean };
 
@@ -38,17 +71,26 @@ export async function createComment(
   let projectId: string | null = null;
   let postId: string | null = null;
   let recipientId: string;
+  let targetTitle: string;
+  let targetUrl: string;
 
   if (targetType === "project") {
-    const project = await prisma.project.findUnique({ where: { id: targetId }, select: { id: true, authorId: true } });
+    const project = await prisma.project.findUnique({
+      where: { id: targetId },
+      select: { id: true, authorId: true, title: true },
+    });
     if (!project) return { error: "作品が見つかりません" };
     projectId = project.id;
     recipientId = project.authorId;
+    targetTitle = project.title;
+    targetUrl = `${SITE_URL}/work/${project.id}`;
   } else {
-    const post = await prisma.post.findUnique({ where: { id: targetId }, select: { id: true, authorId: true } });
+    const post = await prisma.post.findUnique({ where: { id: targetId }, select: { id: true, authorId: true, body: true } });
     if (!post) return { error: "投稿が見つかりません" };
     postId = post.id;
     recipientId = post.authorId;
+    targetTitle = post.body.length > 30 ? `${post.body.slice(0, 30)}…` : post.body || "投稿";
+    targetUrl = `${SITE_URL}/post/${post.id}`;
   }
 
   const author = await getOrCreateCurrentUser();
@@ -98,10 +140,13 @@ export async function createComment(
     data: { projectId, postId, parentId, body, imageUrl, authorId: author.id },
   });
 
+  const actorName = author.displayName ?? author.name;
+
   if (recipientId !== author.id) {
     await prisma.notification.create({
       data: { type: "comment", recipientId, actorId: author.id, projectId, postId },
     });
+    after(() => notifyByEmail({ recipientId, actorName, commentPreview: body, targetTitle, targetUrl }));
   }
   // 返信先の作者にも通知する(project/post所有者への上の通知とは別人の
   // 場合のみ。同一人物への二重通知は避ける)。
@@ -109,6 +154,9 @@ export async function createComment(
     await prisma.notification.create({
       data: { type: "reply", recipientId: replyRecipientId, actorId: author.id, projectId, postId },
     });
+    after(() =>
+      notifyByEmail({ recipientId: replyRecipientId, actorName, commentPreview: body, targetTitle, targetUrl }),
+    );
   }
 
   if (projectId) revalidatePath(`/work/${projectId}`);
