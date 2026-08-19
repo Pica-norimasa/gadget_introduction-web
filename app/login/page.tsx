@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
+import { GitHubMark, XMark } from "@/app/components/BrandIcons";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default async function LoginPage() {
               type="submit"
               className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
             >
+              <GitHubMark />
               GitHubでログイン
             </button>
           </form>
@@ -49,6 +51,7 @@ export default async function LoginPage() {
               type="submit"
               className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
             >
+              <XMark />
               Xでログイン
             </button>
           </form>
