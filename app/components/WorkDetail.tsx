@@ -125,7 +125,7 @@ export function WorkDetail({
           )}
         </div>
 
-        <div className="mb-4">
+        <div className="relative mb-4">
           {mediaTabs.length === 0 ? (
             work.glyph && work.hasMotion ? (
               <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
@@ -137,6 +137,10 @@ export function WorkDetail({
           ) : (
             <WorkMediaTabs tabs={mediaTabs} />
           )}
+          {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く(WorkCard.tsxと同じ配置) */}
+          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
+            👁️{formatCount(work.views)} 💬{work.comments}
+          </span>
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-1.5">
@@ -158,28 +162,23 @@ export function WorkDetail({
         )}
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {blockedByAuthor ? (
-              <span className="text-[12px] text-[var(--ink-faint)]">
-                この作品の作者にブロックされているため、反応できません
-              </span>
-            ) : (
-              <>
-                <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
-                <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
-              </>
-            )}
-            <Link
-              href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
-              className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-            >
-              🌱 これにインスパイアされて投稿する
-            </Link>
-          </div>
-          <span className="font-mono text-[12px] text-[var(--ink-faint)]">
-            👁️{formatCount(work.views)} · 💬{work.comments}
-          </span>
+        <div className="mb-6 flex flex-wrap items-center gap-1.5">
+          {blockedByAuthor ? (
+            <span className="text-[12px] text-[var(--ink-faint)]">
+              この作品の作者にブロックされているため、反応できません
+            </span>
+          ) : (
+            <>
+              <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
+              <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+            </>
+          )}
+          <Link
+            href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
+            className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+          >
+            🌱 これにインスパイアされて投稿する
+          </Link>
         </div>
 
         <div className="mb-6">
