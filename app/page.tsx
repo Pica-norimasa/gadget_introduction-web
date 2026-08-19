@@ -66,7 +66,7 @@ export default async function Home() {
             いた。ここに小さなピルボタンとして複製し、常時見える位置に出す
             (lg以上はサイドバーに既にあるので重複させない)。投稿欄のすぐ下、
             スワイプで発見の直前という並びにしている。 */}
-        <div className="mx-auto max-w-[1180px] px-4 pt-3 sm:px-6 lg:hidden">
+        <div className="mx-auto max-w-[1180px] px-4 pt-3 pb-5 sm:px-6 lg:hidden">
           <Link
             href="/guide/build"
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
