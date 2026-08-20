@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { GitHubMark, GoogleMark, XMark } from "@/app/components/BrandIcons";
@@ -19,6 +20,13 @@ export default async function LoginPage() {
       <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-[400px] flex-1 flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
+        <Link
+          href="/"
+          className="mb-8 self-start inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← ホームに戻る
+        </Link>
+
         <h1 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
           ログイン
         </h1>
