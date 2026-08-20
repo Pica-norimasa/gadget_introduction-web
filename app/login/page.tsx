@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
-import { GitHubMark, XMark } from "@/app/components/BrandIcons";
+import { GitHubMark, GoogleMark, XMark } from "@/app/components/BrandIcons";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
@@ -53,6 +53,20 @@ export default async function LoginPage() {
             >
               <XMark />
               Xでログイン
+            </button>
+          </form>
+          <form
+            action={async () => {
+              "use server";
+              await signIn("google", { redirectTo: "/" });
+            }}
+          >
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+            >
+              <GoogleMark />
+              Googleでログイン
             </button>
           </form>
         </div>
