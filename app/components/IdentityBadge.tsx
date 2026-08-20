@@ -34,7 +34,10 @@ export function IdentityBadge({
       // eslint-disable-next-line @next/next/no-img-element -- GitHubのアバター画像、next/imageのドメイン設定不要な簡易表示
       <img src={image} alt="" className="h-4 w-4 shrink-0 rounded-full" />
     ) : (
-      <span aria-hidden className="shrink-0">
+      // 絵文字はフォントによって行内での縦位置がまちまちで、img版(h-4 w-4)
+      // と揃えないとモバイル(アイコンのみ表示)で中央からずれて見える。
+      // 画像と同じ箱サイズにしてgridで中央寄せすることで揃える。
+      <span aria-hidden className="grid h-4 w-4 shrink-0 place-items-center leading-none">
         👤
       </span>
     );
