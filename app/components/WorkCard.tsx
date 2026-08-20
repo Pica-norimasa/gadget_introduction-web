@@ -122,23 +122,31 @@ export function WorkCard({
             )}
           </div>
         )}
-        <div className="absolute right-2 top-2 flex items-center gap-1.5">
+        <div className="absolute right-2 top-2 z-20 flex items-center gap-1.5">
           {work.trendScore >= 70 && (
-            <span
-              title="急上昇"
-              aria-label="急上昇"
-              className="grid h-6 w-6 place-items-center rounded-full bg-[var(--ink)] text-[12px]"
-            >
-              🔥
+            <span className="group/trend relative">
+              <span
+                aria-label="急上昇"
+                className="grid h-6 w-6 place-items-center rounded-full bg-[var(--ink)] text-[12px]"
+              >
+                🔥
+              </span>
+              <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-max max-w-[160px] scale-95 rounded-lg bg-[var(--ink)] px-2 py-1 text-[11px] leading-snug text-[var(--bg)] opacity-0 shadow-[0_4px_12px_var(--shadow)] transition-all group-hover/trend:scale-100 group-hover/trend:opacity-100">
+                反応が伸びていて、今注目されている作品です
+              </span>
             </span>
           )}
           {isUnderdog(work) && (
-            <span
-              title="無名の逆転枠"
-              aria-label="無名の逆転枠"
-              className="grid h-6 w-6 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] text-[var(--accent)]"
-            >
-              💎
+            <span className="group/underdog relative">
+              <span
+                aria-label="無名の逆転枠"
+                className="grid h-6 w-6 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] text-[var(--accent)]"
+              >
+                💎
+              </span>
+              <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-max max-w-[160px] scale-95 rounded-lg bg-[var(--ink)] px-2 py-1 text-[11px] leading-snug text-[var(--bg)] opacity-0 shadow-[0_4px_12px_var(--shadow)] transition-all group-hover/underdog:scale-100 group-hover/underdog:opacity-100">
+                フォロワーが少ないのに注目されている、掘り出し物枠です
+              </span>
             </span>
           )}
         </div>
