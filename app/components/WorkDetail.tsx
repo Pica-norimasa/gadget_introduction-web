@@ -146,6 +146,34 @@ export function WorkDetail({
           ) : (
             <WorkMediaTabs tabs={mediaTabs} />
           )}
+          {(work.appStoreUrl || work.googlePlayUrl) && (
+            <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
+              {work.appStoreUrl && (
+                <a
+                  href={work.appStoreUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="App Store"
+                  aria-label="App Store"
+                  className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+                >
+                  <AppleMark className="h-4 w-4" />
+                </a>
+              )}
+              {work.googlePlayUrl && (
+                <a
+                  href={work.googlePlayUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Google Play"
+                  aria-label="Google Play"
+                  className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+                >
+                  <AndroidMark className="h-4 w-4" />
+                </a>
+              )}
+            </div>
+          )}
           {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く(WorkCard.tsxと同じ配置) */}
           <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
             👁️{formatCount(work.views)} 💬{work.comments}
@@ -170,33 +198,6 @@ export function WorkDetail({
           </Link>
         )}
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
-
-        {(work.appStoreUrl || work.googlePlayUrl) && (
-          <div className="mb-4 flex flex-wrap items-center gap-1.5">
-            {work.appStoreUrl && (
-              <a
-                href={work.appStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-              >
-                <AppleMark className="h-3.5 w-3.5" />
-                App Store
-              </a>
-            )}
-            {work.googlePlayUrl && (
-              <a
-                href={work.googlePlayUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-              >
-                <AndroidMark className="h-3.5 w-3.5" />
-                Google Play
-              </a>
-            )}
-          </div>
-        )}
 
         <div className="mb-6 flex flex-wrap items-center gap-1.5">
           {blockedByAuthor ? (

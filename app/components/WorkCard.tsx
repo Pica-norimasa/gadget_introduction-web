@@ -94,20 +94,54 @@ export function WorkCard({
         ) : (
           <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
         )}
-        {work.trendScore >= 70 && (
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[var(--ink)] px-2 py-0.5 text-[11px] font-medium text-[var(--bg)]">
-            🔥 急上昇
-          </span>
+        {(work.appStoreUrl || work.googlePlayUrl) && (
+          <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
+            {work.appStoreUrl && (
+              <a
+                href={work.appStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="App Store"
+                aria-label="App Store"
+                className="grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+              >
+                <AppleMark className="h-3.5 w-3.5" />
+              </a>
+            )}
+            {work.googlePlayUrl && (
+              <a
+                href={work.googlePlayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Google Play"
+                aria-label="Google Play"
+                className="grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+              >
+                <AndroidMark className="h-3.5 w-3.5" />
+              </a>
+            )}
+          </div>
         )}
-        {isUnderdog(work) && (
-          <span
-            title="無名の逆転枠"
-            aria-label="無名の逆転枠"
-            className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] text-[var(--accent)]"
-          >
-            💎
-          </span>
-        )}
+        <div className="absolute right-2 top-2 flex items-center gap-1.5">
+          {work.trendScore >= 70 && (
+            <span
+              title="急上昇"
+              aria-label="急上昇"
+              className="grid h-6 w-6 place-items-center rounded-full bg-[var(--ink)] text-[12px]"
+            >
+              🔥
+            </span>
+          )}
+          {isUnderdog(work) && (
+            <span
+              title="無名の逆転枠"
+              aria-label="無名の逆転枠"
+              className="grid h-6 w-6 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] text-[var(--accent)]"
+            >
+              💎
+            </span>
+          )}
+        </div>
         {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く */}
         <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
           👁️{formatCount(work.views)} 💬{work.comments}
@@ -125,33 +159,6 @@ export function WorkCard({
           {work.title}
         </h3>
         <ExpandableText text={work.catch} />
-
-        {(work.appStoreUrl || work.googlePlayUrl) && (
-          <div className="relative z-20 flex flex-wrap items-center gap-1.5">
-            {work.appStoreUrl && (
-              <a
-                href={work.appStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-              >
-                <AppleMark className="h-3 w-3" />
-                App Store
-              </a>
-            )}
-            {work.googlePlayUrl && (
-              <a
-                href={work.googlePlayUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-              >
-                <AndroidMark className="h-3 w-3" />
-                Google Play
-              </a>
-            )}
-          </div>
-        )}
 
         {latestPost && (
           <div
