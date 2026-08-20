@@ -1,4 +1,5 @@
 import type { Post, ReactionKey, Work } from "@/app/lib/mock-data";
+import { HorizontalScroller } from "./HorizontalScroller";
 import { WorkCard } from "./WorkCard";
 
 export function HeroRail({
@@ -28,7 +29,7 @@ export function HeroRail({
         </p>
       </div>
 
-      <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 [scrollbar-width:thin]">
+      <HorizontalScroller className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 [scrollbar-width:thin]">
         {works.map((w) => (
           <div key={w.id} className="w-[260px] shrink-0">
             <WorkCard
@@ -41,7 +42,7 @@ export function HeroRail({
             />
           </div>
         ))}
-      </div>
+      </HorizontalScroller>
     </section>
   );
 }

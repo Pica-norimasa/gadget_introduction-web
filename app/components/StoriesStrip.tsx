@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
+import { HorizontalScroller } from "./HorizontalScroller";
 
 type StoryEntry = { post: Post; projectTitle: string };
 type AuthorStory = { author: string; authorHandle: string; hue: number; glyph: string; entries: StoryEntry[] };
@@ -135,7 +136,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
         <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">
           フォロー中ユーザー
         </p>
-        <div className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:thin]">
+        <HorizontalScroller className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:thin]">
           {stories.map((story, i) => {
             const isSeen = seen.has(story.authorHandle);
             return (
@@ -173,7 +174,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
               </div>
             );
           })}
-        </div>
+        </HorizontalScroller>
       </div>
 
       {current && currentEntry && (

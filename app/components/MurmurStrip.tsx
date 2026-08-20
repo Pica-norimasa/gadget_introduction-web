@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { HorizontalScroller } from "./HorizontalScroller";
 import { LikeButton } from "./LikeButton";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -22,7 +23,7 @@ export function MurmurStrip({
   return (
     <div id="murmurs" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-6 sm:px-6">
       <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">つぶやき</p>
-      <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
+      <HorizontalScroller className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
         {posts.map((post) => (
           <div
             key={post.id}
@@ -63,7 +64,7 @@ export function MurmurStrip({
             </div>
           </div>
         ))}
-      </div>
+      </HorizontalScroller>
     </div>
   );
 }
