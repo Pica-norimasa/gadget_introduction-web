@@ -5,6 +5,7 @@ import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/li
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
 import { toolLabel } from "@/app/lib/tool-meta";
+import { formatRelativeHours } from "@/app/lib/format";
 import { ReactionBar } from "./ReactionBar";
 
 const BATCH_SIZE = 5;
@@ -17,11 +18,6 @@ function shuffled<T>(arr: T[]): T[] {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
-}
-
-function formatRelativeHours(hoursAgo: number): string {
-  if (hoursAgo < 24) return `${hoursAgo}時間前`;
-  return `${Math.round(hoursAgo / 24)}日前`;
 }
 
 function Slide({

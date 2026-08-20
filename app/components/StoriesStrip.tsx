@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
+import { formatRelativeHours } from "@/app/lib/format";
 
 type StoryEntry = { post: Post; projectTitle: string };
 type AuthorStory = { author: string; authorHandle: string; hue: number; glyph: string; entries: StoryEntry[] };
@@ -239,7 +240,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
               </span>
               <div className="rounded-xl bg-[var(--bg)]/90 p-3 backdrop-blur-sm">
                 <p className="mb-1 text-[11px] text-[var(--ink-faint)]">
-                  {POST_TYPE_META[currentEntry.post.type].icon} {currentEntry.post.hoursAgo}時間前・
+                  {POST_TYPE_META[currentEntry.post.type].icon} {formatRelativeHours(currentEntry.post.hoursAgo)}・
                   {POST_TYPE_META[currentEntry.post.type].label}・{currentEntry.projectTitle}
                 </p>
                 <p className="text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
