@@ -9,13 +9,25 @@ import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { sendVerificationEmail, SITE_URL } from "@/app/lib/email";
 import { anonymizeUser } from "@/app/lib/user-admin";
+import { isRateLimited } from "@/app/lib/rate-limit";
 import { prisma } from "@/app/lib/prisma";
 
 const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 // 確認メールの送信自体はフォーム送信をブロックしたくないのでafter()の
 // 中で行い、失敗してもメールアドレスの保存自体は成功したままにする。
+// 送信先(identifier)単位でレート制限する: /settingsには本人以外の
+// メールアドレスも入力できてしまうため、updateEmail/resendVerificationEmail
+// のどちらの経路であっても、無関係な第三者へ連打で送りつけられないように
+// ここ(共通の送信箇所)で一括して防ぐ。
 async function sendVerification(email: string): Promise<void> {
+  const limited = await isRateLimited(
+    (since) => prisma.verificationToken.count({ where: { identifier: email, createdAt: { gte: since } } }),
+    15,
+    3,
+  );
+  if (limited) return;
+
   const token = randomUUID();
   try {
     await prisma.verificationToken.create({
