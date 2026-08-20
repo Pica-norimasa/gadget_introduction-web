@@ -387,3 +387,12 @@ model Report {
 
   @@index([targetType])
 }
+
+// 管理画面ログイン(ADMIN_KEY照合)の総当たり対策用。失敗した試行だけを
+// 記録し、直近の件数がしきい値を超えたら一定時間ロックする
+// (admin-actions.tsのadminLogin、isRateLimitedと同じ考え方)。
+// 個人を識別しない共有の合言葉なのでIP等は持たず、件数だけ見る。
+model AdminLoginAttempt {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+}
