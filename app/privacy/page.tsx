@@ -52,7 +52,7 @@ const SECTIONS = [
   },
   {
     title: "7. お問い合わせ",
-    body: ["本ポリシーに関するお問い合わせは、以下までご連絡ください。", "flytobrain@gmail.com"],
+    body: ["本ポリシーに関するお問い合わせは、以下までご連絡ください。", "flytobrainwork1@gmail.com"],
   },
 ];
 
