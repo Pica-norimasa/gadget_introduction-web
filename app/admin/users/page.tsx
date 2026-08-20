@@ -6,10 +6,19 @@ import { AdminLoginForm } from "@/app/components/AdminLoginForm";
 import { AdminLogoutButton } from "@/app/components/AdminLogoutButton";
 import { AdminNav } from "@/app/components/AdminNav";
 import { AdminDeleteUserButton } from "@/app/components/AdminDeleteUserButton";
+import type { AdminUserKind } from "@/app/lib/queries";
 
 export const metadata: Metadata = { title: "ユーザー一覧 | Draftly Admin" };
 
 const PAGE_SIZE = 20;
+
+const KIND_LABELS: Record<AdminUserKind, string> = {
+  github: "GitHub",
+  x: "X",
+  google: "Google",
+  guest: "ゲスト",
+  seed: "シード/Bot",
+};
 
 export default async function AdminUsersPage({
   searchParams,
@@ -68,10 +77,16 @@ export default async function AdminUsersPage({
                     <span className="ml-1.5 text-[11px] text-[var(--ink-faint)]">@{u.name}</span>
                   </td>
                   <td className="px-4 py-2 text-[var(--ink-faint)]">{u.email ?? "—"}</td>
-                  <td className="px-4 py-2 text-[var(--ink-faint)]">
-                    {[u.githubUsername && "GitHub", u.xUsername && "X", u.isGuest && !u.githubUsername && !u.xUsername && "ゲスト"]
-                      .filter(Boolean)
-                      .join(" / ") || "—"}
+                  <td className="px-4 py-2">
+                    <span
+                      className={
+                        u.kind === "seed"
+                          ? "rounded-full bg-[var(--bg-sunken)] px-2 py-0.5 text-[11px] text-[var(--ink-faint)]"
+                          : "text-[var(--ink-faint)]"
+                      }
+                    >
+                      {KIND_LABELS[u.kind]}
+                    </span>
                   </td>
                   <td className="px-4 py-2 tabular-nums text-[var(--ink-faint)]">
                     {u.createdAt.toLocaleDateString("ja-JP")}

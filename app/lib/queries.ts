@@ -1007,6 +1007,8 @@ export async function getAllReports(): Promise<AdminReportView[]> {
   });
 }
 
+export type AdminUserKind = "github" | "x" | "google" | "guest" | "seed";
+
 export type AdminUserView = {
   id: string;
   name: string;
@@ -1016,10 +1018,24 @@ export type AdminUserView = {
   xUsername: string | null;
   createdAt: Date;
   deletedAt: Date | null;
-  // sessionIdだけがあり、GitHub/X/Google連携が無い=ログインせず使っている
-  // 匿名ゲストのUser行(投稿/コメント等の初回操作で遅延生成される)。
-  isGuest: boolean;
+  kind: AdminUserKind;
 };
+
+// githubUsername/xUsernameはauth.tsのsignInコールバックがGitHub/X
+// ログインのときだけ埋める(Googleログインは埋めない)ため、それ単体では
+// 「連携なし」がGoogleログインなのかシード/BOTなのか区別できない。
+// Account行(OAuth連携)が1件でもあれば実ログインユーザーとみなし、
+// githubUsername/xUsernameが無ければ消去法でGoogleと判定する。
+// Account行が無く、匿名ゲストのsessionIdも無いユーザーは、実際に
+// ログイン/セッションの仕組みを一切通っていない=シードデータか
+// Draftly AIボットのどちらか(見分ける必要が薄いためまとめて"seed"とする)。
+function adminUserKindOf(u: { githubUsername: string | null; xUsername: string | null; sessionId: string | null; accountCount: number }): AdminUserKind {
+  if (u.githubUsername) return "github";
+  if (u.xUsername) return "x";
+  if (u.accountCount > 0) return "google";
+  if (u.sessionId) return "guest";
+  return "seed";
+}
 
 // 管理画面のユーザー一覧(/admin/users)向け。ページングのため件数も
 // 一緒に返す(1ページ目を表示するたびに全件数え直すのは無駄だが、
@@ -1041,6 +1057,7 @@ export async function getAdminUsers(page: number, pageSize = 20): Promise<{ user
         createdAt: true,
         deletedAt: true,
         sessionId: true,
+        _count: { select: { accounts: true } },
       },
     }),
     prisma.user.count(),
@@ -1056,7 +1073,7 @@ export async function getAdminUsers(page: number, pageSize = 20): Promise<{ user
       xUsername: u.xUsername,
       createdAt: u.createdAt,
       deletedAt: u.deletedAt,
-      isGuest: !!u.sessionId,
+      kind: adminUserKindOf({ ...u, accountCount: u._count.accounts }),
     })),
     total,
   };
