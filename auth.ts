@@ -1,8 +1,11 @@
+import { cookies } from "next/headers";
 import NextAuth, { type DefaultSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { mergeGuestIntoUser } from "@/app/lib/guest-merge";
+import { SESSION_COOKIE } from "@/app/lib/session-cookie";
 import { prisma } from "@/app/lib/prisma";
 
 // session.user.idはデフォルトのSession型にはoptionalでしか無いため、
@@ -87,6 +90,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       } catch (e) {
         console.error("連携ユーザー名の保存に失敗しました(ログインは継続します)", e);
       }
+
+      // ログイン前にゲスト(セッションCookieだけのUser)として投稿等を
+      // していた場合、その持ち物をログイン後のUser行へ引き継ぐ
+      // (guest-merge.ts参照)。失敗してもログイン自体はブロックしない。
+      try {
+        const sessionId = (await cookies()).get(SESSION_COOKIE)?.value;
+        if (sessionId) {
+          const guest = await prisma.user.findUnique({ where: { sessionId }, select: { id: true } });
+          if (guest) await mergeGuestIntoUser(guest.id, user.id);
+        }
+      } catch (e) {
+        console.error("ゲストの投稿等の引き継ぎに失敗しました(ログインは継続します)", e);
+      }
+
       return true;
     },
   },
