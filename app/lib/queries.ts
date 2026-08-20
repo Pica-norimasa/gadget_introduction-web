@@ -424,8 +424,13 @@ export type StandalonePostView = {
 async function loadStandalonePosts(
   extraWhere: Prisma.PostWhereInput,
   limit?: number,
+  // プロフィールページ(getUserStandalonePosts)は「このユーザーの投稿を
+  // 見る」という明示的な行き先なので、getWorksWhere({authorId})と同じく
+  // ミュート/ブロックによる除外はしない(除外はホーム/検索など、
+  // 自分から選んでいない一覧に出さないためのもの)。
+  filterMutedBlocked = true,
 ): Promise<StandalonePostView[]> {
-  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const excludeAuthorIds = filterMutedBlocked ? await getMutedOrBlockedAuthorIds() : [];
   const rows = await prisma.post.findMany({
     where: {
       projectId: null,
@@ -462,6 +467,12 @@ async function loadStandalonePosts(
 // 一緒に埋もれていたため、専用の目立つ枠に切り出した。
 export async function getRecentStandalonePosts(limit = 12): Promise<StandalonePostView[]> {
   return loadStandalonePosts({}, limit);
+}
+
+// プロフィールページの「つぶやき」タブ専用。特定の作者(プロジェクトに
+// 紐付かない投稿のみ)を新しい順で全件返す。
+export async function getStandalonePostsByAuthor(authorId: string): Promise<StandalonePostView[]> {
+  return loadStandalonePosts({ authorId }, undefined, false);
 }
 
 // /search専用。検索がsearchWorks()(Project限定)しか無く、単独投稿

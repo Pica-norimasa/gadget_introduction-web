@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBlockedUsers, getMutedUsers, getMyReactions, getPosts, getUserProfile } from "@/app/lib/queries";
+import {
+  getBlockedUsers,
+  getMutedUsers,
+  getMyReactions,
+  getPosts,
+  getStandalonePostsByAuthor,
+  getUserProfile,
+} from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { AuthorStats } from "@/app/components/AuthorStats";
@@ -13,6 +20,7 @@ import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { MutedBlockedList } from "@/app/components/MutedBlockedList";
 import { ProfileTabs } from "@/app/components/ProfileTabs";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
 
 export async function generateMetadata({
@@ -38,6 +46,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
   ]);
   if (!profile) notFound();
   const isOwnProfile = profile.id === currentUser?.id;
+  const murmurs = await getStandalonePostsByAuthor(profile.id);
 
   // ミュート/ブロック中一覧は「自分の」状態を返すクエリなので、他人の
   // プロフィールを見ているときに取得しても意味が無い(表示もしない)。
@@ -131,6 +140,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
         <ProfileTabs
           postedLabel={`投稿した作品(${profile.works.length})`}
           repostedLabel={`リポストした作品(${profile.repostedWorks.length})`}
+          murmursLabel={`つぶやき(${murmurs.length})`}
           showBlockedTab={isOwnProfile}
           postedContent={
             profile.works.length === 0 ? (
@@ -169,6 +179,17 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             )
           }
           blockedContent={<MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
+          murmursContent={
+            murmurs.length === 0 ? (
+              <p className="text-[13px] text-[var(--ink-faint)]">まだつぶやきはありません</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {murmurs.map((post) => (
+                  <StandalonePostCard key={post.id} post={post} />
+                ))}
+              </div>
+            )
+          }
         />
       </main>
     </div>

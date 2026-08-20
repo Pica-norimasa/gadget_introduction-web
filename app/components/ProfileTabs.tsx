@@ -2,30 +2,36 @@
 
 import { useState, type ReactNode } from "react";
 
-type TabId = "posted" | "reposted" | "blocked";
+type TabId = "posted" | "reposted" | "blocked" | "murmurs";
 
 // FeedSectionの新着/急上昇/あなたへタブと同じ、下線付きのタブUIを流用。
 // 各タブの中身は既にサーバー側でレンダリング済みのReactNode(WorkCardの
 // グリッドやMutedBlockedList)を受け取るだけで、このコンポーネント自体は
-// 「どれを表示するか」の切り替えしか持たない。
+// 「どれを表示するか」の切り替えしか持たない。つぶやきタブは一番左に
+// 固定したいため、先頭に置く。
 export function ProfileTabs({
   postedLabel,
   repostedLabel,
+  murmursLabel,
   showBlockedTab,
   postedContent,
   repostedContent,
   blockedContent,
+  murmursContent,
 }: {
   postedLabel: string;
   repostedLabel: string;
+  murmursLabel: string;
   showBlockedTab: boolean;
   postedContent: ReactNode;
   repostedContent: ReactNode;
   blockedContent: ReactNode;
+  murmursContent: ReactNode;
 }) {
   const [tab, setTab] = useState<TabId>("posted");
 
   const tabs: { id: TabId; label: string }[] = [
+    { id: "murmurs", label: murmursLabel },
     { id: "posted", label: postedLabel },
     { id: "reposted", label: repostedLabel },
     ...(showBlockedTab ? [{ id: "blocked" as const, label: "ブロックユーザー" }] : []),
@@ -52,6 +58,7 @@ export function ProfileTabs({
       {tab === "posted" && postedContent}
       {tab === "reposted" && repostedContent}
       {tab === "blocked" && showBlockedTab && blockedContent}
+      {tab === "murmurs" && murmursContent}
     </div>
   );
 }
