@@ -30,6 +30,10 @@ model User {
   // Xのプロフィール文のようなフリーテキストの自己紹介。未設定はnull。
   bio       String?
   createdAt DateTime @default(now())
+  // 退会(deleteAccount)済みかどうか。投稿・コメント本文は他人のスレッドの
+  // 文脈を壊さないよう残すが、name/email等の個人を特定する情報は消して
+  // ここに削除日時を入れる(Xの凍結/削除済みアカウント表示と同じ考え方)。
+  deletedAt DateTime?
 
   // 軽量セッション(proxy.tsがCookieで発行するopaqueなID)との紐付け。
   // ログインしていない匿名ゲスト向け。GitHubログイン済みのUserや

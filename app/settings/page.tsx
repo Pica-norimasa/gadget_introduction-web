@@ -6,6 +6,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { EmailAddressForm } from "@/app/components/EmailAddressForm";
 import { EmailNotificationToggle } from "@/app/components/EmailNotificationToggle";
 import { ResendVerificationButton } from "@/app/components/ResendVerificationButton";
+import { DeleteAccountButton } from "@/app/components/DeleteAccountButton";
 
 export const metadata: Metadata = { title: "設定 | Draftly" };
 
@@ -96,6 +97,16 @@ export default async function SettingsPage({
               </div>
               <EmailNotificationToggle initialEnabled={user.emailNotificationsEnabled} />
             </div>
+          </div>
+        )}
+
+        {session?.user && user && (
+          <div className="mt-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+            <p className="mb-1 text-[14px] font-medium text-[var(--ink)]">アカウントの削除</p>
+            <p className="mb-2 text-[12px] text-[var(--ink-faint)]">
+              退会すると表示名・メールアドレス等の個人情報は削除されます。投稿・コメントは他の人の会話の文脈を保つため「削除されたユーザー」として残ります。
+            </p>
+            <DeleteAccountButton />
           </div>
         )}
       </main>

@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { randomUUID } from "node:crypto";
+import { auth, signOut } from "@/auth";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { sendVerificationEmail, SITE_URL } from "@/app/lib/email";
@@ -135,4 +137,44 @@ export async function updateAvatar(
   // layout単位で無効化する(表示名の変更と同じ考え方)。
   revalidatePath("/", "layout");
   return { success: true };
+}
+
+export type DeleteAccountState = { error?: string };
+
+// 退会。投稿・コメント本文は他人のスレッドの文脈を壊さないよう残すが、
+// 個人を特定する情報(name/email/画像/連携ユーザー名等)は消して
+// 「削除されたユーザー」に置き換える(Xの凍結/削除済みアカウント表示と
+// 同じ考え方)。Account行も削除し、同じGitHub/X/Googleアカウントで
+// 再ログインしてもこの行には戻れないようにする(再ログインは新規Userに
+// なる)。匿名ゲスト(sessionIdのみ)には「退会」という概念が無いため、
+// 実ログイン(auth()のセッション)を必須にする。
+export async function deleteAccount(_prevState: DeleteAccountState, _formData: FormData): Promise<DeleteAccountState> {
+  const session = await auth();
+  if (!session?.user) return { error: "ログインが必要です" };
+
+  const userId = session.user.id;
+
+  await prisma.$transaction([
+    prisma.account.deleteMany({ where: { userId } }),
+    prisma.session.deleteMany({ where: { userId } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: `deleted-${userId}`,
+        displayName: "削除されたユーザー",
+        bio: null,
+        image: null,
+        email: null,
+        emailVerified: null,
+        emailNotificationsEnabled: false,
+        githubUsername: null,
+        xUsername: null,
+        sessionId: null,
+        deletedAt: new Date(),
+      },
+    }),
+  ]);
+
+  await signOut({ redirect: false });
+  redirect("/");
 }
