@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { getCommentsForPost, getMyLikeForPost, getPostById, isBlockedByAuthor } from "@/app/lib/queries";
+import {
+  getCommentsForPost,
+  getMyCommentCount,
+  getMyLikeForPost,
+  getPostById,
+  isBlockedByAuthor,
+} from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
@@ -29,11 +35,12 @@ export async function generateMetadata({
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [post, comments, currentUser, session] = await Promise.all([
+  const [post, comments, currentUser, session, guestCommentCount] = await Promise.all([
     getPostById(id),
     getCommentsForPost(id),
     getCurrentUser(),
     auth(),
+    getMyCommentCount(),
   ]);
   if (!post) notFound();
   const isLoggedIn = !!session?.user;
@@ -128,6 +135,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                   target={{ type: "post", id: post.id }}
                   currentUserId={currentUser?.id ?? null}
                   isLoggedIn={isLoggedIn}
+                  guestCommentCount={guestCommentCount}
                 />
               ))
             )}
@@ -137,7 +145,11 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               この投稿の作者にブロックされているため、コメントできません
             </p>
           ) : (
-            <CommentForm target={{ type: "post", id: post.id }} isLoggedIn={isLoggedIn} />
+            <CommentForm
+              target={{ type: "post", id: post.id }}
+              isLoggedIn={isLoggedIn}
+              guestCommentCount={guestCommentCount}
+            />
           )}
         </div>
       </main>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { createComment, type CreateCommentState } from "@/app/lib/comment-actions";
+import { GUEST_COMMENT_LIMIT } from "@/app/lib/guest-limits";
 import { ImagePickerButton } from "./ImagePickerButton";
 
 const initialState: CreateCommentState = {};
@@ -11,16 +12,19 @@ export function CommentForm({
   target,
   parentId,
   isLoggedIn,
+  guestCommentCount,
   onDone,
 }: {
   target: { type: "project" | "post"; id: string };
   // 指定するとその返信として投稿する(CommentThread.tsxが「返信する」
   // から開くフォームで使う)。
   parentId?: string;
-  // コメントは匿名ゲストの荒らし対策として、GitHub/Xログイン必須にした
-  // (閲覧・投稿・リアクション等は引き続き匿名ゲストのままでも可能)。
-  // 未ログインならフォームの代わりにログイン導線を出す。
+  // コメントは荒らし対策として原則ログイン必須にしているが、投稿と同様
+  // 「試しに使ってみたい」訪問者の摩擦を減らすため、未ログインでも
+  // GUEST_COMMENT_LIMIT件まではコメントできる(comment-actions.ts参照)。
   isLoggedIn: boolean;
+  // ログイン済みの場合は上限が無いので無視される。
+  guestCommentCount: number;
   // 送信成功時に呼ばれる(返信フォームを自動で畳むために使う)。
   onDone?: () => void;
 }) {
@@ -58,12 +62,13 @@ export function CommentForm({
   }, [state.success]);
 
   const trimmed = body.trim();
+  const guestRemaining = GUEST_COMMENT_LIMIT - guestCommentCount;
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && guestRemaining <= 0) {
     return (
       <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)] p-3">
         <span className="text-[13px] text-[var(--ink-soft)]">
-          {parentId ? "返信するにはログインが必要です" : "コメントするにはログインが必要です"}
+          ゲストのコメントは{GUEST_COMMENT_LIMIT}件までです。続けるにはログインしてください
         </span>
         <Link
           href="/login"
@@ -80,6 +85,11 @@ export function CommentForm({
       <input type="hidden" name="targetType" value={target.type} />
       <input type="hidden" name="targetId" value={target.id} />
       {parentId && <input type="hidden" name="parentId" value={parentId} />}
+      {!isLoggedIn && (
+        <p className="text-[12px] text-[var(--ink-faint)]">
+          🔓 ログインなしでもあと{guestRemaining}件コメントできます(ログインすると無制限にコメントできます)
+        </p>
+      )}
       <textarea
         name="body"
         value={body}

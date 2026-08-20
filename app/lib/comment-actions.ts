@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { auth } from "@/auth";
+import { GUEST_COMMENT_LIMIT } from "@/app/lib/guest-limits";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
@@ -57,12 +58,12 @@ export async function createComment(
   const parentIdRaw = String(formData.get("parentId") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
-  // コメントは匿名ゲストの荒らし対策としてGitHub/Xログイン必須にした
-  // (CommentForm.tsx側のUIガードとは別に、Server Action直接呼び出しへの
-  // 防御としてここでも検証する)。閲覧・投稿・リアクション等は従来通り
-  // 匿名ゲストのままでも可能。
+  // コメントは元々、匿名ゲストの荒らし対策として完全ログイン必須にして
+  // いたが、投稿(post-actions.ts createPost)と同様に「試しに使ってみたい」
+  // 訪問者の摩擦を減らすため、未ログインでもGUEST_COMMENT_LIMIT件までは
+  // コメントできるようにした(CommentForm.tsx側のUIガードとは別に、
+  // Server Action直接呼び出しへの防御としてここでも検証する)。
   const session = await auth();
-  if (!session?.user) return { error: "コメントするにはログインが必要です" };
 
   if (targetType !== "project" && targetType !== "post") return { error: "投稿先が不明です" };
   if (!targetId) return { error: "投稿先が不明です" };
@@ -95,6 +96,13 @@ export async function createComment(
   }
 
   const author = await getOrCreateCurrentUser();
+
+  if (!session?.user) {
+    const guestCommentCount = await prisma.comment.count({ where: { authorId: author.id } });
+    if (guestCommentCount >= GUEST_COMMENT_LIMIT) {
+      return { error: `ゲストのコメントは${GUEST_COMMENT_LIMIT}件までです。続けてコメントするにはログインしてください` };
+    }
+  }
 
   // 荒らし・スパム対策の簡易レート制限(直近10分に20件まで)。
   const commentLimited = await isRateLimited(

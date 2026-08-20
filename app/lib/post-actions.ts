@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { auth } from "@/auth";
 import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
+import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
@@ -31,12 +32,15 @@ export async function createPost(
   _prevState: CreatePostState,
   formData: FormData,
 ): Promise<CreatePostState> {
-  // 投稿は匿名ゲストの使い捨てアカウントによる荒らし・スパム対策として
-  // ログイン必須にした(PostComposerToggle.tsx側のUIガードとは別に、
-  // Server Action直接呼び出しへの防御としてここでも検証する)。閲覧・
-  // リアクション等は従来通り匿名ゲストのままでも可能。
+  // 投稿は元々、匿名ゲストの使い捨てアカウントによる荒らし・スパム対策
+  // として完全ログイン必須にしていたが、「試しに使ってみたい」訪問者の
+  // 摩擦を減らすため、未ログインでもGUEST_POST_LIMIT件までは投稿できる
+  // ようにした(PostComposerToggle.tsx側のUIガードとは別に、Server Action
+  // 直接呼び出しへの防御としてここでも検証する)。ゲストの正体はCookieだけ
+  // なので、Cookieを消せば上限はリセットできてしまうが、あくまで初回体験の
+  // ハードルを下げるためのものと割り切り、本格的な荒らし対策は下の
+  // レート制限に任せる。
   const session = await auth();
-  if (!session?.user) return { error: "投稿するにはログインが必要です" };
 
   const body = String(formData.get("body") ?? "").trim();
   const projectTarget = String(formData.get("projectTarget") ?? "");
@@ -65,6 +69,13 @@ export async function createPost(
   }
 
   const author = await getOrCreateCurrentUser();
+
+  if (!session?.user) {
+    const guestPostCount = await prisma.post.count({ where: { authorId: author.id } });
+    if (guestPostCount >= GUEST_POST_LIMIT) {
+      return { error: `ゲストの投稿は${GUEST_POST_LIMIT}件までです。続けて投稿するにはログインしてください` };
+    }
+  }
 
   // 荒らし・スパム対策の簡易レート制限(直近10分に10件まで)。
   const limited = await isRateLimited(

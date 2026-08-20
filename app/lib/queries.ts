@@ -583,6 +583,22 @@ export async function getMyLikedPostIds(): Promise<Set<string>> {
   return new Set(rows.map((r) => r.postId!));
 }
 
+// 未ログインのゲストが投稿できる残り件数(GUEST_POST_LIMIT)をUIに
+// 表示するためのカウント。ログイン済みユーザーには上限が無いので
+// 呼び出し側(PostComposerToggle)では未ログイン時にしか使わない。
+export async function getMyPostCount(): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) return 0;
+  return prisma.post.count({ where: { authorId: user.id } });
+}
+
+// getMyPostCount()と同じ考え方で、コメント側(GUEST_COMMENT_LIMIT)向け。
+export async function getMyCommentCount(): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) return 0;
+  return prisma.comment.count({ where: { authorId: user.id } });
+}
+
 // 単一Post向け(/post/[id])。全件取得するgetMyLikedPostIds()より軽い。
 export async function getMyLikeForPost(postId: string): Promise<boolean> {
   const user = await getCurrentUser();

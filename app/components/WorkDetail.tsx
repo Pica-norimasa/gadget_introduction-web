@@ -33,6 +33,8 @@ export function WorkDetail({
   comments,
   currentUserId,
   isLoggedIn,
+  guestCommentCount,
+  guestPostCount,
   inspiredItems,
   posts,
   inspiredMyReactions,
@@ -43,10 +45,16 @@ export function WorkDetail({
   myReactions: ReactionKey[];
   comments: CommentThreadType[];
   currentUserId: string | null;
-  // コメント投稿にはGitHub/Xログインが必須(荒らし対策)。閲覧・
+  // コメント投稿は原則GitHub/Xログインが必須(荒らし対策)だが、
+  // GUEST_COMMENT_LIMIT件までは未ログインでも投稿できる。閲覧・
   // リアクション等は引き続き匿名ゲストのままでも可能なので、
   // currentUserId(匿名ゲストも含む)とは別に持つ。
   isLoggedIn: boolean;
+  // ログイン済みの場合は上限が無いので無視される。
+  guestCommentCount: number;
+  // TimelinePostForm(作者本人にしか出ないが、その作者がゲストのことも
+  // ある)向け。同じくログイン済みの場合は無視される。
+  guestPostCount: number;
   inspiredItems: InspiredItem[];
   // 「この作品からインスパイアされた投稿」でProjectカード(WorkCard)を
   // そのまま再利用するために必要な、フィードと同じ形の付随データ。
@@ -210,7 +218,7 @@ export function WorkDetail({
           </ol>
           {work.authorId === currentUserId && (
             <div className="mt-4">
-              <TimelinePostForm projectId={work.id} />
+              <TimelinePostForm projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
             </div>
           )}
         </div>
@@ -230,6 +238,7 @@ export function WorkDetail({
                   target={{ type: "project", id: work.id }}
                   currentUserId={currentUserId}
                   isLoggedIn={isLoggedIn}
+                  guestCommentCount={guestCommentCount}
                 />
               ))
             )}
@@ -239,7 +248,11 @@ export function WorkDetail({
               この作品の作者にブロックされているため、コメントできません
             </p>
           ) : (
-            <CommentForm target={{ type: "project", id: work.id }} isLoggedIn={isLoggedIn} />
+            <CommentForm
+              target={{ type: "project", id: work.id }}
+              isLoggedIn={isLoggedIn}
+              guestCommentCount={guestCommentCount}
+            />
           )}
         </div>
 

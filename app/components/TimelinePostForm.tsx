@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META } from "@/app/lib/mock-data";
+import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
@@ -12,7 +14,21 @@ const initialState: CreatePostState = {};
 // 作品詳細ページからその場でタイムラインに追記するための簡易フォーム。
 // トップページのPostComposerと違い、紐付け先はこのProjectに固定なので
 // セレクタは出さず、hidden inputでprojectTargetを渡すだけにしている。
-export function TimelinePostForm({ projectId }: { projectId: string }) {
+// 表示自体は作品の作者本人にしか出ない(WorkDetail.tsx参照)が、その
+// 作者がゲスト(まだログインしていない訪問者が自分の作品を作った場合)の
+// こともあるため、PostComposerToggle.tsxと同じGUEST_POST_LIMITのガードを
+// ここにも入れている(createPost自体は既に上限を検証済みだが、UIとして
+// 残り件数が見えないと不親切なため)。
+export function TimelinePostForm({
+  projectId,
+  isLoggedIn,
+  guestPostCount,
+}: {
+  projectId: string;
+  isLoggedIn: boolean;
+  // ログイン済みの場合は上限が無いので無視される。
+  guestPostCount: number;
+}) {
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -50,6 +66,19 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
 
   const trimmed = body.trim();
   const guessedType = inferPostType(body);
+  const guestRemaining = GUEST_POST_LIMIT - guestPostCount;
+
+  if (!isLoggedIn && guestRemaining <= 0) {
+    return (
+      <Link
+        href="/login"
+        className="flex w-full items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[15px] text-[var(--ink-faint)] transition-colors hover:border-[var(--accent)]"
+      >
+        <span aria-hidden>✎</span>
+        ゲストの投稿は{GUEST_POST_LIMIT}件までです。続けて投稿するにはログインしてください
+      </Link>
+    );
+  }
 
   return (
     <form
@@ -59,6 +88,11 @@ export function TimelinePostForm({ projectId }: { projectId: string }) {
       className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3"
     >
       <input type="hidden" name="projectTarget" value={projectId} />
+      {!isLoggedIn && (
+        <p className="mb-2 text-[12px] text-[var(--ink-faint)]">
+          🔓 ログインなしでもあと{guestRemaining}件投稿できます(ログインすると無制限に投稿できます)
+        </p>
+      )}
       <textarea
         name="body"
         value={body}

@@ -78,11 +78,13 @@ export function CommentThread({
   target,
   currentUserId,
   isLoggedIn,
+  guestCommentCount,
 }: {
   thread: CommentThreadType;
   target: { type: "project" | "post"; id: string };
   currentUserId: string | null;
   isLoggedIn: boolean;
+  guestCommentCount: number;
 }) {
   const [replying, setReplying] = useState(false);
 
@@ -112,6 +114,7 @@ export function CommentThread({
             target={target}
             parentId={thread.id}
             isLoggedIn={isLoggedIn}
+            guestCommentCount={guestCommentCount}
             onDone={() => setReplying(false)}
           />
         </div>

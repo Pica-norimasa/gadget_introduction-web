@@ -1,5 +1,6 @@
 import {
   getMyLikedPostIds,
+  getMyPostCount,
   getMyReactions,
   getPosts,
   getRecentActivity,
@@ -36,6 +37,7 @@ export default async function Home() {
     likedPostIds,
     inspirations,
     session,
+    myPostCount,
   ] = await Promise.all([
     getWorks(),
     getPosts(),
@@ -48,6 +50,7 @@ export default async function Home() {
     getMyLikedPostIds(),
     getRecentInspirations(),
     auth(),
+    getMyPostCount(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -58,7 +61,11 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <PostComposerToggle myProjects={myProjects} isLoggedIn={!!session?.user} />
+        <PostComposerToggle
+          myProjects={myProjects}
+          isLoggedIn={!!session?.user}
+          guestPostCount={myPostCount}
+        />
 
         {/* 「プロダクトの作り方」ガイドは元々サイドバーにあったが、lg未満だと
             ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
