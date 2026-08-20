@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { CommentThread as CommentThreadType, CommentView } from "@/app/lib/queries";
+import { AI_BOT_NAME } from "@/app/lib/ai-bot-name";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
@@ -87,18 +88,23 @@ export function CommentThread({
   guestCommentCount: number;
 }) {
   const [replying, setReplying] = useState(false);
+  // bot(応援コメント)には返信しても反応が返らないため、返信する導線
+  // 自体を出さない(ai-comment.ts参照)。
+  const isBot = thread.authorHandle === AI_BOT_NAME;
 
   return (
     <div className="flex flex-col gap-2">
       <CommentRow comment={thread} currentUserId={currentUserId} target={target} />
 
-      <button
-        type="button"
-        onClick={() => setReplying((v) => !v)}
-        className="ml-9 self-start text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
-      >
-        {replying ? "キャンセル" : "返信する"}
-      </button>
+      {!isBot && (
+        <button
+          type="button"
+          onClick={() => setReplying((v) => !v)}
+          className="ml-9 self-start text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          {replying ? "キャンセル" : "返信する"}
+        </button>
+      )}
 
       {thread.replies.length > 0 && (
         <div className="ml-9 flex flex-col gap-2 border-l-2 border-[var(--line)] pl-3">
