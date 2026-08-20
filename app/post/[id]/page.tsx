@@ -13,7 +13,6 @@ import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { PostEditor } from "@/app/components/PostEditor";
 import { PostXShareButton } from "@/app/components/PostXShareButton";
 import { SiteHeader } from "@/app/components/SiteHeader";
-import { YouTubeCard } from "@/app/components/YouTubeCard";
 
 export async function generateMetadata({
   params,
@@ -89,24 +88,17 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           </Link>
         )}
 
-        {post.authorId === currentUser?.id ? (
-          <div className="mb-4">
-            <PostEditor postId={post.id} body={post.body} />
-          </div>
-        ) : (
-          post.body && (
-            <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink)]">{post.body}</p>
-          )
-        )}
-        {post.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-          <img
-            src={post.imageUrl}
-            alt=""
-            className="mb-4 max-h-[480px] w-full rounded-2xl border border-[var(--line)] object-contain"
+        <div className="mb-4">
+          <PostEditor
+            postId={post.id}
+            body={post.body}
+            imageUrl={post.imageUrl}
+            youtubeUrl={post.youtubeUrl}
+            isOwner={post.authorId === currentUser?.id}
+            imageClassName="max-h-[480px] w-full rounded-2xl border border-[var(--line)] object-contain"
+            youtubeClassName="max-w-md"
           />
-        )}
-        {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} className="mb-4 max-w-md" />}
+        </div>
 
         <div className="mb-6 flex flex-wrap items-center gap-2">
           {blockedByAuthor ? (

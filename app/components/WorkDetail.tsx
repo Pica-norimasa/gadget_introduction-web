@@ -197,24 +197,14 @@ export function WorkDetail({
                   {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
                   {formatRelativeHours(post.hoursAgo)}
                 </p>
-                {work.authorId === currentUserId ? (
-                  <PostEditor
-                    postId={post.id}
-                    body={post.body}
-                    bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
-                  />
-                ) : (
-                  post.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{post.body}</p>
-                )}
-                {post.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-                  <img
-                    src={post.imageUrl}
-                    alt=""
-                    className="mt-2 max-h-80 max-w-full rounded-xl border border-[var(--line)] object-contain"
-                  />
-                )}
-                {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} className="mt-2 max-w-xs" />}
+                <PostEditor
+                  postId={post.id}
+                  body={post.body}
+                  imageUrl={post.imageUrl}
+                  youtubeUrl={post.youtubeUrl}
+                  isOwner={work.authorId === currentUserId}
+                  bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
+                />
               </li>
             ))}
           </ol>

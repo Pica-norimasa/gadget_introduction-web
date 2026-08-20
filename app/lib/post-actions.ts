@@ -174,31 +174,53 @@ export async function createPost(
 
 export type UpdatePostState = { error?: string; success?: boolean };
 
-// 投稿後の軽い編集(誤字修正など)を想定した本文のみの更新。画像の
-// 差し替え/削除は今回のスコープ外。つぶやき(projectId無し)・
-// 制作タイムライン投稿(projectId有り)はどちらも同じPostモデルなので、
-// このActionが両方をカバーする。
+// 投稿後の軽い編集(誤字修正・画像/YouTubeリンクの差し替え)。つぶやき
+// (projectId無し)・制作タイムライン投稿(projectId有り)はどちらも同じ
+// Postモデルなので、このActionが両方をカバーする。画像は新しいファイルが
+// 来ていればそれに差し替え、無ければremoveImageフラグの有無で「維持」か
+// 「削除」かを判断する(何も送らない=変更なし、が既定)。
 export async function updatePost(
   _prevState: UpdatePostState,
   formData: FormData,
 ): Promise<UpdatePostState> {
   const postId = String(formData.get("postId") ?? "");
   const body = String(formData.get("body") ?? "").trim();
+  const youtubeUrlRaw = String(formData.get("youtubeUrl") ?? "").trim();
+  const removeImage = formData.get("removeImage") === "1";
+  const imageFile = extractImageFile(formData, "image");
 
   if (!postId) return { error: "投稿が見つかりません" };
   if (body.length > 280) return { error: "280文字以内で入力してください" };
+  if (youtubeUrlRaw && !extractYouTubeVideoId(youtubeUrlRaw)) {
+    return { error: "YouTube URLの形式が正しくありません" };
+  }
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
     select: { authorId: true, imageUrl: true, projectId: true },
   });
   if (!post) return { error: "投稿が見つかりません" };
-  if (!body && !post.imageUrl) return { error: "本文か画像のどちらかが必要です" };
 
   const user = await getCurrentUser();
   if (!user || user.id !== post.authorId) return { error: "権限がありません" };
 
-  await prisma.post.update({ where: { id: postId }, data: { body } });
+  let imageUrl = post.imageUrl;
+  if (imageFile) {
+    try {
+      imageUrl = await saveUploadedImage(imageFile);
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+    }
+  } else if (removeImage) {
+    imageUrl = null;
+  }
+
+  const youtubeUrl = youtubeUrlRaw || null;
+  if (!body && !imageUrl && !youtubeUrl) {
+    return { error: "本文・画像・YouTubeリンクのいずれかが必要です" };
+  }
+
+  await prisma.post.update({ where: { id: postId }, data: { body, imageUrl, youtubeUrl } });
 
   if (post.projectId) revalidatePath(`/work/${post.projectId}`);
   revalidatePath(`/post/${postId}`);
