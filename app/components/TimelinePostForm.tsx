@@ -36,6 +36,14 @@ export function TimelinePostForm({
   const [resetCount, setResetCount] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 行数固定だと複数行書きたい時に窮屈なので、内容に合わせて高さを伸ばす
+  // (PostComposer.tsxと同じ挙動)。
+  function autoGrow(el: HTMLTextAreaElement) {
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -58,6 +66,7 @@ export function TimelinePostForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
       setBody("");
       formRef.current?.reset();
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
       clearImage();
       setYoutubeUrl("");
       setResetCount((c) => c + 1);
@@ -94,13 +103,17 @@ export function TimelinePostForm({
         </p>
       )}
       <textarea
+        ref={textareaRef}
         name="body"
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => {
+          setBody(e.target.value);
+          autoGrow(e.target);
+        }}
         placeholder="進捗を投稿する(未完成でもOK)"
         rows={2}
         maxLength={280}
-        className="w-full resize-none border-none bg-transparent text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
+        className="w-full resize-none overflow-hidden border-none bg-transparent text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
       />
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <ImagePickerButton

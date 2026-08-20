@@ -189,103 +189,118 @@ export function WorkDetail({
           </Link>
         </div>
 
-        <div className="mb-6">
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            制作タイムライン
-          </h2>
-          <ol className="relative ml-2 border-l-2 border-[var(--line)] pl-5">
-            {timeline.map((post) => (
-              <li key={post.id} className="relative mb-5 last:mb-0">
-                <span
-                  aria-hidden
-                  className="absolute -left-[22px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
-                  style={{ background: post.hoursAgo < 24 ? "var(--teal)" : "var(--ink-faint)" }}
-                />
-                <p className="mb-0.5 font-mono text-[11px] font-medium text-[var(--ink-faint)]">
-                  {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
-                  {formatRelativeHours(post.hoursAgo)}
-                </p>
-                <PostEditor
-                  postId={post.id}
-                  body={post.body}
-                  imageUrl={post.imageUrl}
-                  youtubeUrl={post.youtubeUrl}
-                  isOwner={work.authorId === currentUserId}
-                  bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
-                />
-              </li>
-            ))}
-          </ol>
-          {work.authorId === currentUserId && (
-            <div className="mt-4">
-              <TimelinePostForm projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
-            </div>
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            コメント({comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})
-          </h2>
-          <div className="mb-4 flex flex-col gap-3">
-            {comments.length === 0 ? (
-              <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
-            ) : (
-              comments.map((c) => (
-                <CommentThread
-                  key={c.id}
-                  thread={c}
-                  target={{ type: "project", id: work.id }}
-                  currentUserId={currentUserId}
-                  isLoggedIn={isLoggedIn}
-                  guestCommentCount={guestCommentCount}
-                />
-              ))
-            )}
-          </div>
-          {blockedByAuthor ? (
-            <p className="text-[13px] text-[var(--ink-faint)]">
-              この作品の作者にブロックされているため、コメントできません
-            </p>
-          ) : (
-            <CommentForm
-              target={{ type: "project", id: work.id }}
-              isLoggedIn={isLoggedIn}
-              guestCommentCount={guestCommentCount}
-            />
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            この作品からインスパイアされた投稿({inspiredItems.length})
-          </h2>
-          {inspiredItems.length === 0 ? (
-            <p className="text-[13px] text-[var(--ink-faint)]">まだインスパイアされた投稿はありません</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {inspiredItems.map((item) =>
-                item.kind === "project" ? (
-                  <WorkCard
-                    key={`project-${item.work.id}`}
-                    work={item.work}
-                    posts={posts}
-                    myReactions={inspiredMyReactions}
-                    currentUserId={currentUserId}
-                    showAnchor={false}
-                  />
-                ) : (
-                  <StandalonePostCard key={`post-${item.post.id}`} post={item.post} />
-                ),
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+        {/* 共有ボタンは元々一番下(タイムライン/コメント/インスパイアされた
+            投稿という3つの際限なく伸びるセクションの後)にあったが、
+            プロジェクトが育つほど埋もれて押されにくくなるという指摘を
+            受けて、伸びる前のここ(タイムラインの直上)に移動した。 */}
+        <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
           <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
           <ShareButtons title={work.title} />
         </div>
+
+        {/* 制作タイムライン・コメントは縦積みのまま、「この作品から
+            インスパイアされた投稿」だけは際限なく伸びて共有ボタン等を
+            押しにくくしていたため、タブで別ペインに切り出した
+            (WorkMediaTabs.tsxを画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
+        <WorkMediaTabs
+          tabs={[
+            {
+              id: "timeline",
+              label: "制作タイムライン",
+              content: (
+                <div className="mb-6">
+                  <ol className="relative ml-2 border-l-2 border-[var(--line)] pl-5">
+                    {timeline.map((post) => (
+                      <li key={post.id} className="relative mb-5 last:mb-0">
+                        <span
+                          aria-hidden
+                          className="absolute -left-[22px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
+                          style={{ background: post.hoursAgo < 24 ? "var(--teal)" : "var(--ink-faint)" }}
+                        />
+                        <p className="mb-0.5 font-mono text-[11px] font-medium text-[var(--ink-faint)]">
+                          {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
+                          {formatRelativeHours(post.hoursAgo)}
+                        </p>
+                        <PostEditor
+                          postId={post.id}
+                          body={post.body}
+                          imageUrl={post.imageUrl}
+                          youtubeUrl={post.youtubeUrl}
+                          isOwner={work.authorId === currentUserId}
+                          bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
+                        />
+                      </li>
+                    ))}
+                  </ol>
+                  {work.authorId === currentUserId && (
+                    <div className="mt-4">
+                      <TimelinePostForm projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
+                    </div>
+                  )}
+
+                  <h2 className="mb-3 mt-6 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
+                    コメント({comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})
+                  </h2>
+                  <div className="mb-4 flex flex-col gap-3">
+                    {comments.length === 0 ? (
+                      <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
+                    ) : (
+                      comments.map((c) => (
+                        <CommentThread
+                          key={c.id}
+                          thread={c}
+                          target={{ type: "project", id: work.id }}
+                          currentUserId={currentUserId}
+                          isLoggedIn={isLoggedIn}
+                          guestCommentCount={guestCommentCount}
+                        />
+                      ))
+                    )}
+                  </div>
+                  {blockedByAuthor ? (
+                    <p className="text-[13px] text-[var(--ink-faint)]">
+                      この作品の作者にブロックされているため、コメントできません
+                    </p>
+                  ) : (
+                    <CommentForm
+                      target={{ type: "project", id: work.id }}
+                      isLoggedIn={isLoggedIn}
+                      guestCommentCount={guestCommentCount}
+                    />
+                  )}
+                </div>
+              ),
+            },
+            {
+              id: "inspired",
+              label: `インスパイアされた投稿(${inspiredItems.length})`,
+              content: (
+                <div className="mb-6">
+                  {inspiredItems.length === 0 ? (
+                    <p className="text-[13px] text-[var(--ink-faint)]">まだインスパイアされた投稿はありません</p>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {inspiredItems.map((item) =>
+                        item.kind === "project" ? (
+                          <WorkCard
+                            key={`project-${item.work.id}`}
+                            work={item.work}
+                            posts={posts}
+                            myReactions={inspiredMyReactions}
+                            currentUserId={currentUserId}
+                            showAnchor={false}
+                          />
+                        ) : (
+                          <StandalonePostCard key={`post-${item.post.id}`} post={item.post} />
+                        ),
+                      )}
+                    </div>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+        />
       </main>
     </div>
   );
