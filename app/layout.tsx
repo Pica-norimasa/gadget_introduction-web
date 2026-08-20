@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { auth } from "@/auth";
+import { SITE_URL } from "@/app/lib/email";
 import {
   getBlockedUserIds,
   getFollowedAuthors,
@@ -14,9 +15,14 @@ import { MuteHydrator } from "@/app/components/MuteHydrator";
 import { RepostHydrator } from "@/app/components/RepostHydrator";
 
 export const metadata: Metadata = {
-  // 本番ドメインが決まったらNEXT_PUBLIC_SITE_URLで上書きする。
-  // 未設定時はローカル開発用のフォールバック。
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  // OGP画像・canonical URLの解決に使われる。metadata自体はサーバー専用
+  // (クライアントバンドルへは出ない)なので、Next.jsのビルド時インライン化に
+  // 依存するNEXT_PUBLIC_接頭辞の変数を新設せず、既に本番で正しく設定されている
+  // AUTH_URL(app/lib/email.tsのSITE_URL)を再利用する。以前は
+  // NEXT_PUBLIC_SITE_URLを参照していたが、これが本番で一度も設定されて
+  // おらず、OGP画像URLがhttp://localhost:3000のまま出てしまっていた
+  // (X/LINE等でのシェア時にプレビュー画像が表示されない不具合)。
+  metadataBase: new URL(SITE_URL),
   title: "Draftly | アイデアを、育てながら見せる場所",
   description:
     "非エンジニアがAIで作った作品を発表し、発見し合う創作プラットフォームのコンセプトモック。",
