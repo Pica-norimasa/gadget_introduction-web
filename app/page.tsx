@@ -96,38 +96,6 @@ export default async function Home() {
         />
         <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
 
-        {/* 投稿・コメント・フォローは既にログイン必須にしてあり、それぞれの
-            場面で「ログインが必要です」という制限型の導線は出ている。ただし
-            未ログインのままリアクションだけで満足して離脱する訪問者は、その
-            制限にすら一度も遭遇しない。ここでは制限の説明ではなく、ログイン
-            するメリット(投稿欄の直下は既に埋まっているため、一通りフィードを
-            見た後の一番下)を伝える導線を別途置く。 */}
-        {!session?.user && (
-          <div className="mx-auto max-w-[1180px] px-4 pb-8 sm:px-6">
-            <div className="flex flex-col items-start gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <span aria-hidden className="text-xl">
-                  🔑
-                </span>
-                <div>
-                  <p className="text-[14px] font-medium text-[var(--ink)]">
-                    GitHub / X でログインすると、投稿・コメント・フォローに参加できます
-                  </p>
-                  <p className="mt-0.5 text-[12.5px] text-[var(--ink-faint)]">
-                    ログインしたアカウントは端末を変えても同じ自分に戻れます(ゲストのままだとCookieを消した時点で別人扱いになります)
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/login"
-                className="shrink-0 rounded-full bg-[var(--accent)] px-4 py-2 text-[13px] font-medium text-[var(--accent-ink)] hover:opacity-90"
-              >
-                ログイン
-              </Link>
-            </div>
-          </div>
-        )}
-
         {/* サイドバー(ランキング・おすすめの作者等)はlg未満だとフィードの下に
             回り込む。フィードが無限スクロールで際限なく伸びるため、下まで
             スクロールさせて見せるのは事実上たどり着けず、アンカーリンクで
