@@ -53,9 +53,10 @@ export async function toggleReportResolved(reportId: string): Promise<void> {
 
 export type AdminDeleteUserState = { error?: string };
 
-// ユーザー一覧(/admin/users)からの論理削除。中身はdeleteAccount
-// (session-actions.ts、本人による退会)と同じanonymizeUser()を使う。
-// 既に削除済みのユーザーへの二重実行を弾く(idempotentにするため)。
+// ユーザー一覧(/admin/users)・通報一覧(/admin/reports、対象がユーザーの
+// 場合)の両方から呼ばれる。中身はdeleteAccount(session-actions.ts、
+// 本人による退会)と同じanonymizeUser()を使う。既に削除済みのユーザーへの
+// 二重実行を弾く(idempotentにするため)。
 export async function adminDeleteUser(
   _prevState: AdminDeleteUserState,
   formData: FormData,
@@ -70,6 +71,7 @@ export async function adminDeleteUser(
   if (user.deletedAt) return { error: "既に削除済みです" };
 
   await anonymizeUser(userId);
+  revalidatePath("/admin/reports");
 
   revalidatePath("/admin/users");
   return {};

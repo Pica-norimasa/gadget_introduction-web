@@ -5,6 +5,7 @@ import { getAllReports } from "@/app/lib/queries";
 import { AdminLoginForm } from "@/app/components/AdminLoginForm";
 import { AdminLogoutButton } from "@/app/components/AdminLogoutButton";
 import { AdminNav } from "@/app/components/AdminNav";
+import { AdminDeleteUserButton } from "@/app/components/AdminDeleteUserButton";
 import { ReportResolveButton } from "@/app/components/ReportResolveButton";
 
 export const metadata: Metadata = { title: "通報一覧 | Draftly Admin" };
@@ -117,12 +118,15 @@ export default async function AdminReportsPage({
                     </Link>
                   )}
                   {r.target.kind === "user" && (
-                    <Link
-                      href={`/u/${encodeURIComponent(r.target.name)}`}
-                      className="text-[var(--accent)] hover:underline"
-                    >
-                      対象のユーザー: {r.target.name} →
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/u/${encodeURIComponent(r.target.name)}`}
+                        className="text-[var(--accent)] hover:underline"
+                      >
+                        対象のユーザー: {r.target.name} →
+                      </Link>
+                      <AdminDeleteUserButton userId={r.target.id} />
+                    </div>
                   )}
                   {r.target.kind === "post" && (
                     <Link href={`/post/${r.target.id}`} className="text-[var(--accent)] hover:underline">
