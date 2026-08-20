@@ -58,6 +58,8 @@ export async function updateProject(
   const glyph = String(formData.get("glyph") ?? "").trim();
   const githubUrl = String(formData.get("githubUrl") ?? "").trim();
   const youtubeUrl = String(formData.get("youtubeUrl") ?? "").trim();
+  const appStoreUrl = String(formData.get("appStoreUrl") ?? "").trim();
+  const googlePlayUrl = String(formData.get("googlePlayUrl") ?? "").trim();
   const platforms = formData.getAll("platforms").map(String);
   const coverImageFile = extractImageFile(formData, "image");
   const removeCoverImage = formData.get("removeCoverImage") === "1";
@@ -76,6 +78,12 @@ export async function updateProject(
   }
   if (youtubeUrl && !extractYouTubeVideoId(youtubeUrl)) {
     return { error: "YouTube URLの形式が正しくありません" };
+  }
+  if (appStoreUrl && !/^https:\/\/apps\.apple\.com\/.+/.test(appStoreUrl)) {
+    return { error: "App Store URLの形式が正しくありません(https://apps.apple.com/... の形にしてください)" };
+  }
+  if (googlePlayUrl && !/^https:\/\/play\.google\.com\/.+/.test(googlePlayUrl)) {
+    return { error: "Google Play URLの形式が正しくありません(https://play.google.com/... の形にしてください)" };
   }
   if (platforms.length === 0) return { error: "対応環境を1つ以上選んでください" };
   if (!platforms.every((p) => PLATFORMS.includes(p as Platform))) return { error: "対応環境が不正です" };
@@ -110,6 +118,8 @@ export async function updateProject(
       glyph: glyph || null,
       githubUrl: githubUrl || null,
       youtubeUrl: youtubeUrl || null,
+      appStoreUrl: appStoreUrl || null,
+      googlePlayUrl: googlePlayUrl || null,
       platforms,
       ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
     },

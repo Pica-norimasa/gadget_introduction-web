@@ -53,6 +53,8 @@ type ProjectWithAuthor = {
   coverImageUrl: string | null;
   githubUrl: string | null;
   youtubeUrl: string | null;
+  appStoreUrl: string | null;
+  googlePlayUrl: string | null;
   hasMotion: boolean;
   views: number;
   trendScore: number;
@@ -131,6 +133,8 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     coverImageUrl: project.coverImageUrl ?? undefined,
     githubUrl: project.githubUrl ?? undefined,
     youtubeUrl: project.youtubeUrl ?? undefined,
+    appStoreUrl: project.appStoreUrl ?? undefined,
+    googlePlayUrl: project.googlePlayUrl ?? undefined,
     hasMotion: project.hasMotion,
     reactions,
     comments,

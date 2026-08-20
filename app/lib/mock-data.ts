@@ -55,6 +55,8 @@ export type Work = {
   coverImageUrl?: string; // アップロードされた実写真。あればglyph/hueより優先して表示
   githubUrl?: string; // 画像がない場合、リポジトリ情報を自動取得してカード化する
   youtubeUrl?: string; // 設定されていればサムネイルカードを表示する
+  appStoreUrl?: string; // App Storeへのリンク(設定されていればWorkDetailにリンクを表示)
+  googlePlayUrl?: string; // Google Playへのリンク(同上)
   hasMotion?: boolean; // true = 動画/GIFを添付した投稿。ホバー/スクロール時にミュート再生風プレビューを見せる
   reactions: {
     like: number;

@@ -12,6 +12,7 @@ import { GitHubCard } from "./GitHubCard";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { MoreActionsMenu } from "./MoreActionsMenu";
+import { AndroidMark, AppleMark } from "./PlatformIcons";
 import { PostEditor } from "./PostEditor";
 import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
@@ -169,6 +170,33 @@ export function WorkDetail({
           </Link>
         )}
         <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+
+        {(work.appStoreUrl || work.googlePlayUrl) && (
+          <div className="mb-4 flex flex-wrap items-center gap-1.5">
+            {work.appStoreUrl && (
+              <a
+                href={work.appStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              >
+                <AppleMark className="h-3.5 w-3.5" />
+                App Store
+              </a>
+            )}
+            {work.googlePlayUrl && (
+              <a
+                href={work.googlePlayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              >
+                <AndroidMark className="h-3.5 w-3.5" />
+                Google Play
+              </a>
+            )}
+          </div>
+        )}
 
         <div className="mb-6 flex flex-wrap items-center gap-1.5">
           {blockedByAuthor ? (

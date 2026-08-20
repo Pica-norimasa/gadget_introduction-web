@@ -136,6 +136,8 @@ model Project {
   coverImageUrl String?
   githubUrl   String?
   youtubeUrl  String?
+  appStoreUrl String?
+  googlePlayUrl String?
   hasMotion   Boolean  @default(false)
   views       Int      @default(0)
   trendScore  Int      @default(0)

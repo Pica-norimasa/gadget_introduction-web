@@ -160,6 +160,28 @@ export function ProjectEditForm({ work }: { work: Work }) {
       </label>
 
       <label className="flex flex-col gap-1">
+        <span className={labelClass}>App Store(空欄可)</span>
+        <input
+          type="text"
+          name="appStoreUrl"
+          defaultValue={work.appStoreUrl ?? ""}
+          placeholder="https://apps.apple.com/..."
+          className={inputClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className={labelClass}>Google Play(空欄可)</span>
+        <input
+          type="text"
+          name="googlePlayUrl"
+          defaultValue={work.googlePlayUrl ?? ""}
+          placeholder="https://play.google.com/store/apps/..."
+          className={inputClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
         <span className={labelClass}>GitHubリポジトリ(空欄可)</span>
         <input
           type="text"
