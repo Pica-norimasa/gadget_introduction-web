@@ -9,7 +9,16 @@ export type EncouragementInput = {
   postType: PostType;
   hasBody: boolean;
   hasImage: boolean;
+  // 応援コメントが「作品全体への1本の共通コメント欄」に載る都合上、
+  // どのタイムライン更新への反応かが本文だけでは分からなくなるため、
+  // 対象の投稿本文を短く引用して添える(hasBody=falseなら引用できる
+  // ものが無いので付けない)。
+  postBody: string;
 };
+
+function truncateForQuote(text: string, max = 24): string {
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
 
 const IMAGE_ONLY_PHRASES = [
   "画像だけでも伝わってきます、いい調子ですね📷",
@@ -56,7 +65,9 @@ const PHRASES_BY_TYPE: Record<PostType, string[]> = {
 
 export async function generateEncouragementComment(input: EncouragementInput): Promise<string> {
   const pool = !input.hasBody && input.hasImage ? IMAGE_ONLY_PHRASES : PHRASES_BY_TYPE[input.postType];
-  return pool[Math.floor(Math.random() * pool.length)];
+  const phrase = pool[Math.floor(Math.random() * pool.length)];
+  if (!input.hasBody) return phrase;
+  return `「${truncateForQuote(input.postBody)}」について:\n${phrase}`;
 }
 
 // 制作タイムライン投稿(=Projectに紐づくPost)があったとき、投稿者本人に
@@ -68,12 +79,14 @@ export async function postAiEncouragementComment(params: {
   postType: PostType;
   hasBody: boolean;
   hasImage: boolean;
+  postBody: string;
 }): Promise<void> {
   const aiUser = await getAiUser();
   const body = await generateEncouragementComment({
     postType: params.postType,
     hasBody: params.hasBody,
     hasImage: params.hasImage,
+    postBody: params.postBody,
   });
 
   await prisma.comment.create({

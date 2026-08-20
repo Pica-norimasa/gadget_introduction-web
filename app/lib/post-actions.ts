@@ -158,6 +158,7 @@ export async function createPost(
           postType: type,
           hasBody: Boolean(body),
           hasImage: Boolean(imageUrl),
+          postBody: body,
         });
         revalidatePath(`/work/${targetProjectId}`);
       } catch (e) {
