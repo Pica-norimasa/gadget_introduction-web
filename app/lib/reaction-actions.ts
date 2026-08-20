@@ -4,16 +4,17 @@ import { revalidatePath } from "next/cache";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import type { ReactionKey } from "@/app/lib/mock-data";
 import { isBlockedBy } from "@/app/lib/queries";
-import { rateLimitWindowStart } from "@/app/lib/rate-limit";
+import { isRateLimited } from "@/app/lib/rate-limit";
 import { prisma } from "@/app/lib/prisma";
 
 // 荒らし・スパム対策の簡易レート制限(直近10分に60件まで)。トレンド
 // スコアはリアクション数に連動するため、大量連打による操作も抑止する。
-async function isReactionRateLimited(userId: string): Promise<boolean> {
-  const count = await prisma.reaction.count({
-    where: { userId, createdAt: { gte: rateLimitWindowStart(10) } },
-  });
-  return count >= 60;
+function isReactionRateLimited(userId: string): Promise<boolean> {
+  return isRateLimited(
+    (since) => prisma.reaction.count({ where: { userId, createdAt: { gte: since } } }),
+    10,
+    60,
+  );
 }
 
 // トグル: 既に押していれば取り消し、押していなければReaction行を作る。

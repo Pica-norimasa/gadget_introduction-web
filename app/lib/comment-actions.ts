@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
-import { rateLimitWindowStart } from "@/app/lib/rate-limit";
+import { isRateLimited } from "@/app/lib/rate-limit";
 import { sendCommentNotificationEmail, SITE_URL } from "@/app/lib/email";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { prisma } from "@/app/lib/prisma";
@@ -97,10 +97,12 @@ export async function createComment(
   const author = await getOrCreateCurrentUser();
 
   // 荒らし・スパム対策の簡易レート制限(直近10分に20件まで)。
-  const recentCommentCount = await prisma.comment.count({
-    where: { authorId: author.id, createdAt: { gte: rateLimitWindowStart(10) } },
-  });
-  if (recentCommentCount >= 20) {
+  const commentLimited = await isRateLimited(
+    (since) => prisma.comment.count({ where: { authorId: author.id, createdAt: { gte: since } } }),
+    10,
+    20,
+  );
+  if (commentLimited) {
     return { error: "コメントが多すぎます。少し時間をおいてから試してください" };
   }
 
@@ -209,10 +211,12 @@ export async function shareCommentAsPost(commentId: string): Promise<ShareCommen
   if (!comment.body) return { error: "本文のないコメントはシェアできません" };
 
   // 荒らし・スパム対策の簡易レート制限(createPostと同じ、直近10分に10件まで)。
-  const recentPostCount = await prisma.post.count({
-    where: { authorId: user.id, createdAt: { gte: rateLimitWindowStart(10) } },
-  });
-  if (recentPostCount >= 10) {
+  const shareLimited = await isRateLimited(
+    (since) => prisma.post.count({ where: { authorId: user.id, createdAt: { gte: since } } }),
+    10,
+    10,
+  );
+  if (shareLimited) {
     return { error: "投稿が多すぎます。少し時間をおいてから試してください" };
   }
 

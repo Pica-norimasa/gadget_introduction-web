@@ -8,6 +8,23 @@ export type NotificationType = "reaction" | "comment" | "follow" | "repost" | "i
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
 
+// formatRelativeHours(app/lib/format.ts)向けの経過時間。切り捨てず小数の
+// まま返す(1時間未満を分単位で表示するため)。この計算式が8箇所に
+// コピペされていたのをここに集約した。
+function hoursAgoOf(createdAt: Date): number {
+  return Math.max(0, (Date.now() - createdAt.getTime()) / HOUR_MS);
+}
+
+// author選択(表示名・アイコン・連携ユーザー名)。4箇所で同じselectが
+// 繰り返されていたのをここに集約した。
+const AUTHOR_SELECT = {
+  name: true,
+  displayName: true,
+  image: true,
+  githubUsername: true,
+  xUsername: true,
+} as const;
+
 // フィード/検索/コメント欄など、能動的に発見される場所から、自分が
 // ミュート・ブロックしたUserのコンテンツを取り除くために使う。特定の
 // プロフィールページやWork詳細ページなど、URLで直接たどり着いた先までは
@@ -266,7 +283,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
     where: { inspiredByProjectId: projectId },
     orderBy: { createdAt: "desc" },
     include: {
-      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
+      author: { select: AUTHOR_SELECT },
       _count: { select: { comments: true, reactions: true } },
     },
   });
@@ -293,7 +310,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
           youtubeUrl: r.youtubeUrl ?? undefined,
-          hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+          hoursAgo: hoursAgoOf(r.createdAt),
           commentsCount: r._count.comments,
           likesCount: r._count.reactions,
         },
@@ -324,7 +341,7 @@ export async function getPosts(): Promise<Post[]> {
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     youtubeUrl: r.youtubeUrl ?? undefined,
-    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(r.createdAt),
   }));
 }
 
@@ -361,7 +378,7 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
     authorName: r.author.name,
     projectId: r.project?.id ?? null,
     projectTitle: r.project?.title ?? null,
-    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(r.createdAt),
   }));
 }
 
@@ -399,7 +416,7 @@ async function loadStandalonePosts(
     orderBy: { createdAt: "desc" },
     ...(limit ? { take: limit } : {}),
     include: {
-      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
+      author: { select: AUTHOR_SELECT },
       _count: { select: { comments: true, reactions: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
@@ -413,7 +430,7 @@ async function loadStandalonePosts(
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
     youtubeUrl: r.youtubeUrl ?? undefined,
-    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(r.createdAt),
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
     inspiredByProjectId: r.inspiredByProject?.id,
@@ -463,7 +480,7 @@ export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
     projectId: r.project.id,
     projectTitle: r.project.title,
     comment: r.comment,
-    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(r.createdAt),
   }));
 }
 
@@ -568,7 +585,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
   const rows = await prisma.comment.findMany({
     where: { ...where, ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}) },
     include: {
-      author: { select: { name: true, displayName: true, image: true, githubUsername: true, xUsername: true } },
+      author: { select: AUTHOR_SELECT },
     },
     orderBy: { createdAt: "asc" },
   });
@@ -582,7 +599,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     authorHandle: r.author.name,
     authorSocialHandle: socialHandleOf(r.author) ?? undefined,
     authorImage: r.author.image,
-    hoursAgo: Math.max(0, (Date.now() - r.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(r.createdAt),
   });
 
   const repliesByParent = new Map<string, CommentView[]>();
@@ -630,7 +647,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     where: { id },
     include: {
       author: {
-        select: { id: true, name: true, displayName: true, image: true, githubUsername: true, xUsername: true },
+        select: { id: true, ...AUTHOR_SELECT },
       },
       _count: { select: { comments: true, reactions: true } },
       inspiredByProject: { select: { id: true, title: true } },
@@ -648,7 +665,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     authorHandle: post.author.name,
     authorSocialHandle: socialHandleOf(post.author) ?? undefined,
     authorImage: post.author.image,
-    hoursAgo: Math.max(0, (Date.now() - post.createdAt.getTime()) / HOUR_MS),
+    hoursAgo: hoursAgoOf(post.createdAt),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,
     inspiredByProjectId: post.inspiredByProject?.id,
@@ -737,7 +754,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
       reactionType: latest.reactionType as ReactionKey | null,
       sourceProjectId: latest.sourceProject?.id ?? null,
       sourceProjectTitle: latest.sourceProject?.title ?? null,
-      hoursAgo: Math.max(0, (Date.now() - latest.createdAt.getTime()) / HOUR_MS),
+      hoursAgo: hoursAgoOf(latest.createdAt),
       read: group.every((r) => r.readAt !== null),
     };
   });

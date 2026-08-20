@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
 import { isBlockedBy } from "@/app/lib/queries";
-import { rateLimitWindowStart } from "@/app/lib/rate-limit";
+import { isRateLimited } from "@/app/lib/rate-limit";
 import { prisma } from "@/app/lib/prisma";
 
 // トグル: 既にフォローしていればFollow行を消し、していなければ作る。
@@ -39,10 +39,12 @@ export async function toggleFollowAction(authorName: string) {
 
     // 荒らし・スパム対策の簡易レート制限(直近10分に30件まで)。UIに
     // エラー表示の仕組みが無いフォローボタンなので、静かに無視する。
-    const recentFollowCount = await prisma.follow.count({
-      where: { followerId: follower.id, createdAt: { gte: rateLimitWindowStart(10) } },
-    });
-    if (recentFollowCount >= 30) return;
+    const limited = await isRateLimited(
+      (since) => prisma.follow.count({ where: { followerId: follower.id, createdAt: { gte: since } } }),
+      10,
+      30,
+    );
+    if (limited) return;
 
     await prisma.follow.create({ data: { followerId: follower.id, followingId: following.id } });
     await prisma.notification.create({
