@@ -88,7 +88,31 @@ function socialHandleOf(user: { xUsername: string | null; githubUsername: string
   return user.xUsername ?? user.githubUsername ?? null;
 }
 
+// trendScoreは元々シードデータ作成時に手書きした固定値(mock-data.ts)で、
+// 実際のリアクション・コメント・リポストが増えても一切更新されなかった
+// (実投稿は常にDBのデフォルト値0のままで、「今日の掘り出し物」に構造上
+// 出られなかった)。エンゲージメント量+新しさから毎回その場で計算する
+// 値に置き換える。反応が付く前の投稿にも「新しさ」だけで一定の値を
+// 与え(30日かけて0まで減衰)、時間が経つほどエンゲージメント量の比重が
+// 相対的に増していく設計。
+function computeTrendScore(totalReactions: number, totalComments: number, totalReposts: number, daysAgo: number): number {
+  const engagementScore = totalReactions + totalComments * 2 + totalReposts * 3;
+  const recencyBoost = Math.max(0, 30 - daysAgo) * 2;
+  return Math.min(100, Math.round(engagementScore / 5 + recencyBoost));
+}
+
 function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
+  const reactions = {
+    like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
+    useful: project.reactionUsefulSeed + (realReactionCounts?.useful ?? 0),
+    idea: project.reactionIdeaSeed + (realReactionCounts?.idea ?? 0),
+    wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
+  };
+  const totalReactions = reactions.like + reactions.useful + reactions.idea + reactions.wantToTry;
+  const comments = project.commentsSeed + project._count.comments;
+  const reposts = project._count.reposts;
+  const daysAgo = Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS));
+
   return {
     id: project.id,
     title: project.title,
@@ -108,17 +132,12 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     githubUrl: project.githubUrl ?? undefined,
     youtubeUrl: project.youtubeUrl ?? undefined,
     hasMotion: project.hasMotion,
-    reactions: {
-      like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
-      useful: project.reactionUsefulSeed + (realReactionCounts?.useful ?? 0),
-      idea: project.reactionIdeaSeed + (realReactionCounts?.idea ?? 0),
-      wantToTry: project.reactionWantToTrySeed + (realReactionCounts?.wantToTry ?? 0),
-    },
-    comments: project.commentsSeed + project._count.comments,
-    reposts: project._count.reposts,
+    reactions,
+    comments,
+    reposts,
     views: project.views,
-    daysAgo: Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS)),
-    trendScore: project.trendScore,
+    daysAgo,
+    trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
   };
 }
