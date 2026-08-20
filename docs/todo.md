@@ -2,6 +2,22 @@
 
 実装は後回しにするが、忘れないように残しておくメモ。
 
+## 外形監視(アップタイム監視)の追加
+
+今のエラー監視(CloudWatch Alarm、`draftly-error-alarm`)は、App Runnerの
+アプリログに「Error」を含む行が出たときだけ検知する仕組み。アプリが
+完全にクラッシュ・ハングしてログ自体が止まった場合(＝一番困る全断)は、
+「ログが無い」ことが異常として扱われない設定(`TreatMissingData: notBreaching`)
+のため検知できない、という死角がある。
+
+対策候補:
+- Route53 Health Check + CloudWatch Alarm(AWS内で完結、月$0.50程度)
+- UptimeRobot等の無料の外形監視サービスに`https://draftly-web.dev`を
+  登録するだけ(AWS外、無料、数分でセットアップ可能)
+
+個人開発の規模なら後者で十分。ユーザーから「別の改修を先にやりたい」との
+判断で保留中。
+
 ## GitHub プレビュー機能のレート制限対策 (AWS + MySQL移行時)
 
 `app/api/github-preview/route.ts` は現状、カード表示のたびにクライアントから
