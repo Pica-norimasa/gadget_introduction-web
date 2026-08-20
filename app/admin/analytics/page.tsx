@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { isAdminAuthed } from "@/app/lib/admin-auth";
 import { getDailyVisitStats } from "@/app/lib/cloudflare-analytics";
 import { getDailyFunnelStats } from "@/app/lib/product-funnel";
 import { AdminLoginForm } from "@/app/components/AdminLoginForm";
 import { AdminLogoutButton } from "@/app/components/AdminLogoutButton";
+import { AdminNav } from "@/app/components/AdminNav";
 
 export const metadata: Metadata = { title: "アクセス状況 | Draftly Admin" };
 
@@ -70,18 +70,7 @@ export default async function AdminAnalyticsPage() {
           <AdminLogoutButton />
         </div>
 
-        <div className="mb-6 flex items-center gap-1 border-b border-[var(--line)]">
-          <Link href="/admin/analytics" className="relative px-3 py-2 text-sm font-medium text-[var(--ink)]">
-            アクセス状況
-            <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[var(--accent)]" />
-          </Link>
-          <Link
-            href="/admin/reports"
-            className="px-3 py-2 text-sm font-medium text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
-          >
-            通報一覧
-          </Link>
-        </div>
+        <AdminNav active="analytics" />
 
         {loadError ? (
           <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-6 text-[13px] text-[var(--ink-soft)]">

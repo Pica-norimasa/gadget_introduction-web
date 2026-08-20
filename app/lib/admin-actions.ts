@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { ADMIN_COOKIE } from "@/app/lib/admin-cookie";
 import { isAdminAuthed } from "@/app/lib/admin-auth";
+import { anonymizeUser } from "@/app/lib/user-admin";
 import { prisma } from "@/app/lib/prisma";
 
 export type AdminLoginState = { error?: string };
@@ -48,4 +49,28 @@ export async function toggleReportResolved(reportId: string): Promise<void> {
   });
 
   revalidatePath("/admin/reports");
+}
+
+export type AdminDeleteUserState = { error?: string };
+
+// ユーザー一覧(/admin/users)からの論理削除。中身はdeleteAccount
+// (session-actions.ts、本人による退会)と同じanonymizeUser()を使う。
+// 既に削除済みのユーザーへの二重実行を弾く(idempotentにするため)。
+export async function adminDeleteUser(
+  _prevState: AdminDeleteUserState,
+  formData: FormData,
+): Promise<AdminDeleteUserState> {
+  if (!(await isAdminAuthed())) return { error: "権限がありません" };
+
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return { error: "ユーザーが指定されていません" };
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { deletedAt: true } });
+  if (!user) return { error: "ユーザーが見つかりません" };
+  if (user.deletedAt) return { error: "既に削除済みです" };
+
+  await anonymizeUser(userId);
+
+  revalidatePath("/admin/users");
+  return {};
 }

@@ -1006,3 +1006,58 @@ export async function getAllReports(): Promise<AdminReportView[]> {
     };
   });
 }
+
+export type AdminUserView = {
+  id: string;
+  name: string;
+  displayName: string | null;
+  email: string | null;
+  githubUsername: string | null;
+  xUsername: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
+  // sessionIdだけがあり、GitHub/X/Google連携が無い=ログインせず使っている
+  // 匿名ゲストのUser行(投稿/コメント等の初回操作で遅延生成される)。
+  isGuest: boolean;
+};
+
+// 管理画面のユーザー一覧(/admin/users)向け。ページングのため件数も
+// 一緒に返す(1ページ目を表示するたびに全件数え直すのは無駄だが、
+// この規模なら気にするほどのコストではない)。
+export async function getAdminUsers(page: number, pageSize = 20): Promise<{ users: AdminUserView[]; total: number }> {
+  const skip = Math.max(0, (page - 1) * pageSize);
+  const [rows, total] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        email: true,
+        githubUsername: true,
+        xUsername: true,
+        createdAt: true,
+        deletedAt: true,
+        sessionId: true,
+      },
+    }),
+    prisma.user.count(),
+  ]);
+
+  return {
+    users: rows.map((u) => ({
+      id: u.id,
+      name: u.name,
+      displayName: u.displayName,
+      email: u.email,
+      githubUsername: u.githubUsername,
+      xUsername: u.xUsername,
+      createdAt: u.createdAt,
+      deletedAt: u.deletedAt,
+      isGuest: !!u.sessionId,
+    })),
+    total,
+  };
+}
