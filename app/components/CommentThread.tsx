@@ -20,6 +20,11 @@ function CommentRow({
   currentUserId: string | null;
   target: { type: "project" | "post"; id: string };
 }) {
+  // bot(応援コメント)はミュート・ブロック・通報のいずれも対象として
+  // 意味を持たない(個人ではなく共有のシステムアカウントのため)ので、
+  // 「⋯」メニュー自体を出さない。
+  const isBot = comment.authorHandle === AI_BOT_NAME;
+
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
       <div className="flex items-start gap-2">
@@ -43,10 +48,12 @@ function CommentRow({
             {comment.authorId === currentUserId ? (
               <DeleteCommentButton commentId={comment.id} />
             ) : (
-              <MoreActionsMenu
-                reportTarget={{ type: "comment", id: comment.id }}
-                author={{ id: comment.authorId, name: comment.authorName }}
-              />
+              !isBot && (
+                <MoreActionsMenu
+                  reportTarget={{ type: "comment", id: comment.id }}
+                  author={{ id: comment.authorId, name: comment.authorName }}
+                />
+              )
             )}
           </div>
           {comment.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{comment.body}</p>}
