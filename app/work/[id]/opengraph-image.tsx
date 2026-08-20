@@ -68,6 +68,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   }
 
   const preview = work.catch.length > 78 ? `${work.catch.slice(0, 78)}…` : work.catch;
+  // 表紙写真(coverImageUrl)が設定されている場合は、カード表示(WorkCard)と
+  // 同じくそれを最優先で使う。写真の上に文字を乗せるため、下から暗くなる
+  // スクリムを重ねて可読性を確保し、文字色も白系に切り替える(グラデーション
+  // 単体の場合は明るい背景前提の暗い文字色のまま)。
+  const hasCover = !!work.coverImageUrl;
 
   return new ImageResponse(
     (
@@ -79,11 +84,32 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           flexDirection: "column",
           justifyContent: "flex-end",
           padding: "64px",
-          background: `linear-gradient(160deg, hsl(${work.hue}, 55%, 89%), hsl(${work.hue}, 45%, 66%))`,
+          position: "relative",
+          background: hasCover
+            ? "#14181A"
+            : `linear-gradient(160deg, hsl(${work.hue}, 55%, 89%), hsl(${work.hue}, 45%, 66%))`,
           fontFamily: "sans-serif",
         }}
       >
-        {work.glyph ? (
+        {hasCover ? (
+          // eslint-disable-next-line @next/next/no-img-element -- satoriはnext/imageを解決できないため生の<img>が必須
+          <img
+            src={work.coverImageUrl!}
+            alt=""
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : null}
+        {hasCover ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(0deg, rgba(10,10,10,0.88) 0%, rgba(10,10,10,0.35) 55%, rgba(10,10,10,0.05) 100%)",
+            }}
+          />
+        ) : null}
+
+        {!hasCover && work.glyph ? (
           <div
             style={{
               position: "absolute",
@@ -97,7 +123,16 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
         ) : null}
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 28, color: "rgba(20,18,14,0.6)", marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            fontSize: 28,
+            color: hasCover ? "rgba(255,255,255,0.75)" : "rgba(20,18,14,0.6)",
+            marginBottom: 16,
+          }}
+        >
           <BrandMarkBadge size={36} />
           Draftly ・ {work.stage}
         </div>
@@ -106,7 +141,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             display: "flex",
             fontSize: 64,
             fontWeight: 700,
-            color: "#181410",
+            color: hasCover ? "#FFFFFF" : "#181410",
             lineHeight: 1.15,
             maxWidth: 880,
           }}
@@ -117,14 +152,21 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           style={{
             display: "flex",
             fontSize: 30,
-            color: "rgba(20,18,14,0.78)",
+            color: hasCover ? "rgba(255,255,255,0.85)" : "rgba(20,18,14,0.78)",
             marginTop: 24,
             maxWidth: 860,
           }}
         >
           {preview}
         </div>
-        <div style={{ display: "flex", fontSize: 26, color: "rgba(20,18,14,0.6)", marginTop: 32 }}>
+        <div
+          style={{
+            display: "flex",
+            fontSize: 26,
+            color: hasCover ? "rgba(255,255,255,0.7)" : "rgba(20,18,14,0.6)",
+            marginTop: 32,
+          }}
+        >
           by {work.author}
         </div>
       </div>
