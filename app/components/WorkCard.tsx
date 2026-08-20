@@ -2,6 +2,7 @@ import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
+import { AndroidMark, AppleMark } from "./PlatformIcons";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CoverImage } from "./CoverImage";
 import { ExpandableText } from "./ExpandableText";
@@ -124,6 +125,33 @@ export function WorkCard({
           {work.title}
         </h3>
         <ExpandableText text={work.catch} />
+
+        {(work.appStoreUrl || work.googlePlayUrl) && (
+          <div className="relative z-20 flex flex-wrap items-center gap-1.5">
+            {work.appStoreUrl && (
+              <a
+                href={work.appStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              >
+                <AppleMark className="h-3 w-3" />
+                App Store
+              </a>
+            )}
+            {work.googlePlayUrl && (
+              <a
+                href={work.googlePlayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              >
+                <AndroidMark className="h-3 w-3" />
+                Google Play
+              </a>
+            )}
+          </div>
+        )}
 
         {latestPost && (
           <div
