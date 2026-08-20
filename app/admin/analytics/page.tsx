@@ -15,7 +15,6 @@ function sum(values: number[]) {
 type MergedRow = {
   date: string;
   uniques: number;
-  requests: number;
   signups: number;
   posts: number;
   follows: number;
@@ -46,7 +45,6 @@ export default async function AdminAnalyticsPage() {
     return {
       date: v.date,
       uniques: v.uniques,
-      requests: v.requests,
       signups: f?.signups ?? 0,
       posts: f?.posts ?? 0,
       follows: f?.follows ?? 0,
@@ -76,7 +74,7 @@ export default async function AdminAnalyticsPage() {
           <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-6 text-[13px] text-[var(--ink-soft)]">
             <p className="mb-2 font-medium text-[var(--ink)]">Cloudflare Analyticsの設定が必要です</p>
             <p className="mb-2">
-              CLOUDFLARE_API_TOKEN と CLOUDFLARE_ZONE_ID の環境変数が未設定、または権限が不足しています。
+              CLOUDFLARE_WEB_ANALYTICS_TOKEN と CLOUDFLARE_ACCOUNT_ID の環境変数が未設定、または権限が不足しています。
             </p>
             <p className="text-[12px] text-[var(--ink-faint)]">エラー詳細: {loadError}</p>
           </div>
@@ -93,7 +91,7 @@ export default async function AdminAnalyticsPage() {
             </div>
 
             <p className="mb-6 text-[12px] text-[var(--ink-faint)]">
-              ※ 訪問者数はCloudflareの日別集計による概算値。サインアップはGitHub/Xで実際にログインしたユーザーのみを数え、匿名ゲストやシードデータは含みません。
+              ※ 訪問者数はCloudflare Web Analytics(JSビーコン型の実測値、ボット・クローラーはJSを実行しないため基本的にカウントされない)による日別集計。サインアップはGitHub/Xで実際にログインしたユーザーのみを数え、匿名ゲストやシードデータは含みません。
             </p>
 
             <div className="overflow-x-auto rounded-xl border border-[var(--line)]">

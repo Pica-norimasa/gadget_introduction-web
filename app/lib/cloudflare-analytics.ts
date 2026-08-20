@@ -1,24 +1,33 @@
-// Cloudflareの無料プランでも使えるZone Analytics(GraphQL)から、日別のユニーク
-// 訪問者数を取ってくるだけの薄いクライアント。自前でDBに書き込む方式だと
-// 全アクセスでRDSへの書き込みが発生してしまうため、既にオレンジクラウドで
-// 全トラフィックを受けているCloudflare側の集計をそのまま使う。
+// CloudflareのWeb Analytics(RUM、JSビーコン型)から、日別の訪問者数を
+// 取ってくるだけの薄いクライアント。以前はZone Analytics(生のHTTP
+// リクエスト集計、ボット・クローラーも素通しでカウントされる)を使って
+// いたが、実際の人間の訪問者数とかなり乖離があった(Zone Analyticsで
+// 146訪問/日だった同じ日に、Web Analyticsでは24時間で52訪問)ため、
+// ボットがJSを実行しない限り記録されないWeb Analytics側に切り替えた。
+// Web Analytics(RUM)はアカウント単位のリソースなので、Zone Analytics
+// (CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID)とは別のトークン
+// (CLOUDFLARE_WEB_ANALYTICS_TOKEN、Account.Account Analytics:Read権限)
+// とアカウントID(CLOUDFLARE_ACCOUNT_ID)を使う。
 const CLOUDFLARE_GRAPHQL_ENDPOINT = "https://api.cloudflare.com/client/v4/graphql";
+
+// このアカウント配下に複数サイトが増えても、draftly-web.dev以外の
+// 数値を混ぜないようにホスト名で絞り込む。
+const SITE_HOST = "draftly-web.dev";
 
 export type DailyVisitStat = {
   date: string;
   uniques: number;
-  requests: number;
   pageViews: number;
 };
 
 type GraphQLResponse = {
   data?: {
     viewer?: {
-      zones?: {
-        httpRequests1dGroups?: {
+      accounts?: {
+        rumPageloadEventsAdaptiveGroups?: {
           dimensions: { date: string };
-          uniq: { uniques: number };
-          sum: { requests: number; pageViews: number };
+          count: number;
+          sum: { visits: number };
         }[];
       }[];
     };
@@ -29,10 +38,10 @@ type GraphQLResponse = {
 // dateフィールドは "2026-08-19" 形式で比較する。sinceは含む・untilは含まない
 // 前提でCloudflare側が扱うため、呼び出し側は今日+1日をuntilに渡す。
 export async function getDailyVisitStats(days: number): Promise<DailyVisitStat[]> {
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  const zoneTag = process.env.CLOUDFLARE_ZONE_ID;
-  if (!token || !zoneTag) {
-    throw new Error("CLOUDFLARE_API_TOKEN または CLOUDFLARE_ZONE_ID が設定されていません");
+  const token = process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN;
+  const accountTag = process.env.CLOUDFLARE_ACCOUNT_ID;
+  if (!token || !accountTag) {
+    throw new Error("CLOUDFLARE_WEB_ANALYTICS_TOKEN または CLOUDFLARE_ACCOUNT_ID が設定されていません");
   }
 
   const until = new Date();
@@ -41,17 +50,17 @@ export async function getDailyVisitStats(days: number): Promise<DailyVisitStat[]
   const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
 
   const query = `
-    query GetDailyVisits($zoneTag: String!, $since: Date!, $until: Date!) {
+    query GetDailyVisits($accountTag: String!, $since: Date!, $until: Date!, $host: string!) {
       viewer {
-        zones(filter: { zoneTag: $zoneTag }) {
-          httpRequests1dGroups(
+        accounts(filter: { accountTag: $accountTag }) {
+          rumPageloadEventsAdaptiveGroups(
             limit: 90
-            filter: { date_geq: $since, date_leq: $until }
+            filter: { date_geq: $since, date_leq: $until, requestHost: $host }
             orderBy: [date_ASC]
           ) {
             dimensions { date }
-            uniq { uniques }
-            sum { requests, pageViews }
+            count
+            sum { visits }
           }
         }
       }
@@ -66,7 +75,7 @@ export async function getDailyVisitStats(days: number): Promise<DailyVisitStat[]
     },
     body: JSON.stringify({
       query,
-      variables: { zoneTag, since: toDateStr(since), until: toDateStr(until) },
+      variables: { accountTag, since: toDateStr(since), until: toDateStr(until), host: SITE_HOST },
     }),
     cache: "no-store",
   });
@@ -76,11 +85,10 @@ export async function getDailyVisitStats(days: number): Promise<DailyVisitStat[]
     throw new Error(json.errors.map((e) => e.message).join(", "));
   }
 
-  const groups = json.data?.viewer?.zones?.[0]?.httpRequests1dGroups ?? [];
+  const groups = json.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups ?? [];
   return groups.map((g) => ({
     date: g.dimensions.date,
-    uniques: g.uniq.uniques,
-    requests: g.sum.requests,
-    pageViews: g.sum.pageViews,
+    uniques: g.sum.visits,
+    pageViews: g.count,
   }));
 }
