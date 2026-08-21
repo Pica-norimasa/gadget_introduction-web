@@ -86,7 +86,7 @@ export function WorkDetail({
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
         <div className="mb-4 flex items-center justify-between">
           <Link
-            href="/"
+            href={`/#work-${work.id}`}
             className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
           >
             ← ホームに戻る
