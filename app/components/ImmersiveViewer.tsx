@@ -10,6 +10,7 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
 import { ReactionBar } from "./ReactionBar";
+import { VerifiedBadge } from "./VerifiedBadge";
 
 const BATCH_SIZE = 5;
 const MAX_ITEMS = 60;
@@ -28,13 +29,11 @@ function Slide({
   posts,
   myReactions,
   currentUserId,
-  onNavigate,
 }: {
   work: Work;
   posts: Post[];
   myReactions: Record<string, ReactionKey[]>;
   currentUserId: string | null;
-  onNavigate: () => void;
 }) {
   const latestPost = latestPostFor(work.id, posts);
 
@@ -66,11 +65,13 @@ function Slide({
       <div className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 bg-gradient-to-b from-black/70 to-transparent p-4 pb-10 text-white">
         <Link
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
-          onClick={onNavigate}
           className="flex min-w-0 items-center gap-2"
         >
           <AuthorAvatar name={work.author} image={work.authorImage} size={32} />
-          <span className="truncate text-[14px] font-semibold drop-shadow-sm">{work.author}</span>
+          <span className="truncate text-[14px] font-semibold drop-shadow-sm">
+            {work.author}
+            {work.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
+          </span>
         </Link>
         {work.authorId !== currentUserId && (
           <FollowButton author={work.authorHandle ?? work.author} variant="dark" />
@@ -91,15 +92,14 @@ function Slide({
           <h2 className="text-xl font-bold leading-snug">{work.title}</h2>
           <p className="text-[14px] leading-relaxed text-white/85">{work.catch}</p>
           {latestPost && (
-            <a
-              href={`#work-${work.id}`}
-              onClick={onNavigate}
+            <Link
+              href={`/work/${work.id}`}
               className="line-clamp-2 text-[12px] text-white/60 hover:underline"
             >
               {POST_TYPE_META[latestPost.type].icon}
               {formatRelativeHours(latestPost.hoursAgo)}・{POST_TYPE_META[latestPost.type].label}・
               {latestPost.body}
-            </a>
+            </Link>
           )}
           <div className="mt-1">
             <ReactionBar
@@ -109,13 +109,12 @@ function Slide({
               variant="dark"
             />
           </div>
-          <a
-            href={`#work-${work.id}`}
-            onClick={onNavigate}
+          <Link
+            href={`/work/${work.id}`}
             className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-medium text-black"
           >
-            フィードで見る →
-          </a>
+            作品詳細を見る →
+          </Link>
         </div>
       </div>
     </section>
@@ -187,14 +186,7 @@ export function ImmersiveViewer({
 
       <div className="h-full snap-y snap-mandatory overflow-y-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {feed.slice(0, loadedCount).map((w, i) => (
-          <Slide
-            key={`${w.id}-${i}`}
-            work={w}
-            posts={posts}
-            myReactions={myReactions}
-            currentUserId={currentUserId}
-            onNavigate={onClose}
-          />
+          <Slide key={`${w.id}-${i}`} work={w} posts={posts} myReactions={myReactions} currentUserId={currentUserId} />
         ))}
         <div ref={sentinelRef} className="h-1" />
       </div>
