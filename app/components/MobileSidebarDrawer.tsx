@@ -47,6 +47,13 @@ export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
         role="dialog"
         aria-modal="true"
         aria-label="ランキング・おすすめ"
+        onClick={(e) => {
+          // ランキング等のリンクをタップして遷移・ジャンプする際は、
+          // 選んだ後もドロワーが開いたままだと結果が見えないため閉じる。
+          if ((e.target as HTMLElement).closest("a")) {
+            setOpen(false);
+          }
+        }}
         className={`fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm overflow-y-auto bg-[var(--bg)] p-4 shadow-2xl transition-transform duration-300 lg:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}

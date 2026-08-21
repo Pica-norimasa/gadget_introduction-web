@@ -51,13 +51,12 @@ export function IdentityBadge({
             className="flex items-center gap-1.5 text-[13px] text-[var(--ink-soft)] hover:text-[var(--ink)]"
           >
             {avatar}
-            {/* モバイル幅ではアイコンだけにして、ヘッダーの横幅を圧迫しないようにする */}
-            <span className="hidden sm:inline">{name ?? "ゲスト"}</span>
+            <span className="max-w-[84px] truncate sm:max-w-none">{name ?? "ゲスト"}</span>
           </Link>
         ) : (
           <span className="flex items-center gap-1.5 text-[13px] text-[var(--ink-soft)]">
             {avatar}
-            <span className="hidden sm:inline">{name ?? "ゲスト"}</span>
+            <span className="max-w-[84px] truncate sm:max-w-none">{name ?? "ゲスト"}</span>
           </span>
         )}
         {/* 表示名の変更ボタンは頻度の低い操作なので、幅の厳しいモバイルでは
