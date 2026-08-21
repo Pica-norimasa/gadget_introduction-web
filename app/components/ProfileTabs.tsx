@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
-type TabId = "posted" | "reposted" | "blocked" | "murmurs";
+type TabId = "posted" | "reposted" | "blocked" | "murmurs" | "following";
 
 // FeedSectionの新着/急上昇/あなたへタブと同じ、下線付きのタブUIを流用。
 // 各タブの中身は既にサーバー側でレンダリング済みのReactNode(WorkCardの
@@ -13,20 +13,24 @@ export function ProfileTabs({
   postedLabel,
   repostedLabel,
   murmursLabel,
+  followingLabel,
   showBlockedTab,
   postedContent,
   repostedContent,
   blockedContent,
   murmursContent,
+  followingContent,
 }: {
   postedLabel: string;
   repostedLabel: string;
   murmursLabel: string;
+  followingLabel: string;
   showBlockedTab: boolean;
   postedContent: ReactNode;
   repostedContent: ReactNode;
   blockedContent: ReactNode;
   murmursContent: ReactNode;
+  followingContent: ReactNode;
 }) {
   const [tab, setTab] = useState<TabId>("posted");
 
@@ -34,6 +38,7 @@ export function ProfileTabs({
     { id: "murmurs", label: murmursLabel },
     { id: "posted", label: postedLabel },
     { id: "reposted", label: repostedLabel },
+    { id: "following", label: followingLabel },
     ...(showBlockedTab ? [{ id: "blocked" as const, label: "ブロックユーザー" }] : []),
   ];
 
@@ -59,6 +64,7 @@ export function ProfileTabs({
       {tab === "reposted" && repostedContent}
       {tab === "blocked" && showBlockedTab && blockedContent}
       {tab === "murmurs" && murmursContent}
+      {tab === "following" && followingContent}
     </div>
   );
 }

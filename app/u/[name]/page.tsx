@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getBlockedUsers,
+  getFollowingList,
   getMutedUsers,
   getMyReactions,
   getPosts,
@@ -15,6 +16,7 @@ import { AuthorStats } from "@/app/components/AuthorStats";
 import { AvatarEditor } from "@/app/components/AvatarEditor";
 import { BioEditor } from "@/app/components/BioEditor";
 import { DisplayNameEditor } from "@/app/components/DisplayNameEditor";
+import { FollowingList } from "@/app/components/FollowingList";
 import { GitHubMark, XMark } from "@/app/components/BrandIcons";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
@@ -47,7 +49,10 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
   ]);
   if (!profile) notFound();
   const isOwnProfile = profile.id === currentUser?.id;
-  const murmurs = await getStandalonePostsByAuthor(profile.id);
+  const [murmurs, followingList] = await Promise.all([
+    getStandalonePostsByAuthor(profile.id),
+    getFollowingList(profile.id),
+  ]);
 
   // ミュート/ブロック中一覧は「自分の」状態を返すクエリなので、他人の
   // プロフィールを見ているときに取得しても意味が無い(表示もしない)。
@@ -59,7 +64,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -146,12 +151,13 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           postedLabel={`投稿した作品(${profile.works.length})`}
           repostedLabel={`リポストした作品(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
+          followingLabel={`フォロー中(${followingList.length})`}
           showBlockedTab={isOwnProfile}
           postedContent={
             profile.works.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {profile.works.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -169,7 +175,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             profile.repostedWorks.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだリポストした作品はありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {profile.repostedWorks.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -184,11 +190,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             )
           }
           blockedContent={<MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
+          followingContent={<FollowingList users={followingList} />}
           murmursContent={
             murmurs.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだつぶやきはありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {murmurs.map((post) => (
                   <StandalonePostCard key={post.id} post={post} />
                 ))}

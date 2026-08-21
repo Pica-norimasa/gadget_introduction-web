@@ -935,6 +935,32 @@ export async function getFollowedAuthors(): Promise<string[]> {
   return follows.map((f) => f.following.name);
 }
 
+export type FollowedUserRef = {
+  id: string;
+  name: string;
+  displayName: string;
+  image: string | null;
+  bio: string | null;
+};
+
+// プロフィールページ(/u/[name])の「フォロー中」タブ向け。X等と同じく
+// 誰から見ても公開の情報として扱い、自分のページに限定しない(他人の
+// フォロー中一覧から新しい作者を発見できる導線にもなる)。
+export async function getFollowingList(userId: string): Promise<FollowedUserRef[]> {
+  const rows = await prisma.follow.findMany({
+    where: { followerId: userId },
+    orderBy: { createdAt: "desc" },
+    include: { following: { select: { id: true, name: true, displayName: true, image: true, bio: true } } },
+  });
+  return rows.map((r) => ({
+    id: r.following.id,
+    name: r.following.name,
+    displayName: displayNameOf(r.following),
+    image: r.following.image,
+    bio: r.following.bio,
+  }));
+}
+
 export type SuggestedAuthor = {
   id: string;
   name: string;
