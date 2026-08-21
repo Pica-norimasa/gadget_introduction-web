@@ -97,6 +97,14 @@ html {
   50% { transform: translateY(-8%) scale(1.08); }
 }
 
+/* ヘッダー直下のUpdatesTicker(最新の創作活動を1件ずつ切り替えて見せる)。
+   常時流れっぱなしだと鬱陶しいとの指摘を受け、右からシュッと1件入って
+   きて少し静止する方式に変更した。 */
+@keyframes ticker-item-in {
+  from { transform: translateX(28px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

@@ -22,6 +22,7 @@ import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
 import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
+import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 
 export default async function Home() {
   const [
@@ -58,6 +59,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
+      <UpdatesTicker activity={activity} />
 
       <main className="flex-1">
         <PostComposerToggle
