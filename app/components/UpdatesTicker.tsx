@@ -47,25 +47,24 @@ const KIND_META: Record<TickerActivity["kind"], { icon: string; label: string }>
 
 function TickerItem({ item }: { item: TickerActivity }) {
   const meta = KIND_META[item.kind];
-  const text = (
-    <span className="whitespace-nowrap text-[12.5px]">
-      <span className="font-medium text-[var(--ink)]">{item.authorName}</span>
-      <span className="text-[var(--ink-soft)]">
-        {item.kind === "murmur-comment" ? "が" : `が「${item.projectTitle}」`}
-        {meta.label}
-      </span>
-      <span className="ml-1 text-[var(--ink-faint)]">
-        {meta.icon} {formatRelativeHours(item.hoursAgo)}
-      </span>
-    </span>
-  );
-
   const href = item.kind === "murmur-comment" ? `/post/${item.postId}` : `/work/${item.projectId}`;
 
   return (
     <div className="[animation:ticker-item-in_0.35s_ease-out]">
-      <Link href={href} className="hover:underline">
-        {text}
+      {/* モバイルは横幅が狭く全文が収まらないため省略記号で切る。sm以上は
+          横幅に余裕があるので、そのまま全文を表示する。 */}
+      <Link
+        href={href}
+        className="block truncate text-[12.5px] hover:underline sm:overflow-visible sm:text-clip sm:whitespace-nowrap"
+      >
+        <span className="font-medium text-[var(--ink)]">{item.authorName}</span>
+        <span className="text-[var(--ink-soft)]">
+          {item.kind === "murmur-comment" ? "が" : `が「${item.projectTitle}」`}
+          {meta.label}
+        </span>
+        <span className="ml-1 text-[var(--ink-faint)]">
+          {meta.icon} {formatRelativeHours(item.hoursAgo)}
+        </span>
       </Link>
     </div>
   );
