@@ -8,6 +8,7 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
 import { DeleteCommentButton } from "./DeleteCommentButton";
+import { LinkifiedText } from "./LinkifiedText";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 import { ShareCommentButton } from "./ShareCommentButton";
 
@@ -56,7 +57,11 @@ function CommentRow({
               )
             )}
           </div>
-          {comment.body && <p className="text-[14px] leading-relaxed text-[var(--ink)]">{comment.body}</p>}
+          {comment.body && (
+            <p className="text-[14px] leading-relaxed text-[var(--ink)]">
+              <LinkifiedText text={comment.body} />
+            </p>
+          )}
           {comment.imageUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
             <img

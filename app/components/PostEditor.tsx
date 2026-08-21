@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
+import { LinkifiedText } from "./LinkifiedText";
 import { YouTubeCard } from "./YouTubeCard";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
@@ -72,7 +73,11 @@ export function PostEditor({
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
-          {body && <p className={`flex-1 whitespace-pre-line ${bodyClassName}`}>{body}</p>}
+          {body && (
+            <p className={`flex-1 whitespace-pre-line ${bodyClassName}`}>
+              <LinkifiedText text={body} />
+            </p>
+          )}
           {isOwner && (
             <button
               type="button"

@@ -10,6 +10,7 @@ import { CommentThread } from "./CommentThread";
 import { CoverImage } from "./CoverImage";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
+import { LinkifiedText } from "./LinkifiedText";
 import { MotionThumb } from "./MotionThumb";
 import { PlatformBadges } from "./PlatformBadges";
 import { MoreActionsMenu } from "./MoreActionsMenu";
@@ -198,7 +199,9 @@ export function WorkDetail({
             🌱 {work.inspiredByProjectTitle} からインスパイア
           </Link>
         )}
-        <p className="mb-5 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+        <p className="mb-5 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">
+          <LinkifiedText text={work.catch} />
+        </p>
 
         <div className="mb-6 flex flex-wrap items-center gap-2">
           {blockedByAuthor ? (
