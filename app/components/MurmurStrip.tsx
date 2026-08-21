@@ -27,7 +27,7 @@ export function MurmurStrip({
         {posts.map((post) => (
           <div
             key={post.id}
-            className="flex w-56 shrink-0 flex-col gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 hover:border-[var(--accent)]"
+            className="flex w-[324px] shrink-0 flex-col gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 hover:border-[var(--accent)]"
           >
             <Link href={`/post/${post.id}`} className="flex flex-1 flex-col gap-2">
               <div className="flex items-center gap-2">

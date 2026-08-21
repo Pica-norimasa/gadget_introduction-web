@@ -74,10 +74,10 @@ export default async function Home() {
         {/* 「プロダクトの作り方」ガイドは元々サイドバーにあったが、lg未満だと
             ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
             Xからの初見の非ログインユーザーに一番見てほしい導線が埋もれて
-            いた。ここに小さなピルボタンとして複製し、常時見える位置に出す
-            (lg以上はサイドバーに既にあるので重複させない)。投稿欄のすぐ下に
-            置いている。 */}
-        <div className="mx-auto max-w-[1180px] px-4 pt-3 pb-5 sm:px-6 lg:hidden">
+            いた。ここに小さなピルボタンとして複製し、常時見える位置に出す。
+            lg以上はサイドバーにも既にあるが、投稿欄のすぐ下という目立つ
+            位置にも同様に置いてほしいとの要望で、幅を問わず表示する。 */}
+        <div className="mx-auto max-w-[1180px] px-4 pt-3 pb-5 sm:px-6">
           <Link
             href="/guide/build"
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
