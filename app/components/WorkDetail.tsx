@@ -43,6 +43,7 @@ export function WorkDetail({
   posts,
   inspiredMyReactions,
   blockedByAuthor,
+  initialTab,
 }: {
   work: Work;
   timeline: Post[];
@@ -68,6 +69,9 @@ export function WorkDetail({
   // リポスト/コメントのUIを出さない(サーバー側でも別途拒否している、
   // これは無駄な操作を先回りで防ぐためのもの)。
   blockedByAuthor: boolean;
+  // 通知(NotificationBell.tsx)の?tab=クエリから渡される、開いた直後に
+  // 表示したいタブ("comments"等)。未指定なら従来通り制作タイムライン。
+  initialTab?: string;
 }) {
   // 表紙画像・GitHub・YouTubeのうち設定されているものだけをタブとして
   // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
@@ -239,6 +243,7 @@ export function WorkDetail({
             経緯)ため、タブで別ペインに切り出した(WorkMediaTabs.tsxを
             画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
         <WorkMediaTabs
+          initialTabId={initialTab}
           tabs={[
             {
               id: "timeline",
@@ -299,6 +304,7 @@ export function WorkDetail({
                           currentUserId={currentUserId}
                           isLoggedIn={isLoggedIn}
                           guestCommentCount={guestCommentCount}
+                          contentAuthorId={work.authorId ?? ""}
                         />
                       ))
                     )}

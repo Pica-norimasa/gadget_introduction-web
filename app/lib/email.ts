@@ -70,6 +70,28 @@ export async function sendVerificationEmail(params: { to: string; verifyUrl: str
   await sendEmail({ to: params.to, subject: "メールアドレスの確認 - Draftly", html });
 }
 
+// フォロー中の作者の作品が「公開中」に到達したことを知らせるメール
+// (project-actions.tsのupdateProject参照)。全ステージ前進で送ると通知
+// 過多になるため、一番盛り上がる最終ステージ到達時だけに絞っている。
+export async function sendStageUpNotificationEmail(params: {
+  to: string;
+  authorName: string;
+  projectTitle: string;
+  projectUrl: string;
+}): Promise<void> {
+  const html = `
+    <p>フォロー中の${escapeHtml(params.authorName)}さんの「${escapeHtml(params.projectTitle)}」が公開されました🎉</p>
+    <p><a href="${params.projectUrl}">Draftlyで見る →</a></p>
+    <p style="color:#999; font-size:12px;">この通知が不要な場合は、Draftlyの設定ページからメール通知をオフにできます。</p>
+  `;
+
+  await sendEmail({
+    to: params.to,
+    subject: `${params.authorName}さんの新作が公開されました - Draftly`,
+    html,
+  });
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")

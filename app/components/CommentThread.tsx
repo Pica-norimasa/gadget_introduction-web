@@ -17,15 +17,21 @@ function CommentRow({
   comment,
   currentUserId,
   target,
+  contentAuthorId,
 }: {
   comment: CommentView;
   currentUserId: string | null;
   target: { type: "project" | "post"; id: string };
+  // このコメントが付いている作品/投稿そのものの作者ID。作者本人のコメントを
+  // 「作者」バッジで目立たせる(Product Huntの「Maker」表示に相当。作者の
+  // 反応が埋もれていて気付きにくいという指摘を受けて追加)。
+  contentAuthorId: string;
 }) {
   // bot(応援コメント)はミュート・ブロック・通報のいずれも対象として
   // 意味を持たない(個人ではなく共有のシステムアカウントのため)ので、
   // 「⋯」メニュー自体を出さない。
   const isBot = comment.authorHandle === AI_BOT_NAME;
+  const isContentAuthor = comment.authorId === contentAuthorId;
 
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3.5">
@@ -43,6 +49,11 @@ function CommentRow({
                 {comment.authorName}
               </Link>
               {comment.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
+              {isContentAuthor && (
+                <span className="ml-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
+                  作者
+                </span>
+              )}
               {comment.authorSocialHandle && (
                 <span className="text-[var(--ink-faint)]"> @{comment.authorSocialHandle}</span>
               )}{" "}
@@ -94,12 +105,14 @@ export function CommentThread({
   currentUserId,
   isLoggedIn,
   guestCommentCount,
+  contentAuthorId,
 }: {
   thread: CommentThreadType;
   target: { type: "project" | "post"; id: string };
   currentUserId: string | null;
   isLoggedIn: boolean;
   guestCommentCount: number;
+  contentAuthorId: string;
 }) {
   const [replying, setReplying] = useState(false);
   // bot(応援コメント)には返信しても反応が返らないため、返信する導線
@@ -108,7 +121,7 @@ export function CommentThread({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <CommentRow comment={thread} currentUserId={currentUserId} target={target} />
+      <CommentRow comment={thread} currentUserId={currentUserId} target={target} contentAuthorId={contentAuthorId} />
 
       {!isBot && (
         <button
@@ -123,7 +136,13 @@ export function CommentThread({
       {thread.replies.length > 0 && (
         <div className="ml-9 flex flex-col gap-2 border-l-2 border-[var(--line)] pl-3">
           {thread.replies.map((reply) => (
-            <CommentRow key={reply.id} comment={reply} currentUserId={currentUserId} target={target} />
+            <CommentRow
+              key={reply.id}
+              comment={reply}
+              currentUserId={currentUserId}
+              target={target}
+              contentAuthorId={contentAuthorId}
+            />
           ))}
         </div>
       )}

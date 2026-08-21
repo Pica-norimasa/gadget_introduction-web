@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { getCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
+import { sendStageUpNotificationEmail, SITE_URL } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
 import type { AiTool, Category, Platform, Stage } from "@/app/lib/mock-data";
 
@@ -43,6 +45,40 @@ const PLATFORMS: Platform[] = [
   "Unity",
   "Unreal Engine",
 ];
+
+// 「公開中」に到達した作者のフォロワーへ一斉メール通知する。レスポンスを
+// ブロックしたくないのでafter()の中で行い、失敗しても保存自体は成功した
+// ままにする(comment-actions.tsのnotifyByEmailと同じ方針)。1人ずつの
+// 送信失敗が他のフォロワーへの送信を止めないようallSettledを使う。
+async function notifyFollowersOfRelease(params: {
+  authorId: string;
+  authorName: string;
+  projectId: string;
+  projectTitle: string;
+}): Promise<void> {
+  try {
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: params.authorId,
+        follower: { email: { not: null }, emailNotificationsEnabled: true, emailVerified: { not: null } },
+      },
+      select: { follower: { select: { email: true } } },
+    });
+    const projectUrl = `${SITE_URL}/work/${params.projectId}`;
+    await Promise.allSettled(
+      followers.map((f) =>
+        sendStageUpNotificationEmail({
+          to: f.follower.email!,
+          authorName: params.authorName,
+          projectTitle: params.projectTitle,
+          projectUrl,
+        }),
+      ),
+    );
+  } catch (e) {
+    console.error("ステージアップ通知メールの送信に失敗しました", e);
+  }
+}
 
 export async function updateProject(
   _prevState: UpdateProjectState,
@@ -134,6 +170,11 @@ export async function updateProject(
       ...(stageAdvanced ? { stageChangedAt: new Date() } : {}),
     },
   });
+
+  if (stageAdvanced && stage === "公開中") {
+    const authorName = user.displayName ?? user.name;
+    after(() => notifyFollowersOfRelease({ authorId: user.id, authorName, projectId, projectTitle: title }));
+  }
 
   revalidatePath(`/work/${projectId}`);
   revalidatePath("/");

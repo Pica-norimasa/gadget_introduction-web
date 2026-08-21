@@ -60,8 +60,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function WorkPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function WorkPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { id } = await params;
+  const { tab } = await searchParams;
   const work = await getWorkById(id);
   if (!work) notFound();
 
@@ -106,6 +113,7 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
       posts={posts}
       inspiredMyReactions={inspiredMyReactions}
       blockedByAuthor={blockedByAuthor}
+      initialTab={tab}
     />
   );
 }

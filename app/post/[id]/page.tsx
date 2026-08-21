@@ -138,6 +138,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                   currentUserId={currentUser?.id ?? null}
                   isLoggedIn={isLoggedIn}
                   guestCommentCount={guestCommentCount}
+                  contentAuthorId={post.authorId}
                 />
               ))
             )}

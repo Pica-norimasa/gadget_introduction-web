@@ -81,9 +81,10 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
 
   // コメントへの返信。「comment」と同じくpostId/projectIdのどちらかで
   // ルーティングする(返信は作品向け/単独投稿向けコメントのどちらにも
-  // 付けられるため)。
+  // 付けられるため)。作品向けの場合は、コメントタブを開いた状態で
+  // 遷移させる(WorkMediaTabs.tsxのinitialTabId参照)。
   if (n.type === "reply") {
-    const targetHref = n.postId ? `/post/${n.postId}` : n.projectId ? `/work/${n.projectId}` : null;
+    const targetHref = n.postId ? `/post/${n.postId}` : n.projectId ? `/work/${n.projectId}?tab=comments` : null;
     const message = "があなたのコメントに返信しました";
     return (
       <>
@@ -127,12 +128,15 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
       : n.type === "repost"
         ? `が「${n.projectTitle}」をリポストしました`
         : `が「${n.projectTitle}」に${REACTION_META.find((m) => m.key === n.reactionType)?.icon ?? ""}リアクションしました`;
+  // コメント通知だけコメントタブを開いた状態で遷移させる。リポスト/
+  // リアクションは制作タイムライン(既定のタブ)を見せたいのでそのまま。
+  const workHref = n.type === "comment" ? `/work/${n.projectId}?tab=comments` : `/work/${n.projectId}`;
 
   return (
     <>
       {actor}
       {n.projectId ? (
-        <Link href={`/work/${n.projectId}`} onClick={onNavigate} className="hover:underline">
+        <Link href={workHref} onClick={onNavigate} className="hover:underline">
           {suffix}
         </Link>
       ) : (

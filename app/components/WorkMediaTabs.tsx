@@ -8,8 +8,19 @@ import { HorizontalScroller } from "./HorizontalScroller";
 // だけを持つ」という考え方。表紙画像・GitHub・YouTubeのうち2つ以上が
 // 設定されているときだけWorkDetail.tsx側がこれを使う(1つだけならタブ無しで
 // そのまま表示する)。
-export function WorkMediaTabs({ tabs }: { tabs: { id: string; label: string; content: ReactNode }[] }) {
-  const [active, setActive] = useState(tabs[0]?.id);
+export function WorkMediaTabs({
+  tabs,
+  initialTabId,
+}: {
+  tabs: { id: string; label: string; content: ReactNode }[];
+  // 通知(NotificationBell.tsx)から「コメントタブを直接開いた状態で作品
+  // 詳細に飛びたい」といった要望向け。該当するidが無ければ従来通り先頭に
+  // フォールバックする。
+  initialTabId?: string;
+}) {
+  const [active, setActive] = useState(
+    initialTabId && tabs.some((t) => t.id === initialTabId) ? initialTabId : tabs[0]?.id,
+  );
   const activeTab = tabs.find((t) => t.id === active) ?? tabs[0];
 
   return (
