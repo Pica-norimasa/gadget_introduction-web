@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 // アンカーリンクでジャンプさせても実質たどり着けない(前はdetailsで
 // その場開閉にしていたが、Xの右メニューのようなスライドインの方が
 // 見た目・操作感として分かりやすいという要望を受けて置き換えた)。
-// トリガーボタンはDiceButton(🎲、bottom-6 right-6)の真上に固定表示する。
+// トリガーボタンはComposerFab(✏️、bottom-6 right-6)の真上に固定表示する。
 export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 

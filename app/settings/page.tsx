@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { EmailAddressForm } from "@/app/components/EmailAddressForm";
@@ -97,6 +97,26 @@ export default async function SettingsPage({
               </div>
               <EmailNotificationToggle initialEnabled={user.emailNotificationsEnabled} />
             </div>
+          </div>
+        )}
+
+        {session?.user && user && (
+          <div className="mt-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+            <p className="mb-1 text-[14px] font-medium text-[var(--ink)]">ログアウト</p>
+            <p className="mb-2 text-[12px] text-[var(--ink-faint)]">このデバイスからログアウトします</p>
+            <form
+              action={async () => {
+                "use server";
+                await signOut();
+              }}
+            >
+              <button
+                type="submit"
+                className="rounded-full border border-[var(--line)] px-4 py-2 text-[13px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)] hover:bg-[var(--bg-sunken)]"
+              >
+                ログアウト
+              </button>
+            </form>
           </div>
         )}
 

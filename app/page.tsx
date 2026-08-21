@@ -22,7 +22,6 @@ import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
 import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
-import { DiceButton } from "@/app/components/DiceButton";
 
 export default async function Home() {
   const [
@@ -153,8 +152,6 @@ export default async function Home() {
           </Link>
         </p>
       </footer>
-
-      <DiceButton works={works} />
     </div>
   );
 }
