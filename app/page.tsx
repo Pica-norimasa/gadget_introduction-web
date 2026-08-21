@@ -8,6 +8,7 @@ import {
   getRecentReposts,
   getRecentStandalonePosts,
   getSuggestedAuthors,
+  getTickerActivity,
   getWorks,
 } from "@/app/lib/queries";
 import Link from "next/link";
@@ -38,6 +39,7 @@ export default async function Home() {
     inspirations,
     session,
     myPostCount,
+    tickerActivity,
   ] = await Promise.all([
     getWorks(),
     getPosts(),
@@ -51,6 +53,7 @@ export default async function Home() {
     getRecentInspirations(),
     auth(),
     getMyPostCount(),
+    getTickerActivity(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -59,7 +62,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
-      <UpdatesTicker activity={activity} />
+      <UpdatesTicker activity={tickerActivity} />
 
       <main className="flex-1">
         <PostComposerToggle

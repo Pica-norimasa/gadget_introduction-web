@@ -1,4 +1,5 @@
 import { Prisma } from "@/app/generated/prisma/client";
+import { AI_BOT_NAME } from "@/app/lib/ai-bot-name";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
@@ -434,6 +435,82 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
     projectTitle: r.project?.title ?? null,
     hoursAgo: hoursAgoOf(r.createdAt),
   }));
+}
+
+export type TickerActivity =
+  | { id: string; kind: "post"; authorName: string; projectId: string; projectTitle: string; hoursAgo: number }
+  | { id: string; kind: "comment"; authorName: string; projectId: string; projectTitle: string; hoursAgo: number }
+  | { id: string; kind: "murmur-comment"; authorName: string; postId: string; hoursAgo: number };
+
+// ヘッダー直下のUpdatesTicker向け。getRecentActivity()は制作タイムライン
+// 投稿(Post)だけを見ているが、こちらはコメントも合わせて見せる。コメントは
+// projectIdとpostIdのどちらか一方だけが埋まるポリモーフィックな構造
+// (schema.prisma参照)なので、post.projectIdの有無で「Projectの制作
+// タイムラインへのコメント」と「孤立したPost(つぶやき)へのコメント」を
+// 判別する。Draftly AIの自動応援コメントは活動として意味が薄いので除外する。
+export async function getTickerActivity(limit = 10): Promise<TickerActivity[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const authorWhere = excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {};
+
+  const [posts, comments] = await Promise.all([
+    prisma.post.findMany({
+      where: { projectId: { not: null }, ...authorWhere },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: { author: { select: { name: true } }, project: { select: { id: true, title: true } } },
+    }),
+    prisma.comment.findMany({
+      where: { ...authorWhere, author: { name: { not: AI_BOT_NAME } } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        author: { select: { name: true } },
+        project: { select: { id: true, title: true } },
+        post: { select: { id: true, projectId: true, project: { select: { id: true, title: true } } } },
+      },
+    }),
+  ]);
+
+  const postItems: TickerActivity[] = posts
+    .filter((p) => p.project)
+    .map((p) => ({
+      id: `post-${p.id}`,
+      kind: "post" as const,
+      authorName: p.author.name,
+      projectId: p.project!.id,
+      projectTitle: p.project!.title,
+      hoursAgo: hoursAgoOf(p.createdAt),
+    }));
+
+  const commentItems: TickerActivity[] = comments.flatMap((c): TickerActivity[] => {
+    const project = c.project ?? c.post?.project;
+    if (project) {
+      return [
+        {
+          id: `comment-${c.id}`,
+          kind: "comment" as const,
+          authorName: c.author.name,
+          projectId: project.id,
+          projectTitle: project.title,
+          hoursAgo: hoursAgoOf(c.createdAt),
+        },
+      ];
+    }
+    if (c.post) {
+      return [
+        {
+          id: `murmur-comment-${c.id}`,
+          kind: "murmur-comment" as const,
+          authorName: c.author.name,
+          postId: c.post.id,
+          hoursAgo: hoursAgoOf(c.createdAt),
+        },
+      ];
+    }
+    return [];
+  });
+
+  return [...postItems, ...commentItems].sort((a, b) => a.hoursAgo - b.hoursAgo).slice(0, limit);
 }
 
 export type StandalonePostView = {

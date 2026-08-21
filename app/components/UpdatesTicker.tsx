@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { ActivityView } from "@/app/lib/queries";
-import { POST_TYPE_META } from "@/app/lib/mock-data";
+import type { TickerActivity } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 
 const HOLD_MS = 10000;
 
-// ヘッダー直下で、最新の創作活動(制作タイムライン更新)を1件ずつ
-// 見せるティッカー。常時流れっぱなしだと鬱陶しいという指摘を受け、
-// 右からシュッと1件入ってきて少し静止し、また次が入ってくる方式にした
-// (globals.cssのticker-item-in参照)。hover中は切り替えを止める。
-export function UpdatesTicker({ activity }: { activity: ActivityView[] }) {
+// ヘッダー直下で、最新の創作活動(制作タイムライン更新・コメント)を
+// 1件ずつ見せるティッカー。常時流れっぱなしだと鬱陶しいという指摘を
+// 受け、右からシュッと1件入ってきて少し静止し、また次が入ってくる
+// 方式にした(globals.cssのticker-item-in参照)。hover中は切り替えを止める。
+export function UpdatesTicker({ activity }: { activity: TickerActivity[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -40,13 +39,20 @@ export function UpdatesTicker({ activity }: { activity: ActivityView[] }) {
   );
 }
 
-function TickerItem({ item }: { item: ActivityView }) {
-  const meta = POST_TYPE_META[item.type];
+const KIND_META: Record<TickerActivity["kind"], { icon: string; label: string }> = {
+  post: { icon: "📝", label: "の制作タイムラインを更新" },
+  comment: { icon: "💬", label: "のコメントを更新" },
+  "murmur-comment": { icon: "💬", label: "つぶやきコメントを更新" },
+};
+
+function TickerItem({ item }: { item: TickerActivity }) {
+  const meta = KIND_META[item.kind];
   const text = (
     <span className="whitespace-nowrap text-[12.5px]">
       <span className="font-medium text-[var(--ink)]">{item.authorName}</span>
       <span className="text-[var(--ink-soft)]">
-        {item.projectTitle ? `が「${item.projectTitle}」を更新` : "が投稿"}
+        {item.kind === "murmur-comment" ? "が" : `が「${item.projectTitle}」`}
+        {meta.label}
       </span>
       <span className="ml-1 text-[var(--ink-faint)]">
         {meta.icon} {formatRelativeHours(item.hoursAgo)}
@@ -54,15 +60,13 @@ function TickerItem({ item }: { item: ActivityView }) {
     </span>
   );
 
+  const href = item.kind === "murmur-comment" ? `/post/${item.postId}` : `/work/${item.projectId}`;
+
   return (
     <div className="[animation:ticker-item-in_0.35s_ease-out]">
-      {item.projectId ? (
-        <Link href={`/work/${item.projectId}`} className="hover:underline">
-          {text}
-        </Link>
-      ) : (
-        text
-      )}
+      <Link href={href} className="hover:underline">
+        {text}
+      </Link>
     </div>
   );
 }
