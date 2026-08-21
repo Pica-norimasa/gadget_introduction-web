@@ -83,8 +83,8 @@ export function WorkDetail({
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
-        <div className="mb-4 flex items-center justify-between">
+      <main className="mx-auto w-full max-w-[760px] flex-1 px-4 py-8 sm:px-6">
+        <div className="mb-5 flex items-center justify-between">
           <Link
             href={`/#work-${work.id}`}
             className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -114,10 +114,10 @@ export function WorkDetail({
           )}
         </div>
 
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-5 flex items-center gap-2.5">
           <Link
             href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
-            className="flex min-w-0 flex-1 items-center gap-2"
+            className="flex min-w-0 flex-1 items-center gap-2.5"
           >
             <AuthorAvatar name={work.author} image={work.authorImage} size={36} />
             <div className="min-w-0 flex-1">
@@ -135,7 +135,7 @@ export function WorkDetail({
           )}
         </div>
 
-        <div className="relative mb-4">
+        <div className="relative mb-5">
           {mediaTabs.length === 0 ? (
             work.glyph && work.hasMotion ? (
               <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
@@ -148,7 +148,7 @@ export function WorkDetail({
             <WorkMediaTabs tabs={mediaTabs} />
           )}
           {(work.appStoreUrl || work.googlePlayUrl) && (
-            <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
+            <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
               {work.appStoreUrl && (
                 <a
                   href={work.appStoreUrl}
@@ -181,26 +181,26 @@ export function WorkDetail({
           </span>
         </div>
 
-        <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
           <PlatformBadges platforms={work.platforms} />
         </div>
 
-        <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
+        <h1 className="mb-3 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
           {work.title}
         </h1>
         {work.inspiredByProjectId && work.inspiredByProjectTitle && (
           <Link
             href={`/work/${work.inspiredByProjectId}`}
-            className="mb-2 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
+            className="mb-3 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
           >
             🌱 {work.inspiredByProjectTitle} からインスパイア
           </Link>
         )}
-        <p className="mb-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
+        <p className="mb-5 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">{work.catch}</p>
 
-        <div className="mb-6 flex flex-wrap items-center gap-1.5">
+        <div className="mb-6 flex flex-wrap items-center gap-2">
           {blockedByAuthor ? (
             <span className="text-[12px] text-[var(--ink-faint)]">
               この作品の作者にブロックされているため、反応できません
@@ -223,8 +223,8 @@ export function WorkDetail({
             投稿という3つの際限なく伸びるセクションの後)にあったが、
             プロジェクトが育つほど埋もれて押されにくくなるという指摘を
             受けて、伸びる前のここ(タイムラインの直上)に移動した。 */}
-        <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
-          <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
+        <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-5">
+          <p className="mb-2.5 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
           <ShareButtons title={work.title} />
         </div>
 
@@ -282,7 +282,7 @@ export function WorkDetail({
               label: `コメント(${comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})`,
               content: (
                 <div className="mb-6">
-                  <div className="mb-4 flex flex-col gap-3">
+                  <div className="mb-4 flex flex-col gap-3.5">
                     {comments.length === 0 ? (
                       <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
                     ) : (
@@ -320,7 +320,7 @@ export function WorkDetail({
                   {inspiredItems.length === 0 ? (
                     <p className="text-[13px] text-[var(--ink-faint)]">まだインスパイアされた投稿はありません</p>
                   ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3.5">
                       {inspiredItems.map((item) =>
                         item.kind === "project" ? (
                           <WorkCard

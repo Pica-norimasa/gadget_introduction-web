@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { HorizontalScroller } from "./HorizontalScroller";
 
 // 作品詳細ページのヒーロー枠用。ProfileTabs.tsxと同じ「中身は呼び出し元が
 // 用意したReactNode、このコンポーネント自体はどれを表示するかの切り替え
@@ -13,13 +14,13 @@ export function WorkMediaTabs({ tabs }: { tabs: { id: string; label: string; con
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-1 border-b border-[var(--line)]">
+      <HorizontalScroller className="mb-2 flex items-center gap-1 overflow-x-auto border-b border-[var(--line)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setActive(t.id)}
-            className={`relative px-3 py-1.5 text-[13px] font-medium transition-colors ${
+            className={`relative shrink-0 whitespace-nowrap px-3 py-1.5 text-[13px] font-medium transition-colors ${
               activeTab?.id === t.id
                 ? "text-[var(--ink)]"
                 : "text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -31,7 +32,7 @@ export function WorkMediaTabs({ tabs }: { tabs: { id: string; label: string; con
             )}
           </button>
         ))}
-      </div>
+      </HorizontalScroller>
       {activeTab?.content}
     </div>
   );
