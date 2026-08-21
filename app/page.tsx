@@ -88,7 +88,7 @@ export default async function Home() {
             className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
           >
             <span aria-hidden>🔧</span>
-            プロダクトの作り方
+            プロダクト作りの始め方
             <span aria-hidden className="text-[var(--accent)]">
               →
             </span>

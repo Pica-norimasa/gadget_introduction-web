@@ -58,6 +58,9 @@ export async function createPost(
   if (youtubeUrl && !extractYouTubeVideoId(youtubeUrl)) {
     return { error: "YouTube URLの形式が正しくありません" };
   }
+  if (newProjectTitle.length > 40) {
+    return { error: "プロジェクト名は40文字以内で入力してください" };
+  }
 
   let imageUrl: string | null = null;
   if (imageFile) {

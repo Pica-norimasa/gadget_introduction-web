@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { openComposer } from "@/app/lib/composer-store";
 
 const STORAGE_KEY = "draftly-welcome-seen";
 // Draftly自体の開発ログを投稿しているProject。タイムライン更新+コメントが
@@ -16,6 +18,7 @@ const FEEDBACK_PROJECT_ID = "p-7fa5c3de85f5";
 // フラグを持たせるだけにしている(サーバー往復も不要)。
 export function WelcomeModal() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!window.localStorage.getItem(STORAGE_KEY)) {
@@ -56,10 +59,40 @@ export function WelcomeModal() {
           まだ開発中のプロトタイプなので至らない点も多いと思いますが、よければ触ってみた感想や気になったところを教えてもらえると嬉しいです🙏
         </p>
         <div className="flex flex-col items-center gap-2">
+          {/* 一番のコンバージョン起点にしたいので、投稿導線を主CTAにする
+              (以前は「感想を伝えに行く」が主CTAだったが、閲覧だけで離脱する
+              訪問者が多かったための変更)。ComposerFab.tsxと同じ理由で、
+              既にホームにいる場合は同一ページ内のハッシュ遷移だけでは
+              PostComposerToggle.tsxのマウント時ハッシュ判定が効かないため、
+              composer-store.tsを直接叩く。他ページからならリンクの遷移先の
+              マウント時ハッシュ判定に任せられる。 */}
+          {pathname === "/" ? (
+            <button
+              type="button"
+              onClick={() => {
+                openComposer();
+                close();
+                requestAnimationFrame(() => {
+                  document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+              }}
+              className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
+            >
+              まず自分も投稿してみる
+            </button>
+          ) : (
+            <Link
+              href="/#composer"
+              onClick={close}
+              className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
+            >
+              まず自分も投稿してみる
+            </Link>
+          )}
           <Link
             href={`/work/${FEEDBACK_PROJECT_ID}`}
             onClick={close}
-            className="w-full rounded-full bg-[var(--ink)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--bg)] hover:opacity-90"
+            className="w-full rounded-full border border-[var(--line)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
           >
             感想を伝えに行く
           </Link>

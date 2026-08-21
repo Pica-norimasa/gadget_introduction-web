@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "プロダクトの作り方 | Draftly",
+  title: "プロダクト作りの始め方 | Draftly",
   description: "GitHubのセットアップからAIツールでの制作まで、はじめての一本を作るための最短ルートを紹介します。",
 };
 
@@ -40,7 +40,7 @@ export default function BuildGuidePage() {
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">
-          プロダクトの作り方
+          プロダクト作りの始め方
         </h1>
         <p className="mb-8 text-[14px] leading-relaxed text-[var(--ink-soft)]">
           「自分にも何か作れるかも」と思ったら、ここから。エンジニア経験は無くても大丈夫です。

@@ -17,7 +17,10 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
   // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
   // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
   // 直近のものを既定にして、「書くだけで投稿できる」を最短動線にする。
-  const defaultProjectTarget = myProjects.length > 0 ? myProjects[0].id : "new";
+  // まだプロジェクトが無い(=初めての投稿になりやすい)人には、プロジェクト
+  // 新規作成(タイトル入力が要る分ハードルが上がる)ではなく、一番身軽な
+  // つぶやきを既定にする。
+  const defaultProjectTarget = myProjects.length > 0 ? myProjects[0].id : "";
   const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -139,7 +142,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
             name="projectTarget"
             value={projectTarget}
             onChange={(e) => setProjectTarget(e.target.value)}
-            className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1 text-[12px] text-[var(--ink-soft)] focus:outline-none"
+            className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
           >
             <option value="">💬 つぶやき</option>
             <option value="new">🆕 新しいプロジェクトとして</option>
@@ -155,7 +158,7 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
               name="newProjectTitle"
               placeholder="プロジェクト名(空欄なら投稿内容から自動生成)"
               maxLength={40}
-              className="min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 py-1 text-[12px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+              className="min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 py-1.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
             />
           )}
         </div>
