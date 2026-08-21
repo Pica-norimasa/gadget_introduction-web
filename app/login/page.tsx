@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
-import { GitHubMark, GoogleMark, XMark } from "@/app/components/BrandIcons";
+import { GitHubMark, GoogleMark, LineMark, XMark } from "@/app/components/BrandIcons";
 import { SiteHeader } from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
@@ -75,6 +75,20 @@ export default async function LoginPage() {
             >
               <GoogleMark />
               Googleでログイン
+            </button>
+          </form>
+          <form
+            action={async () => {
+              "use server";
+              await signIn("line", { redirectTo: "/" });
+            }}
+          >
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+            >
+              <LineMark />
+              LINEでログイン
             </button>
           </form>
         </div>

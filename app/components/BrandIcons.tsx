@@ -17,6 +17,16 @@ export function XMark({ className }: { className?: string }) {
   );
 }
 
+// LINEの正式ロゴではなく、吹き出し(チャット)の輪郭を単色で簡略化した
+// もの。GitHub/X/Googleと同じ方針(currentColorの単色シルエット)に揃える。
+export function LineMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden className={className}>
+      <path d="M12 2C6.48 2 2 5.94 2 10.8c0 3.2 2.02 6 5.04 7.56-.16.68-.98 3.4-1.02 3.6-.02.08-.02.18.1.24.12.06.26 0 .26 0 .34-.04 3.9-2.56 4.5-2.98.7.1 1.42.16 2.12.16 5.52 0 10-3.94 10-8.58C22 5.94 17.52 2 12 2z" />
+    </svg>
+  );
+}
+
 // GitHub/Xと同じ単色方針(PlatformIcons.tsx参照)。Googleの4色ロゴも
 // あえて単色の輪郭アイコンにして揃えている。
 export function GoogleMark({ className }: { className?: string }) {

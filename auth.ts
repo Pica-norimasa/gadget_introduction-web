@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import NextAuth, { type DefaultSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import Line from "next-auth/providers/line";
 import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { mergeGuestIntoUser } from "@/app/lib/guest-merge";
@@ -43,7 +44,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return baseAdapter.createUser!({ ...user, name, emailVerified: user.email ? new Date() : null });
     },
   },
-  providers: [GitHub, Twitter, Google],
+  providers: [
+    GitHub,
+    Twitter,
+    Google,
+    // LINEはデフォルトだとメールアドレスを返さない(LINE Developers
+    // コンソールでチャンネルごとに「メールアドレス許可」の申請・承認が
+    // 必要)。承認された場合に取得できるよう scope に email を含めておくが、
+    // 未承認のうちは他の項目同様に無視され、Xログインと同じくメールは
+    // /settingsで別途登録してもらう扱いになる。
+    Line({ authorization: { params: { scope: "profile openid email" } } }),
+  ],
   // Vercel以外の環境(App Runner等)では、Auth.jsはデフォルトでリクエストの
   // Hostヘッダーを信用しない(ホストヘッダーインジェクション対策)。デプロイ先の
   // ドメインはビルド時点では決まらないため、信用するホストを個別指定する
