@@ -45,7 +45,7 @@ export function WorkCard({
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-shadow hover:shadow-[0_6px_20px_var(--shadow)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-colors hover:border-[var(--accent)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
     >
       {/* カード全体を詳細ページへのリンクにする(stretched link)。上に重なる
           FollowButton/ReactionBar/GitHubCardリンク/続きを読むボタンだけは
