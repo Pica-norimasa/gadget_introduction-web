@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { auth } from "@/auth";
 import { SITE_URL } from "@/app/lib/email";
@@ -27,6 +27,14 @@ export const metadata: Metadata = {
   title: "Draftly | アイデアを、育てながら見せる場所",
   description:
     "非エンジニアがAIで作った作品を発表し、発見し合う創作プラットフォームのコンセプトモック。",
+};
+
+// モバイルでピンチ操作によるページ全体の拡大・縮小を無効化する。
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

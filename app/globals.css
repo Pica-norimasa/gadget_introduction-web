@@ -54,6 +54,11 @@
 
 html {
   color-scheme: dark;
+  /* モバイルで、意図しない子要素のはみ出し(横幅計算のズレ等)により
+     ページ全体が横スクロールしてしまう不具合対策。各所の横スクロール
+     帯(HorizontalScroller等)は自身のoverflow-x-autoで独立して機能する
+     ため、ここで親をhiddenにしても影響しない。 */
+  overflow-x: hidden;
 }
 
 /* base層に置くことで、Tailwindのユーティリティクラス(utilities層)側の
@@ -66,6 +71,7 @@ html {
     color: var(--ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   a {
