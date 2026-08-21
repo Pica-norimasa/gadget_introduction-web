@@ -16,6 +16,7 @@ const KIND_LABELS: Record<AdminUserKind, string> = {
   github: "GitHub",
   x: "X",
   google: "Google",
+  line: "LINE",
   guest: "ゲスト",
   seed: "シード/Bot",
 };

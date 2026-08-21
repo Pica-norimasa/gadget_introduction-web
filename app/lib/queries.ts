@@ -1172,7 +1172,7 @@ export async function getAllReports(): Promise<AdminReportView[]> {
   });
 }
 
-export type AdminUserKind = "github" | "x" | "google" | "guest" | "seed";
+export type AdminUserKind = "github" | "x" | "google" | "line" | "guest" | "seed";
 
 export type AdminUserView = {
   id: string;
@@ -1186,18 +1186,22 @@ export type AdminUserView = {
   kind: AdminUserKind;
 };
 
-// githubUsername/xUsernameはauth.tsのsignInコールバックがGitHub/X
-// ログインのときだけ埋める(Googleログインは埋めない)ため、それ単体では
-// 「連携なし」がGoogleログインなのかシード/BOTなのか区別できない。
-// Account行(OAuth連携)が1件でもあれば実ログインユーザーとみなし、
-// githubUsername/xUsernameが無ければ消去法でGoogleと判定する。
-// Account行が無く、匿名ゲストのsessionIdも無いユーザーは、実際に
-// ログイン/セッションの仕組みを一切通っていない=シードデータか
-// Draftly AIボットのどちらか(見分ける必要が薄いためまとめて"seed"とする)。
-function adminUserKindOf(u: { githubUsername: string | null; xUsername: string | null; sessionId: string | null; accountCount: number }): AdminUserKind {
-  if (u.githubUsername) return "github";
-  if (u.xUsername) return "x";
-  if (u.accountCount > 0) return "google";
+// Account.provider(NextAuthの各プロバイダーのid)をそのままAdminUserKindに
+// 変換する。以前はgithubUsername/xUsernameの有無からの消去法で
+// 「それ以外は全部Google」と判定していたが、LINEログイン追加時にLINEの
+// Account行がGoogleと誤判定される不具合になった(LINEもgithubUsername等の
+// 専用列を持たないため)。Account行が無く、匿名ゲストのsessionIdも無い
+// ユーザーは、実際にログイン/セッションの仕組みを一切通っていない=
+// シードデータかDraftly AIボットのどちらか(見分ける必要が薄いため
+// まとめて"seed"とする)。
+const PROVIDER_TO_KIND: Record<string, AdminUserKind> = {
+  github: "github",
+  twitter: "x",
+  google: "google",
+  line: "line",
+};
+function adminUserKindOf(u: { provider: string | null; sessionId: string | null }): AdminUserKind {
+  if (u.provider) return PROVIDER_TO_KIND[u.provider] ?? "google";
   if (u.sessionId) return "guest";
   return "seed";
 }
@@ -1222,7 +1226,7 @@ export async function getAdminUsers(page: number, pageSize = 20): Promise<{ user
         createdAt: true,
         deletedAt: true,
         sessionId: true,
-        _count: { select: { accounts: true } },
+        accounts: { select: { provider: true }, take: 1 },
       },
     }),
     prisma.user.count(),
@@ -1238,7 +1242,7 @@ export async function getAdminUsers(page: number, pageSize = 20): Promise<{ user
       xUsername: u.xUsername,
       createdAt: u.createdAt,
       deletedAt: u.deletedAt,
-      kind: adminUserKindOf({ ...u, accountCount: u._count.accounts }),
+      kind: adminUserKindOf({ provider: u.accounts[0]?.provider ?? null, sessionId: u.sessionId }),
     })),
     total,
   };
