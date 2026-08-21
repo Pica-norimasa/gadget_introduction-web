@@ -182,28 +182,28 @@ export function WorkDetail({
           </span>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="mb-5 flex flex-wrap items-center gap-2.5">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
           <PlatformBadges platforms={work.platforms} />
         </div>
 
-        <h1 className="mb-3 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
+        <h1 className="mb-4 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
           {work.title}
         </h1>
         {work.inspiredByProjectId && work.inspiredByProjectTitle && (
           <Link
             href={`/work/${work.inspiredByProjectId}`}
-            className="mb-3 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
+            className="mb-4 inline-flex w-fit items-center gap-1 rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2.5 py-1 text-[12px] text-[var(--teal)] hover:underline"
           >
             🌱 {work.inspiredByProjectTitle} からインスパイア
           </Link>
         )}
-        <p className="mb-5 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">
+        <p className="mb-6 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">
           <LinkifiedText text={work.catch} />
         </p>
 
-        <div className="mb-6 flex flex-wrap items-center gap-2">
+        <div className="mb-7 flex flex-wrap items-center gap-2.5">
           {blockedByAuthor ? (
             <span className="text-[12px] text-[var(--ink-faint)]">
               この作品の作者にブロックされているため、反応できません
@@ -226,8 +226,8 @@ export function WorkDetail({
             投稿という3つの際限なく伸びるセクションの後)にあったが、
             プロジェクトが育つほど埋もれて押されにくくなるという指摘を
             受けて、伸びる前のここ(タイムラインの直上)に移動した。 */}
-        <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-5">
-          <p className="mb-2.5 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
+        <div className="mb-7 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-6">
+          <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
           <ShareButtons title={work.title} />
         </div>
 

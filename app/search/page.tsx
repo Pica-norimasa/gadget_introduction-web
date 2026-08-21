@@ -86,6 +86,13 @@ export default async function SearchPage({
       <SiteHeader defaultQuery={query} />
 
       <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← ホームに戻る
+        </Link>
+
         {query ? (
           <>
             <h1 className="mb-1 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">

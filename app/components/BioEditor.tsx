@@ -20,17 +20,22 @@ export function BioEditor({ bio }: { bio: string | null }) {
 
   if (!editing) {
     return (
-      <div className="mt-1 flex items-start gap-2">
-        <p className="flex-1 whitespace-pre-line text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+      <div className="mt-1">
+        <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
           {bio || "自己紹介はまだありません"}
         </p>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
-          className="shrink-0 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink)]"
-        >
-          編集
-        </button>
+        {/* ヘッダー右上の⚙️(設定)と横位置を揃えるため、このブロック
+            (アイコン・名前・自己紹介が入る flex-1 の列)の右端に寄せる。 */}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="mt-1 inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink)]"
+          >
+            <span aria-hidden>✏️</span>
+            編集
+          </button>
+        </div>
       </div>
     );
   }
