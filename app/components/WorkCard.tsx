@@ -45,14 +45,14 @@ export function WorkCard({
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 shadow-[0_1px_2px_var(--shadow)] transition-colors hover:border-[var(--accent)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 shadow-[0_1px_2px_var(--shadow)] transition-colors hover:border-[var(--accent)] scroll-mt-24 target:ring-2 target:ring-[var(--accent)]"
     >
       {/* カード全体を詳細ページへのリンクにする(stretched link)。上に重なる
           FollowButton/ReactionBar/GitHubCardリンク/続きを読むボタンだけは
           relative z-20を付けて個別にクリックできるようにしている。 */}
       <Link href={`/work/${work.id}`} aria-label={work.title} className="absolute inset-0 z-10" />
 
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-2">
         <Link
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
           className="relative z-20 flex min-w-0 flex-1 items-center gap-2"
@@ -65,7 +65,7 @@ export function WorkCard({
                 <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
               )}
             </p>
-            <p className="text-[11px] text-[var(--ink-faint)]">
+            <p className="truncate text-[11px] text-[var(--ink-faint)]">
               最終更新: {formatPostedAgo(work.lastActivityDaysAgo ?? work.daysAgo)}
             </p>
           </div>
@@ -97,7 +97,7 @@ export function WorkCard({
           <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
         )}
         {(work.appStoreUrl || work.googlePlayUrl) && (
-          <div className="absolute left-2 top-2 z-20 flex items-center gap-1.5">
+          <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
             {work.appStoreUrl && (
               <a
                 href={work.appStoreUrl}
@@ -124,7 +124,7 @@ export function WorkCard({
             )}
           </div>
         )}
-        <div className="absolute right-2 top-2 z-20 flex items-center gap-1.5">
+        <div className="absolute right-2 top-2 z-20 flex items-center gap-2">
           {work.trendScore >= 70 && (
             <span className="group/trend relative">
               <span
@@ -158,8 +158,8 @@ export function WorkCard({
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 pt-3">
-        <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-1 flex-col gap-3 pt-4">
+        <div className="flex flex-wrap items-center gap-2">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
           <PlatformBadges platforms={work.platforms} />
@@ -172,7 +172,7 @@ export function WorkCard({
 
         {latestPost && (
           <div
-            className={`flex items-start gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] leading-snug ${
+            className={`flex items-start gap-2 rounded-lg px-2.5 py-2 text-[11.5px] leading-snug ${
               latestPost.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
             }`}
           >
@@ -188,8 +188,8 @@ export function WorkCard({
           </div>
         )}
 
-        <div className="mt-auto flex flex-col gap-2 pt-2">
-          <div className="relative z-20 flex flex-wrap items-center gap-1.5">
+        <div className="mt-auto flex flex-col gap-2 pt-3">
+          <div className="relative z-20 flex flex-wrap items-center gap-2">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
             <RepostButton projectId={work.id} count={work.reposts} />
           </div>

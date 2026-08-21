@@ -26,13 +26,13 @@ function CommentRow({
   const isBot = comment.authorHandle === AI_BOT_NAME;
 
   return (
-    <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3">
-      <div className="flex items-start gap-2">
+    <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3.5">
+      <div className="flex items-start gap-2.5">
         <Link href={`/u/${encodeURIComponent(comment.authorHandle)}`} className="shrink-0">
           <AuthorAvatar name={comment.authorName} image={comment.authorImage} size={28} />
         </Link>
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
             <p className="text-[12px] text-[var(--ink-faint)]">
               <Link
                 href={`/u/${encodeURIComponent(comment.authorHandle)}`}
@@ -100,7 +100,7 @@ export function CommentThread({
   const isBot = thread.authorHandle === AI_BOT_NAME;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       <CommentRow comment={thread} currentUserId={currentUserId} target={target} />
 
       {!isBot && (

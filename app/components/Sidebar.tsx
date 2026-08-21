@@ -18,7 +18,7 @@ import { WorkThumb } from "./WorkThumb";
 // RepostRow/ActivityRowも同じ理由)。
 function RankingRow({ rank, work }: { rank: number; work: Work }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="flex items-center gap-3 rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]">
       <span className="w-5 shrink-0 font-mono text-sm font-bold text-[var(--ink-faint)]">{rank}</span>
       <a href={`#work-${work.id}`} className="w-10 shrink-0">
         {work.coverImageUrl ? (
@@ -44,7 +44,7 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
 
 function PostRow({ post, work }: { post: Post; work: Work }) {
   return (
-    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
         <Link
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
@@ -67,7 +67,7 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
 
 function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
   return (
-    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
         🔁{" "}
         <Link
@@ -95,8 +95,8 @@ function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
 
 function SuggestedAuthorRow({ author }: { author: SuggestedAuthor }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-      <Link href={`/u/${encodeURIComponent(author.name)}`} className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-2">
+      <Link href={`/u/${encodeURIComponent(author.name)}`} className="flex min-w-0 flex-1 items-center gap-2.5">
         <AuthorAvatar name={author.name} size={32} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] font-medium text-[var(--ink)]">{author.name}</p>
@@ -115,7 +115,7 @@ function MyProjectRow({ work, posts }: { work: Work; posts: Post[] }) {
   return (
     <Link
       href={`/work/${work.id}`}
-      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]"
+      className="flex items-center gap-3 rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]"
     >
       <div className="w-10 shrink-0">
         {work.coverImageUrl ? (
@@ -147,7 +147,7 @@ function ActivityRow({ item }: { item: ActivityView }) {
     <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{item.body}</p>
   );
   return (
-    <div className="rounded-lg px-2 py-2 hover:bg-[var(--bg-sunken)]">
+    <div className="rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]">
       <p className="text-[12px] text-[var(--ink-faint)]">
         <Link
           href={`/u/${encodeURIComponent(item.authorName)}`}

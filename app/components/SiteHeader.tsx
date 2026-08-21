@@ -61,7 +61,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
             />
           </form>
 
-          <nav className="ml-auto flex items-center gap-2 sm:gap-3">
+          <nav className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
             <FeedNavLink />
             <RankingNavLink />
             <MobileSearch defaultQuery={defaultQuery} />
