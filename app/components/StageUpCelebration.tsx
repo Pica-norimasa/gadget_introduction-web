@@ -10,6 +10,12 @@ function seenKey(item: StageUpView): string {
   return `draftly-stageup-seen:${item.id}:${item.stage}`;
 }
 
+// WelcomeModal.tsxと同じキー。初回訪問者にはまずサイト説明のポップアップを
+// 優先させたい(2つのポップアップが独立にmountすると、初回訪問かつ直近の
+// ステージアップがある場合に両方同時に開いてしまう不具合があったため、
+// 「既にウェルカムを見た(=初回訪問ではない)」ことをこちらの表示条件に加えた)。
+const WELCOME_SEEN_KEY = "draftly-welcome-seen";
+
 // ホーム訪問時、直近でステージが前進した(project-actions.tsのupdateProject
 // 参照)作品をサイト全体に向けてお祝いするポップアップ。WelcomeModalと同じく
 // 「この端末で見たかどうか」だけをlocalStorageで判定する(サーバー往復不要)。
@@ -17,6 +23,7 @@ export function StageUpCelebration({ items }: { items: StageUpView[] }) {
   const [current, setCurrent] = useState<StageUpView | null>(null);
 
   useEffect(() => {
+    if (!window.localStorage.getItem(WELCOME_SEEN_KEY)) return;
     const next = items.find((item) => !window.localStorage.getItem(seenKey(item)));
     if (next) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 既読判定はlocalStorage(クライアント専用)でしかできない
