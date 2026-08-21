@@ -19,7 +19,7 @@ export function ImagePickerButton({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]">
+      <label className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-full border border-[var(--line)] px-2.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]">
         📷 画像
         <input
           ref={fileInputRef}

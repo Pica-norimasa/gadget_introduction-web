@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getWorkById } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
@@ -15,6 +16,12 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href={`/work/${id}`}
+          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← 戻る(編集をキャンセル)
+        </Link>
         <h1 className="mb-6 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
           作品を編集
         </h1>

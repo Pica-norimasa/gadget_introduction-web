@@ -48,7 +48,11 @@ export function HorizontalScroller({
 
   return (
     <div className="relative" onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
-      <div ref={ref} className={className}>
+      {/* touch-pan-x: タッチでのスワイプを横方向だけに限定し、斜めに指が
+          ずれてもページの縦スクロールを巻き込まないようにする。
+          overscroll-x-contain: 横方向を端まで擦り切った時に親(ページ)の
+          スクロールへ伝播させない。 */}
+      <div ref={ref} className={`touch-pan-x overscroll-x-contain ${className ?? ""}`}>
         {children}
       </div>
       {hovering && canScrollLeft && (

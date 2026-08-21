@@ -4,6 +4,7 @@ import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { BookmarkButton } from "./BookmarkButton";
 import { CoverImage } from "./CoverImage";
 import { ExpandableText } from "./ExpandableText";
 import { FollowButton } from "./FollowButton";
@@ -194,6 +195,7 @@ export function WorkCard({
           <div className="relative z-20 flex flex-wrap items-center gap-2">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
             <RepostButton projectId={work.id} count={work.reposts} />
+            <BookmarkButton target={{ type: "project", id: work.id }} bookmarked={work.bookmarked ?? false} className="ml-auto" />
           </div>
         </div>
       </div>

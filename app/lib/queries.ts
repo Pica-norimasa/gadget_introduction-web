@@ -119,6 +119,7 @@ function toWork(
   project: ProjectWithAuthor,
   realReactionCounts?: Partial<Record<ReactionKey, number>>,
   lastActivityAt?: Date,
+  bookmarkedProjectIds?: Set<string>,
 ): Work {
   const reactions = {
     like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
@@ -164,6 +165,7 @@ function toWork(
     aiCommentsEnabled: project.aiCommentsEnabled,
     trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
+    bookmarked: bookmarkedProjectIds?.has(project.id) ?? false,
   };
 }
 
@@ -191,7 +193,7 @@ async function getLastActivityByProject(): Promise<Map<string, Date>> {
 }
 
 async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> {
-  const [projects, reactionRows, lastActivityByProject] = await Promise.all([
+  const [projects, reactionRows, lastActivityByProject, bookmarkedProjectIds] = await Promise.all([
     prisma.project.findMany({
       where,
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
@@ -199,6 +201,7 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
     }),
     prisma.reaction.groupBy({ by: ["projectId", "type"], where: { projectId: { not: null } }, _count: { _all: true } }),
     getLastActivityByProject(),
+    getMyBookmarkedProjectIds(),
   ]);
 
   const countsByProject = new Map<string, Partial<Record<ReactionKey, number>>>();
@@ -209,7 +212,9 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
     countsByProject.set(row.projectId, entry);
   }
 
-  return projects.map((p) => toWork(p, countsByProject.get(p.id), lastActivityByProject.get(p.id)));
+  return projects.map((p) =>
+    toWork(p, countsByProject.get(p.id), lastActivityByProject.get(p.id), bookmarkedProjectIds),
+  );
 }
 
 export async function getWorks(): Promise<Work[]> {
@@ -306,8 +311,17 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   };
 }
 
+async function isBookmarkedByMe(projectId: string): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  const existing = await prisma.bookmark.findUnique({
+    where: { projectId_userId: { projectId, userId: user.id } },
+  });
+  return !!existing;
+}
+
 export async function getWorkById(id: string): Promise<Work | null> {
-  const [project, reactionRows, originPost] = await Promise.all([
+  const [project, reactionRows, originPost, bookmarked] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
@@ -322,13 +336,14 @@ export async function getWorkById(id: string): Promise<Work | null> {
       orderBy: { createdAt: "asc" },
       select: { inspiredByProject: { select: { id: true, title: true } } },
     }),
+    isBookmarkedByMe(id),
   ]);
   if (!project) return null;
 
   const realCounts: Partial<Record<ReactionKey, number>> = {};
   for (const row of reactionRows) realCounts[row.type as ReactionKey] = row._count._all;
 
-  const work = toWork(project, realCounts);
+  const work = toWork(project, realCounts, undefined, bookmarked ? new Set([id]) : undefined);
   if (originPost?.inspiredByProject) {
     work.inspiredByProjectId = originPost.inspiredByProject.id;
     work.inspiredByProjectTitle = originPost.inspiredByProject.title;
@@ -766,6 +781,26 @@ export async function getMyLikedPostIds(): Promise<Set<string>> {
     select: { postId: true },
   });
   return new Set(rows.map((r) => r.postId!));
+}
+
+// projectId -> 自分が既にブックマークしているか。WorkCard/WorkDetail向けに
+// まとめてSetで返す(getMyLikedPostIdsと同じ考え方)。
+export async function getMyBookmarkedProjectIds(): Promise<Set<string>> {
+  const user = await getCurrentUser();
+  if (!user) return new Set();
+
+  const rows = await prisma.bookmark.findMany({
+    where: { userId: user.id, projectId: { not: null } },
+    select: { projectId: true },
+  });
+  return new Set(rows.map((r) => r.projectId!));
+}
+
+// プロフィールページの「ブックマーク」タブ(自分のみ表示)向け。
+export async function getMyBookmarkedWorks(): Promise<Work[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  return getWorksWhere({ bookmarks: { some: { userId: user.id } } });
 }
 
 // 未ログインのゲストが投稿できる残り件数(GUEST_POST_LIMIT)をUIに

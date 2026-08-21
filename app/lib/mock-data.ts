@@ -85,6 +85,9 @@ export type Work = {
   // 各カードでは毎回追加クエリになるため取得しない(未設定=undefined)。
   inspiredByProjectId?: string;
   inspiredByProjectTitle?: string;
+  // 自分がブックマーク(あとで見る)済みかどうか。mock-data.ts由来の
+  // シードWorkはfalse扱い(queries.tsのtoWork()が実データを埋める)。
+  bookmarked?: boolean;
 };
 
 export type ReactionKey = keyof Work["reactions"];

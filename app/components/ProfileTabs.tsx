@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { HorizontalScroller } from "./HorizontalScroller";
 
-type TabId = "posted" | "reposted" | "blocked" | "murmurs" | "following";
+type TabId = "posted" | "reposted" | "blocked" | "murmurs" | "following" | "bookmarked";
 
 // FeedSectionの新着/急上昇/あなたへタブと同じ、下線付きのタブUIを流用。
 // 各タブの中身は既にサーバー側でレンダリング済みのReactNode(WorkCardの
@@ -15,23 +15,31 @@ export function ProfileTabs({
   repostedLabel,
   murmursLabel,
   followingLabel,
+  bookmarkedLabel,
   showBlockedTab,
+  showBookmarksTab,
   postedContent,
   repostedContent,
   blockedContent,
   murmursContent,
   followingContent,
+  bookmarkedContent,
 }: {
   postedLabel: string;
   repostedLabel: string;
   murmursLabel: string;
   followingLabel: string;
+  bookmarkedLabel: string;
   showBlockedTab: boolean;
+  // ブックマークは自分だけの非公開の保存なので、他人のプロフィールを
+  // 見ているときはタブごと出さない(showBlockedTabと同じ理由)。
+  showBookmarksTab: boolean;
   postedContent: ReactNode;
   repostedContent: ReactNode;
   blockedContent: ReactNode;
   murmursContent: ReactNode;
   followingContent: ReactNode;
+  bookmarkedContent: ReactNode;
 }) {
   const [tab, setTab] = useState<TabId>("posted");
 
@@ -40,6 +48,7 @@ export function ProfileTabs({
     { id: "posted", label: postedLabel },
     { id: "reposted", label: repostedLabel },
     { id: "following", label: followingLabel },
+    ...(showBookmarksTab ? [{ id: "bookmarked" as const, label: bookmarkedLabel }] : []),
     ...(showBlockedTab ? [{ id: "blocked" as const, label: "ブロックユーザー" }] : []),
   ];
 
@@ -66,6 +75,7 @@ export function ProfileTabs({
       {tab === "blocked" && showBlockedTab && blockedContent}
       {tab === "murmurs" && murmursContent}
       {tab === "following" && followingContent}
+      {tab === "bookmarked" && showBookmarksTab && bookmarkedContent}
     </div>
   );
 }

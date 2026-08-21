@@ -115,6 +115,8 @@ export function TimelinePostForm({
         maxLength={280}
         className="w-full resize-none overflow-hidden border-none bg-transparent text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none"
       />
+      {/* PostComposer.tsxと同じ理由(別の行に分けると高さが揃って見えない
+          という指摘)で、添付ボタン列と送信ボタンを1行にまとめている。 */}
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <ImagePickerButton
           fileInputRef={fileInputRef}
@@ -123,25 +125,21 @@ export function TimelinePostForm({
           onClear={clearImage}
         />
         <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
-      </div>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span
-          className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
+          className={`ml-auto inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
             trimmed ? "opacity-100" : "opacity-0"
           }`}
         >
           {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}っぽい投稿として判定
         </span>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
-          <button
-            type="submit"
-            disabled={(!trimmed && !imagePreview) || pending}
-            className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
-          >
-            {pending ? "投稿中…" : "投稿する"}
-          </button>
-        </div>
+        <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
+        <button
+          type="submit"
+          disabled={(!trimmed && !imagePreview) || pending}
+          className="h-8 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
+        >
+          {pending ? "投稿中…" : "投稿する"}
+        </button>
       </div>
       {state.error && <p className="mt-2 text-[12px] text-[var(--accent)]">{state.error}</p>}
     </form>

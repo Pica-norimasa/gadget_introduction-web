@@ -16,7 +16,7 @@ export function YouTubeUrlInput({ value, onChange }: { value: string; onChange: 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+        className="inline-flex h-8 items-center gap-1 rounded-full border border-[var(--line)] px-2.5 text-[11px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
       >
         ▶️ YouTube
       </button>

@@ -5,6 +5,7 @@ import {
   getBlockedUsers,
   getFollowingList,
   getMutedUsers,
+  getMyBookmarkedWorks,
   getMyReactions,
   getPosts,
   getStandalonePostsByAuthor,
@@ -54,11 +55,11 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
     getFollowingList(profile.id),
   ]);
 
-  // ミュート/ブロック中一覧は「自分の」状態を返すクエリなので、他人の
-  // プロフィールを見ているときに取得しても意味が無い(表示もしない)。
-  const [mutedUsers, blockedUsers] = isOwnProfile
-    ? await Promise.all([getMutedUsers(), getBlockedUsers()])
-    : [[], []];
+  // ミュート/ブロック中一覧・ブックマークは「自分の」状態を返すクエリなので、
+  // 他人のプロフィールを見ているときに取得しても意味が無い(表示もしない)。
+  const [mutedUsers, blockedUsers, bookmarkedWorks] = isOwnProfile
+    ? await Promise.all([getMutedUsers(), getBlockedUsers(), getMyBookmarkedWorks()])
+    : [[], [], []];
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -152,7 +153,9 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           repostedLabel={`リポストした作品(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
           followingLabel={`フォロー中(${followingList.length})`}
+          bookmarkedLabel={`ブックマーク(${bookmarkedWorks.length})`}
           showBlockedTab={isOwnProfile}
+          showBookmarksTab={isOwnProfile}
           postedContent={
             profile.works.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
@@ -191,6 +194,24 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           }
           blockedContent={<MutedBlockedList mutedUsers={mutedUsers} blockedUsers={blockedUsers} />}
           followingContent={<FollowingList users={followingList} />}
+          bookmarkedContent={
+            bookmarkedWorks.length === 0 ? (
+              <p className="text-[13px] text-[var(--ink-faint)]">まだブックマークした作品はありません</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {bookmarkedWorks.map((work) => (
+                  <WorkCard
+                    key={work.id}
+                    work={work}
+                    posts={posts}
+                    myReactions={myReactions}
+                    currentUserId={currentUser?.id ?? null}
+                    showAnchor={false}
+                  />
+                ))}
+              </div>
+            )
+          }
           murmursContent={
             murmurs.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだつぶやきはありません</p>

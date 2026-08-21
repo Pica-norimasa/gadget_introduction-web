@@ -5,6 +5,7 @@ import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AiCommentsToggle } from "./AiCommentsToggle";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { BookmarkButton } from "./BookmarkButton";
 import { CommentForm } from "./CommentForm";
 import { CommentThread } from "./CommentThread";
 import { CoverImage } from "./CoverImage";
@@ -226,6 +227,12 @@ export function WorkDetail({
           >
             🌱 これにインスパイアされて投稿する
           </Link>
+          <BookmarkButton
+            target={{ type: "project", id: work.id }}
+            bookmarked={work.bookmarked ?? false}
+            size="md"
+            className="ml-auto"
+          />
         </div>
 
         {/* 共有ボタンは元々一番下(タイムライン/コメント/インスパイアされた

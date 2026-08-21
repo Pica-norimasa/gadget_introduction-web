@@ -111,7 +111,7 @@ export function CommentForm({
         <button
           type="submit"
           disabled={(!trimmed && !imagePreview) || pending}
-          className="shrink-0 rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
+          className="h-8 shrink-0 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
         >
           {pending ? "送信中…" : parentId ? "返信する" : "コメントする"}
         </button>
