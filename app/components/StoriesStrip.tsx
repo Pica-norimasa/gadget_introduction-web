@@ -5,10 +5,18 @@ import { useEffect, useMemo, useState } from "react";
 import { POST_TYPE_META, type Post, type Work } from "@/app/lib/mock-data";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
+import { AuthorAvatar } from "./AuthorAvatar";
 import { HorizontalScroller } from "./HorizontalScroller";
 
 type StoryEntry = { post: Post; projectTitle: string };
-type AuthorStory = { author: string; authorHandle: string; hue: number; glyph: string; entries: StoryEntry[] };
+type AuthorStory = {
+  author: string;
+  authorHandle: string;
+  authorImage?: string;
+  hue: number;
+  glyph: string;
+  entries: StoryEntry[];
+};
 
 // グループ化・フォロー判定・URL生成には一意なauthorHandle(=User.name)を
 // キーとして使う。author(表示名)は重複し得るため、キーには使えない。
@@ -22,6 +30,7 @@ function groupByAuthor(postsList: Post[], works: Work[]): AuthorStory[] {
       map.set(work.authorHandle, {
         author: work.author,
         authorHandle: work.authorHandle,
+        authorImage: work.authorImage,
         hue: work.hue,
         glyph: work.glyph ?? "📝",
         entries: [],
@@ -160,8 +169,8 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                           } 80% 60%), hsl(${story.hue} 80% 60%))`,
                     }}
                   >
-                    <span className="grid h-full w-full place-items-center rounded-full bg-[var(--bg)] text-xl">
-                      <span aria-hidden>{story.glyph}</span>
+                    <span className="grid h-full w-full place-items-center rounded-full bg-[var(--bg)]">
+                      <AuthorAvatar name={story.author} image={story.authorImage} size={48} />
                     </span>
                   </span>
                 </button>
@@ -207,7 +216,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                   href={`/u/${encodeURIComponent(current.authorHandle)}`}
                   className="flex items-center gap-1.5 text-sm font-bold text-white hover:underline"
                 >
-                  <span aria-hidden>{current.glyph}</span>
+                  <AuthorAvatar name={current.author} image={current.authorImage} size={20} />
                   {current.author}
                 </Link>
                 <button type="button" onClick={close} aria-label="閉じる" className="px-1 text-lg leading-none text-white">

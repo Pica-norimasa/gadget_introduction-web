@@ -12,9 +12,16 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 export function HorizontalScroller({
   className,
   children,
+  restrictToHorizontal = false,
 }: {
   className?: string;
   children: ReactNode;
+  // タブバー(ProfileTabs/WorkMediaTabs)のように帯の中に縦スクロールが
+  // そもそも要らない用途だけtrueにする。HeroRail/MurmurStrip/StoriesStrip
+  // のようなカード棚は、横スワイプの後も指を離さずページを縦にスクロール
+  // し続けたいことが普通にあるため、既定はfalse(ブラウザ標準の、斜め方向を
+  // 見て横/縦どちらかに自動振り分けする挙動のまま)にする。
+  restrictToHorizontal?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hovering, setHovering] = useState(false);
@@ -51,8 +58,13 @@ export function HorizontalScroller({
       {/* touch-pan-x: タッチでのスワイプを横方向だけに限定し、斜めに指が
           ずれてもページの縦スクロールを巻き込まないようにする。
           overscroll-x-contain: 横方向を端まで擦り切った時に親(ページ)の
-          スクロールへ伝播させない。 */}
-      <div ref={ref} className={`touch-pan-x overscroll-x-contain ${className ?? ""}`}>
+          スクロールへ伝播させない。カード棚では逆に「横スワイプの後その
+          まま縦スクロールしたい」を妨げてしまうため、restrictToHorizontal
+          がtrueの用途(タブバー)だけに限定して付ける。 */}
+      <div
+        ref={ref}
+        className={`${restrictToHorizontal ? "touch-pan-x overscroll-x-contain" : ""} ${className ?? ""}`}
+      >
         {children}
       </div>
       {hovering && canScrollLeft && (

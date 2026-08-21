@@ -54,7 +54,10 @@ export function ProfileTabs({
 
   return (
     <div>
-      <HorizontalScroller className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-[var(--line)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <HorizontalScroller
+        restrictToHorizontal
+        className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-[var(--line)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {tabs.map((t) => (
           <button
             key={t.id}
