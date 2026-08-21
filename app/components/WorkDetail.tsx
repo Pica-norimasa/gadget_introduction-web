@@ -228,10 +228,11 @@ export function WorkDetail({
           <ShareButtons title={work.title} />
         </div>
 
-        {/* 制作タイムライン・コメントは縦積みのまま、「この作品から
-            インスパイアされた投稿」だけは際限なく伸びて共有ボタン等を
-            押しにくくしていたため、タブで別ペインに切り出した
-            (WorkMediaTabs.tsxを画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
+        {/* 制作タイムライン・コメント・「この作品からインスパイアされた投稿」を
+            縦積みのままにすると、上のものが伸びるほど下のものが埋もれて
+            書き込み・閲覧しづらくなる(共有ボタンの位置を移動したのと同じ
+            経緯)ため、タブで別ペインに切り出した(WorkMediaTabs.tsxを
+            画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
         <WorkMediaTabs
           tabs={[
             {
@@ -273,10 +274,14 @@ export function WorkDetail({
                       <AiCommentsToggle projectId={work.id} initialEnabled={work.aiCommentsEnabled ?? true} />
                     </div>
                   )}
-
-                  <h2 className="mb-3 mt-6 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-                    コメント({comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})
-                  </h2>
+                </div>
+              ),
+            },
+            {
+              id: "comments",
+              label: `コメント(${comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})`,
+              content: (
+                <div className="mb-6">
                   <div className="mb-4 flex flex-col gap-3">
                     {comments.length === 0 ? (
                       <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
