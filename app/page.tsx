@@ -6,6 +6,7 @@ import {
   getRecentActivity,
   getRecentInspirations,
   getRecentReposts,
+  getRecentStageUps,
   getRecentStandalonePosts,
   getSuggestedAuthors,
   getTickerActivity,
@@ -23,6 +24,7 @@ import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
 import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
+import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 
 export default async function Home() {
@@ -40,6 +42,7 @@ export default async function Home() {
     session,
     myPostCount,
     tickerActivity,
+    stageUps,
   ] = await Promise.all([
     getWorks(),
     getPosts(),
@@ -54,6 +57,7 @@ export default async function Home() {
     auth(),
     getMyPostCount(),
     getTickerActivity(),
+    getRecentStageUps(),
   ]);
   const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
@@ -63,6 +67,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
       <UpdatesTicker activity={tickerActivity} />
+      <StageUpCelebration items={stageUps} />
 
       <main className="flex-1">
         <PostComposerToggle

@@ -39,11 +39,27 @@ export function UpdatesTicker({ activity }: { activity: TickerActivity[] }) {
   );
 }
 
-const KIND_META: Record<TickerActivity["kind"], { icon: string; label: string }> = {
-  post: { icon: "📝", label: "の制作タイムラインを更新" },
-  comment: { icon: "💬", label: "のコメントを更新" },
-  "murmur-comment": { icon: "💬", label: "つぶやきコメントを更新" },
+// stage-upだけ他の活動より目立たせたいので、他はテーマの控えめなink-soft、
+// stage-upだけaccent色にしている。
+const KIND_META: Record<TickerActivity["kind"], { icon: string; color: string }> = {
+  post: { icon: "📝", color: "text-[var(--ink-soft)]" },
+  comment: { icon: "💬", color: "text-[var(--ink-soft)]" },
+  "murmur-comment": { icon: "💬", color: "text-[var(--ink-soft)]" },
+  "stage-up": { icon: "🎉", color: "text-[var(--accent)]" },
 };
+
+function labelFor(item: TickerActivity): string {
+  switch (item.kind) {
+    case "post":
+      return `が「${item.projectTitle}」の制作タイムラインを更新`;
+    case "comment":
+      return `が「${item.projectTitle}」のコメントを更新`;
+    case "murmur-comment":
+      return "がつぶやきコメントを更新";
+    case "stage-up":
+      return `の「${item.projectTitle}」が${item.stage}にステップアップ`;
+  }
+}
 
 function TickerItem({ item }: { item: TickerActivity }) {
   const meta = KIND_META[item.kind];
@@ -58,9 +74,8 @@ function TickerItem({ item }: { item: TickerActivity }) {
         className="block truncate text-[12.5px] hover:underline sm:overflow-visible sm:text-clip sm:whitespace-nowrap"
       >
         <span className="font-medium text-[var(--ink)]">{item.authorName}</span>
-        <span className="text-[var(--ink-soft)]">
-          {item.kind === "murmur-comment" ? "が" : `が「${item.projectTitle}」`}
-          {meta.label}
+        <span className={item.kind === "stage-up" ? `font-medium ${meta.color}` : meta.color}>
+          {labelFor(item)}
         </span>
         <span className="ml-1 text-[var(--ink-faint)]">
           {meta.icon} {formatRelativeHours(item.hoursAgo)}

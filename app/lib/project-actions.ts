@@ -91,8 +91,17 @@ export async function updateProject(
   const user = await getCurrentUser();
   if (!user) return { error: "権限がありません" };
 
-  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: { authorId: true, stage: true },
+  });
   if (!project || project.authorId !== user.id) return { error: "権限がありません" };
+
+  // ステージが前進した(アイデア→プロトタイプ→ベータ→公開中)ときだけ
+  // stageChangedAtを更新する。ホームの「昇格おめでとう」ポップアップは
+  // これを見て直近の前進を検出するので、後退・据え置きの保存では
+  // 反応させない。
+  const stageAdvanced = STAGES.indexOf(stage as Stage) > STAGES.indexOf(project.stage as Stage);
 
   // undefinedのままなら既存のcoverImageUrlに触れない。新規アップロードが
   // あれば差し替え、明示的な削除(removeCoverImage)ならnullにする。
@@ -122,6 +131,7 @@ export async function updateProject(
       googlePlayUrl: googlePlayUrl || null,
       platforms,
       ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
+      ...(stageAdvanced ? { stageChangedAt: new Date() } : {}),
     },
   });
 

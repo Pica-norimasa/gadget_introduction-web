@@ -127,6 +127,10 @@ model Project {
   catchText   String   @db.Text
   category    String
   stage       String
+  // ステージが前進した(アイデア→プロトタイプ→ベータ→公開中)最新の日時。
+  // ホームの「昇格おめでとう」ポップアップ(直近の前進のみ対象)の判定に使う。
+  // project-actions.tsのupdateProjectで新旧ステージを比較し、前進時のみ更新する。
+  stageChangedAt DateTime?
   tool        String?
   platforms   Json // Platform[]をそのまま格納(例: ["Web","iOS"])
   hue         Int

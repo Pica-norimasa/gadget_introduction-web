@@ -452,7 +452,16 @@ export async function getRecentActivity(limit = 8): Promise<ActivityView[]> {
 export type TickerActivity =
   | { id: string; kind: "post"; authorName: string; projectId: string; projectTitle: string; hoursAgo: number }
   | { id: string; kind: "comment"; authorName: string; projectId: string; projectTitle: string; hoursAgo: number }
-  | { id: string; kind: "murmur-comment"; authorName: string; postId: string; hoursAgo: number };
+  | { id: string; kind: "murmur-comment"; authorName: string; postId: string; hoursAgo: number }
+  | {
+      id: string;
+      kind: "stage-up";
+      authorName: string;
+      projectId: string;
+      projectTitle: string;
+      stage: string;
+      hoursAgo: number;
+    };
 
 // ヘッダー直下のUpdatesTicker向け。getRecentActivity()は制作タイムライン
 // 投稿(Post)だけを見ているが、こちらはコメントも合わせて見せる。コメントは
@@ -460,11 +469,12 @@ export type TickerActivity =
 // (schema.prisma参照)なので、post.projectIdの有無で「Projectの制作
 // タイムラインへのコメント」と「孤立したPost(つぶやき)へのコメント」を
 // 判別する。Draftly AIの自動応援コメントは活動として意味が薄いので除外する。
+// ステージ前進(stage-up、project-actions.ts参照)も合わせて流す。
 export async function getTickerActivity(limit = 10): Promise<TickerActivity[]> {
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const authorWhere = excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {};
 
-  const [posts, comments] = await Promise.all([
+  const [posts, comments, stageUps] = await Promise.all([
     prisma.post.findMany({
       where: { projectId: { not: null }, ...authorWhere },
       orderBy: { createdAt: "desc" },
@@ -480,6 +490,12 @@ export async function getTickerActivity(limit = 10): Promise<TickerActivity[]> {
         project: { select: { id: true, title: true } },
         post: { select: { id: true, projectId: true, project: { select: { id: true, title: true } } } },
       },
+    }),
+    prisma.project.findMany({
+      where: { stageChangedAt: { not: null }, ...authorWhere },
+      orderBy: { stageChangedAt: "desc" },
+      take: limit,
+      select: { id: true, title: true, stage: true, stageChangedAt: true, author: { select: { name: true } } },
     }),
   ]);
 
@@ -522,7 +538,50 @@ export async function getTickerActivity(limit = 10): Promise<TickerActivity[]> {
     return [];
   });
 
-  return [...postItems, ...commentItems].sort((a, b) => a.hoursAgo - b.hoursAgo).slice(0, limit);
+  const stageUpItems: TickerActivity[] = stageUps.map((p) => ({
+    id: `stage-up-${p.id}`,
+    kind: "stage-up" as const,
+    authorName: p.author.name,
+    projectId: p.id,
+    projectTitle: p.title,
+    stage: p.stage,
+    hoursAgo: hoursAgoOf(p.stageChangedAt!),
+  }));
+
+  return [...postItems, ...commentItems, ...stageUpItems].sort((a, b) => a.hoursAgo - b.hoursAgo).slice(0, limit);
+}
+
+export type StageUpView = {
+  id: string;
+  title: string;
+  stage: string;
+  authorName: string;
+};
+
+const STAGE_UP_WINDOW_DAYS = 3;
+
+// ホーム訪問時の「昇格おめでとう」ポップアップ向け。project-actions.tsの
+// updateProjectがステージ前進(アイデア→プロトタイプ→ベータ→公開中)時にだけ
+// 更新するstageChangedAtを見て、直近に前進した作品を返す。ミュート/
+// ブロックしている作者の分は除外する。
+export async function getRecentStageUps(limit = 5): Promise<StageUpView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const since = new Date(Date.now() - STAGE_UP_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const rows = await prisma.project.findMany({
+    where: {
+      stageChangedAt: { gte: since },
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
+    orderBy: { stageChangedAt: "desc" },
+    take: limit,
+    select: { id: true, title: true, stage: true, author: { select: { name: true } } },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    stage: r.stage,
+    authorName: r.author.name,
+  }));
 }
 
 export type StandalonePostView = {

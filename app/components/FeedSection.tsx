@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
+import type { Category, Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
 import type { InspirationSignalView, RepostView } from "@/app/lib/queries";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
@@ -15,17 +15,19 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "recommend", label: "あなたへ" },
 ];
 
-const BATCH_SIZE = 6;
-const MAX_ITEMS = 60;
+const CATEGORY_ORDER: Category[] = [
+  "Webアプリ",
+  "スマホアプリ",
+  "PCアプリ",
+  "ゲーム",
+  "AIツール",
+  "AI Agent",
+  "拡張機能",
+  "プロトタイプ",
+  "その他",
+];
 
-function shuffled<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
+const BATCH_SIZE = 6;
 
 // 「あなたへ」タブの簡易パーソナライズ。本物のレコメンドAIの代わりに、
 // 手元にある4つのシグナル(フォロー中の作者・過去にリアクションした作品の
@@ -73,20 +75,21 @@ export function FeedSection({
   inspirations: InspirationSignalView[];
 }) {
   const [tab, setTab] = useState<Tab>("new");
+  const [categoryFilter, setCategoryFilter] = useState<Set<Category>>(new Set());
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const followedAuthors = useFollowedAuthors();
 
-  // Math.random()を使うshuffleは、サーバー側の初回レンダリングと
-  // クライアントのハイドレーション時とで結果が食い違い、ハイドレーション
-  // 不整合を起こす。マウント前は決定的な(シャッフルしない)順序で揃え、
-  // マウント後にだけシャッフルを効かせる。
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 上記の理由でマウント後にのみtrueにする必要がある
-    setMounted(true);
-  }, []);
+  function toggleCategory(c: Category) {
+    setCategoryFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c);
+      else next.add(c);
+      return next;
+    });
+    setLoadedCount(BATCH_SIZE);
+  }
 
   function togglePlatform(p: Platform) {
     setPlatformFilter((prev) => {
@@ -122,21 +125,12 @@ export function FeedSection({
   }, [tab, works, myReactions, followedAuthors, reposts, inspirations]);
 
   const visible = useMemo(() => {
-    if (platformFilter.size === 0) return sorted;
-    return sorted.filter((w) => w.platforms.some((p) => platformFilter.has(p)));
-  }, [sorted, platformFilter]);
-
-  // 1周目はタブのソート順(急上昇/新着/あなたへ)をそのまま見せる。
-  // 件数が有限なので無限スクロールらしさを出すために2周目以降だけ
-  // シャッフルした複製を継ぎ足す(実プロダクトではページングAPIに置き換える)。
-  const feed = useMemo(() => {
-    if (visible.length === 0) return [];
-    const list: Work[] = [...visible];
-    while (list.length < MAX_ITEMS) {
-      list.push(...(mounted ? shuffled(visible) : visible));
-    }
-    return list.slice(0, MAX_ITEMS);
-  }, [visible, mounted]);
+    return sorted.filter(
+      (w) =>
+        (categoryFilter.size === 0 || categoryFilter.has(w.category)) &&
+        (platformFilter.size === 0 || w.platforms.some((p) => platformFilter.has(p))),
+    );
+  }, [sorted, categoryFilter, platformFilter]);
 
   function selectTab(t: Tab) {
     setTab(t);
@@ -149,7 +143,7 @@ export function FeedSection({
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setLoadedCount((c) => Math.min(c + BATCH_SIZE, MAX_ITEMS));
+          setLoadedCount((c) => Math.min(c + BATCH_SIZE, visible.length));
         }
       },
       // rootMarginを大きくしすぎると、1バッチ分のカードを追加した後も
@@ -159,10 +153,10 @@ export function FeedSection({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [visible.length]);
 
-  const shown = feed.slice(0, loadedCount);
-  const seenIds = new Set<string>();
+  const shown = visible.slice(0, loadedCount);
+  const hasFilters = categoryFilter.size > 0 || platformFilter.size > 0;
 
   return (
     <section id="feed" className="scroll-mt-24">
@@ -182,6 +176,28 @@ export function FeedSection({
             )}
           </button>
         ))}
+      </div>
+
+      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-[12px] text-[var(--ink-faint)]">カテゴリ</span>
+        {CATEGORY_ORDER.map((c) => {
+          const active = categoryFilter.has(c);
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => toggleCategory(c)}
+              aria-pressed={active}
+              className={`rounded-full border px-2.5 py-1 text-[12px] transition-colors ${
+                active
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+              }`}
+            >
+              {c}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-1.5">
@@ -206,10 +222,11 @@ export function FeedSection({
             </button>
           );
         })}
-        {platformFilter.size > 0 && (
+        {hasFilters && (
           <button
             type="button"
             onClick={() => {
+              setCategoryFilter(new Set());
               setPlatformFilter(new Set());
               setLoadedCount(BATCH_SIZE);
             }}
@@ -227,25 +244,20 @@ export function FeedSection({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {shown.map((w, i) => {
-              const isFirst = !seenIds.has(w.id);
-              seenIds.add(w.id);
-              return (
-                <WorkCard
-                  key={`${w.id}-${i}`}
-                  work={w}
-                  posts={posts}
-                  myReactions={myReactions}
-                  currentUserId={currentUserId}
-                  showAnchor={isFirst}
-                />
-              );
-            })}
+            {shown.map((w) => (
+              <WorkCard
+                key={w.id}
+                work={w}
+                posts={posts}
+                myReactions={myReactions}
+                currentUserId={currentUserId}
+              />
+            ))}
           </div>
 
           <div ref={sentinelRef} className="h-1" />
 
-          {loadedCount < MAX_ITEMS ? (
+          {loadedCount < visible.length ? (
             <div className="flex justify-center pt-6">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--line)] border-t-[var(--accent)]" />
             </div>
