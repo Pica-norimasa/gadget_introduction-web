@@ -7,9 +7,13 @@ import { toggleFollow, useIsFollowing } from "@/app/lib/follow-store";
 export function FollowButton({
   author,
   size = "sm",
+  variant = "card",
 }: {
   author: string;
   size?: "sm" | "md";
+  // "card" = 通常のフィードカード内(テーマ変数に追従)
+  // "dark" = 没入ビューアの黒スクリム上(常に明色固定、ReactionBarのdarkと同じ考え方)
+  variant?: "card" | "dark";
 }) {
   const following = useIsFollowing(author);
   const isLoggedIn = useIsLoggedIn();
@@ -33,7 +37,11 @@ export function FollowButton({
       <button
         type="button"
         onClick={handleClick}
-        className={`shrink-0 rounded-full border border-[var(--line)] bg-transparent font-medium text-[var(--ink-faint)] transition-colors hover:border-[var(--ink-faint)] hover:text-[var(--ink-soft)] ${padding}`}
+        className={`shrink-0 rounded-full border font-medium transition-colors ${padding} ${
+          variant === "dark"
+            ? "border-white bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
+            : "border-[var(--line)] bg-transparent text-[var(--ink-faint)] hover:border-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        }`}
       >
         ログインしてフォロー
       </button>
@@ -46,9 +54,13 @@ export function FollowButton({
       onClick={handleClick}
       aria-pressed={following}
       className={`shrink-0 rounded-full border font-medium transition-colors ${padding} ${
-        following
-          ? "border-transparent bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-80"
-          : "border-[var(--accent)] bg-transparent text-[var(--accent)] hover:bg-[var(--accent-soft)]"
+        variant === "dark"
+          ? following
+            ? "border-white bg-white text-black hover:opacity-80"
+            : "border-white bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
+          : following
+            ? "border-transparent bg-[var(--accent-soft)] text-[var(--accent)] hover:opacity-80"
+            : "border-[var(--accent)] bg-transparent text-[var(--accent)] hover:bg-[var(--accent-soft)]"
       }`}
     >
       {following ? "フォロー中" : "フォローする"}

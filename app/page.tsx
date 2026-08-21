@@ -90,7 +90,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
+        <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} currentUserId={currentUser?.id ?? null} />
         <StoriesStrip posts={posts} works={works} />
         <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
         <HeroRail

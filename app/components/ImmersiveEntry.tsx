@@ -8,10 +8,12 @@ export function ImmersiveEntry({
   works,
   posts,
   myReactions,
+  currentUserId,
 }: {
   works: Work[];
   posts: Post[];
   myReactions: Record<string, ReactionKey[]>;
+  currentUserId: string | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -30,7 +32,13 @@ export function ImmersiveEntry({
       </button>
 
       {open && (
-        <ImmersiveViewer works={works} posts={posts} myReactions={myReactions} onClose={() => setOpen(false)} />
+        <ImmersiveViewer
+          works={works}
+          posts={posts}
+          myReactions={myReactions}
+          currentUserId={currentUserId}
+          onClose={() => setOpen(false)}
+        />
       )}
     </>
   );
