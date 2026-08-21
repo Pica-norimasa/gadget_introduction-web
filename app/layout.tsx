@@ -13,6 +13,7 @@ import { BlockHydrator } from "@/app/components/BlockHydrator";
 import { FollowHydrator } from "@/app/components/FollowHydrator";
 import { MuteHydrator } from "@/app/components/MuteHydrator";
 import { RepostHydrator } from "@/app/components/RepostHydrator";
+import { WelcomeModal } from "@/app/components/WelcomeModal";
 
 export const metadata: Metadata = {
   // OGP画像・canonical URLの解決に使われる。metadata自体はサーバー専用
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <RepostHydrator initial={repostedProjectIds} />
         <MuteHydrator initial={mutedUserIds} />
         <BlockHydrator initial={blockedUserIds} />
+        <WelcomeModal />
         {children}
       </body>
     </html>
