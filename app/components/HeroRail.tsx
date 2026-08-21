@@ -14,7 +14,7 @@ export function HeroRail({
   currentUserId: string | null;
 }) {
   return (
-    <section className="mx-auto max-w-[1180px] px-4 pt-8 sm:px-6">
+    <section className="mx-auto max-w-[1180px] px-4 pt-[62px] sm:px-6">
       <div className="mb-3 flex items-end justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
