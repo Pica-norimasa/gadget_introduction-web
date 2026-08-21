@@ -14,6 +14,7 @@ import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { AuthorStats } from "@/app/components/AuthorStats";
 import { AvatarEditor } from "@/app/components/AvatarEditor";
 import { BioEditor } from "@/app/components/BioEditor";
+import { DisplayNameEditor } from "@/app/components/DisplayNameEditor";
 import { GitHubMark, XMark } from "@/app/components/BrandIcons";
 import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
@@ -73,9 +74,13 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             <AuthorAvatar name={profile.displayName} image={profile.image} size={56} />
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
-              {profile.displayName}
-            </h1>
+            {isOwnProfile ? (
+              <DisplayNameEditor name={profile.displayName} />
+            ) : (
+              <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
+                {profile.displayName}
+              </h1>
+            )}
             <p className="truncate text-[13px] text-[var(--ink-faint)]">@{profile.name}</p>
             {(profile.githubUsername || profile.xUsername) && (
               <p className="mt-0.5 flex items-center gap-2.5">
