@@ -12,6 +12,7 @@ import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { LinkifiedText } from "./LinkifiedText";
 import { MotionThumb } from "./MotionThumb";
+import { VerifiedBadge } from "./VerifiedBadge";
 import { PlatformBadges } from "./PlatformBadges";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
@@ -124,6 +125,7 @@ export function WorkDetail({
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {work.author}
+                {work.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
                 {work.authorSocialHandle && (
                   <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
                 )}

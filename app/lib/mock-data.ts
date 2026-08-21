@@ -39,11 +39,14 @@ export type Work = {
   // フォロー等の内部参照にのみ使う。mock-data.ts由来のシードWorkには
   // 無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
   authorHandle?: string;
-  // 実際にXまたはGitHubに連携している場合だけ、そのユーザー名を「表示名
-  // @ハンドル」の形で添える(queries.tsのsocialHandleOf()参照)。連携が
-  // 無ければ表示しない。authorHandleとは別物(内部ハンドル≠実際のSNSの
-  // ハンドル)。
+  // 実際にXに連携している場合だけ、そのユーザー名を「表示名@ハンドル」の
+  // 形で添える(queries.tsのsocialHandleOf()参照)。連携が無ければ表示
+  // しない。authorHandleとは別物(内部ハンドル≠実際のSNSのハンドル)。
   authorSocialHandle?: string;
+  // GitHub/X/Google/LINEいずれかで実際にログインしたユーザーかどうか
+  // (ゲスト/未ログインと区別する小さなバッジ用。queries.tsの
+  // isVerifiedAuthor()参照)。mock-data.ts由来のシードWorkはfalse扱い。
+  authorVerified?: boolean;
   // GitHubログインのアバター、またはアップロードした画像。未設定ならAuthorAvatarが
   // 生成イニシャルにフォールバックする。mock-data.ts由来のシードWorkには無意味。
   authorImage?: string;

@@ -11,6 +11,7 @@ import { DeleteCommentButton } from "./DeleteCommentButton";
 import { LinkifiedText } from "./LinkifiedText";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 import { ShareCommentButton } from "./ShareCommentButton";
+import { VerifiedBadge } from "./VerifiedBadge";
 
 function CommentRow({
   comment,
@@ -41,6 +42,7 @@ function CommentRow({
               >
                 {comment.authorName}
               </Link>
+              {comment.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
               {comment.authorSocialHandle && (
                 <span className="text-[var(--ink-faint)]"> @{comment.authorSocialHandle}</span>
               )}{" "}

@@ -4,6 +4,7 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { HorizontalScroller } from "./HorizontalScroller";
 import { LikeButton } from "./LikeButton";
+import { VerifiedBadge } from "./VerifiedBadge";
 import { YouTubeCard } from "./YouTubeCard";
 
 // プロジェクトに紐付けない気軽な投稿専用の、横スクロールの帯。
@@ -33,7 +34,8 @@ export function MurmurStrip({
               <div className="flex items-center gap-2">
                 <AuthorAvatar name={post.authorName} image={post.authorImage} size={24} />
                 <span className="min-w-0 truncate text-[12px]">
-                  <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
+                  <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>
+                  {post.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}{" "}
                   {post.authorSocialHandle && (
                     <span className="text-[var(--ink-faint)]">@{post.authorSocialHandle}</span>
                   )}

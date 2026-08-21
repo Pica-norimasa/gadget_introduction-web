@@ -14,6 +14,7 @@ import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
+import { VerifiedBadge } from "./VerifiedBadge";
 import { WorkThumb } from "./WorkThumb";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -61,6 +62,7 @@ export function WorkCard({
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-[var(--ink)] hover:underline">
               {work.author}
+              {work.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
               {work.authorSocialHandle && (
                 <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
               )}

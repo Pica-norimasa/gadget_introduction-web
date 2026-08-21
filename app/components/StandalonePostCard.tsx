@@ -3,6 +3,7 @@ import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LinkifiedText } from "./LinkifiedText";
+import { VerifiedBadge } from "./VerifiedBadge";
 import { YouTubeCard } from "./YouTubeCard";
 
 // 単独投稿(つぶやき)を縦積みの一覧で見せるための簡易カード。
@@ -19,6 +20,7 @@ export function StandalonePostCard({
     | "authorName"
     | "authorHandle"
     | "authorSocialHandle"
+    | "authorVerified"
     | "authorImage"
     | "body"
     | "hoursAgo"
@@ -36,7 +38,8 @@ export function StandalonePostCard({
       <AuthorAvatar name={post.authorName} image={post.authorImage} size={28} />
       <div className="min-w-0 flex-1">
         <p className="mb-1 text-[12px] text-[var(--ink-faint)]">
-          <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>{" "}
+          <span className="font-medium text-[var(--ink-soft)]">{post.authorName}</span>
+          {post.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}{" "}
           {post.authorSocialHandle && <span>@{post.authorSocialHandle}</span>} ・{" "}
           {formatRelativeHours(post.hoursAgo)}
         </p>

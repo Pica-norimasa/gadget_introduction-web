@@ -17,13 +17,15 @@ function hoursAgoOf(createdAt: Date): number {
 }
 
 // author選択(表示名・アイコン・連携ユーザー名)。4箇所で同じselectが
-// 繰り返されていたのをここに集約した。
+// 繰り返されていたのをここに集約した。_count.accountsはisVerifiedAuthor()
+// (ゲスト/未ログインとの区別用バッジ)向け。
 const AUTHOR_SELECT = {
   name: true,
   displayName: true,
   image: true,
   githubUsername: true,
   xUsername: true,
+  _count: { select: { accounts: true } },
 } as const;
 
 // フィード/検索/コメント欄など、能動的に発見される場所から、自分が
@@ -74,7 +76,7 @@ type ProjectWithAuthor = {
     githubUsername: string | null;
     xUsername: string | null;
     followersSeed: number;
-    _count: { followedBy: number };
+    _count: { followedBy: number; accounts: number };
   };
   _count: { comments: number; reposts: number };
 };
@@ -84,12 +86,20 @@ function displayNameOf(user: { name: string; displayName: string | null }): stri
   return user.displayName ?? user.name;
 }
 
-// 「@handle」として表示する連携済みSNSのユーザー名。User.name(内部の一意な
-// ハンドル、/u/[name]のURLに使うだけの値)とは別物で、実際にXまたはGitHubに
-// 連携していない限りは何も返さない(表示自体をしない)。両方連携していれば
-// Xを優先する(このアプリのメインのソーシャルログインという位置付けのため)。
-function socialHandleOf(user: { xUsername: string | null; githubUsername: string | null }): string | null {
-  return user.xUsername ?? user.githubUsername ?? null;
+// 「@handle」として表示するのはXのユーザー名のみ。GitHubのユーザー名は
+// プロフィールページ(/u/[name])のリンクバッジで別途見られる上、GitHub
+// ハンドルをカード等に常時出す価値は薄い(Xはこのアプリの主要な流入元
+// であり、外部プロフィールへの導線として価値が高い)ため、意図的に
+// ここでは扱わない。
+function socialHandleOf(user: { xUsername: string | null }): string | null {
+  return user.xUsername;
+}
+
+// ゲスト/未ログインと区別するための「ログイン済み」バッジ用。実際に
+// OAuthでログインした(Account行を持つ)ユーザーだけtrueになる
+// (GitHub/X/Google/LINEいずれでも良く、特定のプロバイダーに依存しない)。
+function isVerifiedAuthor(user: { _count: { accounts: number } }): boolean {
+  return user._count.accounts > 0;
 }
 
 // trendScoreは元々シードデータ作成時に手書きした固定値(mock-data.ts)で、
@@ -134,6 +144,7 @@ function toWork(
     author: displayNameOf(project.author),
     authorHandle: project.author.name,
     authorSocialHandle: socialHandleOf(project.author) ?? undefined,
+    authorVerified: isVerifiedAuthor(project.author),
     authorImage: project.author.image ?? undefined,
     authorId: project.authorId,
     hue: project.hue,
@@ -156,7 +167,7 @@ function toWork(
   };
 }
 
-const authorInclude = { include: { _count: { select: { followedBy: true } } } } as const;
+const authorInclude = { include: { _count: { select: { followedBy: true, accounts: true } } } } as const;
 
 // 「最終更新」= タイムライン投稿・コメント追加(Projectへの直接コメント、
 // および紐づくPostへのコメントの両方)のうち最も新しい日時。Comment は
@@ -361,6 +372,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           authorName: displayNameOf(r.author),
           authorHandle: r.author.name,
           authorSocialHandle: socialHandleOf(r.author) ?? undefined,
+          authorVerified: isVerifiedAuthor(r.author),
           authorImage: r.author.image,
           body: r.body,
           imageUrl: r.imageUrl ?? undefined,
@@ -518,6 +530,7 @@ export type StandalonePostView = {
   authorName: string;
   authorHandle: string;
   authorSocialHandle?: string;
+  authorVerified: boolean;
   authorImage: string | null;
   body: string;
   imageUrl?: string;
@@ -562,6 +575,7 @@ async function loadStandalonePosts(
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
     authorSocialHandle: socialHandleOf(r.author) ?? undefined,
+    authorVerified: isVerifiedAuthor(r.author),
     authorImage: r.author.image,
     body: r.body,
     imageUrl: r.imageUrl ?? undefined,
@@ -730,6 +744,7 @@ export type CommentView = {
   authorName: string;
   authorHandle: string;
   authorSocialHandle?: string;
+  authorVerified: boolean;
   authorImage: string | null;
   hoursAgo: number;
 };
@@ -756,6 +771,7 @@ async function loadCommentThreads(where: Prisma.CommentWhereInput): Promise<Comm
     authorName: displayNameOf(r.author),
     authorHandle: r.author.name,
     authorSocialHandle: socialHandleOf(r.author) ?? undefined,
+    authorVerified: isVerifiedAuthor(r.author),
     authorImage: r.author.image,
     hoursAgo: hoursAgoOf(r.createdAt),
   });
@@ -791,6 +807,7 @@ export type PostDetailView = {
   authorName: string;
   authorHandle: string;
   authorSocialHandle?: string;
+  authorVerified: boolean;
   authorImage: string | null;
   hoursAgo: number;
   commentsCount: number;
@@ -822,6 +839,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     authorName: displayNameOf(post.author),
     authorHandle: post.author.name,
     authorSocialHandle: socialHandleOf(post.author) ?? undefined,
+    authorVerified: isVerifiedAuthor(post.author),
     authorImage: post.author.image,
     hoursAgo: hoursAgoOf(post.createdAt),
     commentsCount: post._count.comments,

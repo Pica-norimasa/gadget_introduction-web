@@ -19,6 +19,7 @@ import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { PostEditor } from "@/app/components/PostEditor";
 import { PostXShareButton } from "@/app/components/PostXShareButton";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { VerifiedBadge } from "@/app/components/VerifiedBadge";
 
 export async function generateMetadata({
   params,
@@ -71,6 +72,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
                 {post.authorName}
+                {post.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
                 {post.authorSocialHandle && (
                   <span className="ml-1 font-normal text-[var(--ink-faint)]">@{post.authorSocialHandle}</span>
                 )}
