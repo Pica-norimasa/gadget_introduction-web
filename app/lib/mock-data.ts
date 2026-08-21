@@ -68,6 +68,12 @@ export type Work = {
   reposts: number;
   views: number; // ページビュー的な指標。Xのインプレッション表示のように使う
   daysAgo: number;
+  // タイムライン投稿・コメント追加も含めた最終アクティビティからの経過日数。
+  // 未設定(mock-data.ts由来のシードWork)はdaysAgoにフォールバックする。
+  lastActivityDaysAgo?: number;
+  // Draftly AIによる自動応援コメントのON/OFF。未設定(mock-data.ts由来の
+  // シードWork)はtrue(有効)扱いにする。
+  aiCommentsEnabled?: boolean;
   trendScore: number; // 0-100, "急上昇" strength
   followers: number; // author follower count — small number = "無名"
   // この作品が他の作品にインスパイアされて作られた場合の元Project。

@@ -59,6 +59,7 @@ type ProjectWithAuthor = {
   views: number;
   trendScore: number;
   createdAt: Date;
+  aiCommentsEnabled: boolean;
   authorId: string;
   commentsSeed: number;
   reactionLikeSeed: number;
@@ -103,7 +104,11 @@ function computeTrendScore(totalReactions: number, totalComments: number, totalR
   return Math.min(100, Math.round(engagementScore / 5 + recencyBoost));
 }
 
-function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<ReactionKey, number>>): Work {
+function toWork(
+  project: ProjectWithAuthor,
+  realReactionCounts?: Partial<Record<ReactionKey, number>>,
+  lastActivityAt?: Date,
+): Work {
   const reactions = {
     like: project.reactionLikeSeed + (realReactionCounts?.like ?? 0),
     useful: project.reactionUsefulSeed + (realReactionCounts?.useful ?? 0),
@@ -114,6 +119,8 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
   const comments = project.commentsSeed + project._count.comments;
   const reposts = project._count.reposts;
   const daysAgo = Math.max(0, Math.floor((Date.now() - project.createdAt.getTime()) / DAY_MS));
+  const lastActivityMs = Math.max(project.createdAt.getTime(), lastActivityAt?.getTime() ?? 0);
+  const lastActivityDaysAgo = Math.max(0, Math.floor((Date.now() - lastActivityMs) / DAY_MS));
 
   return {
     id: project.id,
@@ -141,6 +148,8 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
     reposts,
     views: project.views,
     daysAgo,
+    lastActivityDaysAgo,
+    aiCommentsEnabled: project.aiCommentsEnabled,
     trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
   };
@@ -148,14 +157,36 @@ function toWork(project: ProjectWithAuthor, realReactionCounts?: Partial<Record<
 
 const authorInclude = { include: { _count: { select: { followedBy: true } } } } as const;
 
+// 「最終更新」= タイムライン投稿・コメント追加(Projectへの直接コメント、
+// および紐づくPostへのコメントの両方)のうち最も新しい日時。Comment は
+// projectId/postIdのどちらか一方だけが埋まるポリモーフィックな構造
+// (schema.prisma参照)なので、両経路をUNIONしてProjectごとに集計する。
+async function getLastActivityByProject(): Promise<Map<string, Date>> {
+  const rows = await prisma.$queryRaw<{ projectId: string; lastAt: Date }[]>`
+    SELECT projectId, MAX(createdAt) AS lastAt FROM (
+      SELECT projectId, createdAt FROM Post WHERE projectId IS NOT NULL
+      UNION ALL
+      SELECT projectId, createdAt FROM Comment WHERE projectId IS NOT NULL
+      UNION ALL
+      SELECT p.projectId AS projectId, c.createdAt AS createdAt
+      FROM Comment c
+      INNER JOIN Post p ON c.postId = p.id
+      WHERE p.projectId IS NOT NULL
+    ) AS activity
+    GROUP BY projectId
+  `;
+  return new Map(rows.map((r) => [r.projectId, r.lastAt]));
+}
+
 async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> {
-  const [projects, reactionRows] = await Promise.all([
+  const [projects, reactionRows, lastActivityByProject] = await Promise.all([
     prisma.project.findMany({
       where,
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.reaction.groupBy({ by: ["projectId", "type"], where: { projectId: { not: null } }, _count: { _all: true } }),
+    getLastActivityByProject(),
   ]);
 
   const countsByProject = new Map<string, Partial<Record<ReactionKey, number>>>();
@@ -166,7 +197,7 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
     countsByProject.set(row.projectId, entry);
   }
 
-  return projects.map((p) => toWork(p, countsByProject.get(p.id)));
+  return projects.map((p) => toWork(p, countsByProject.get(p.id), lastActivityByProject.get(p.id)));
 }
 
 export async function getWorks(): Promise<Work[]> {

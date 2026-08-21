@@ -65,7 +65,9 @@ export function WorkCard({
                 <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
               )}
             </p>
-            <p className="text-[11px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}</p>
+            <p className="text-[11px] text-[var(--ink-faint)]">
+              最終更新: {formatPostedAgo(work.lastActivityDaysAgo ?? work.daysAgo)}
+            </p>
           </div>
         </Link>
         {work.authorId !== currentUserId && (
