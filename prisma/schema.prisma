@@ -142,6 +142,9 @@ model Project {
   views       Int      @default(0)
   trendScore  Int      @default(0)
   createdAt   DateTime @default(now())
+  // AI(Draftly AI)による自動応援コメントのON/OFF。作者がプロダクト詳細
+  // ページのトグルで切り替える(ai-comment.ts参照)。
+  aiCommentsEnabled Boolean @default(true)
 
   // 表示用の起点カウント。実際のリアクションはReaction行として積み上がる想定だが、
   // 種類ごとに数百件のダミー行を作る必要が出るため、シード時点ではこの起点カウント

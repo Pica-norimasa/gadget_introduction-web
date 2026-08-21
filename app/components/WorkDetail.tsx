@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib/queries";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
+import { AiCommentsToggle } from "./AiCommentsToggle";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { CommentForm } from "./CommentForm";
 import { CommentThread } from "./CommentThread";
@@ -264,6 +265,12 @@ export function WorkDetail({
                   {work.authorId === currentUserId && (
                     <div className="mt-4">
                       <TimelinePostForm projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
+                    </div>
+                  )}
+
+                  {work.authorId === currentUserId && (
+                    <div className="mt-4">
+                      <AiCommentsToggle projectId={work.id} initialEnabled={work.aiCommentsEnabled ?? true} />
                     </div>
                   )}
 

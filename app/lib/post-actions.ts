@@ -99,6 +99,9 @@ export async function createPost(
 
   const type = inferPostType(body);
   let projectId: string | null = null;
+  // 新規Projectは常にaiCommentsEnabled: true(schemaのデフォルト)で
+  // 作られるため、既存Projectに投稿する場合だけそのProjectの設定を見る。
+  let aiCommentsEnabled = true;
 
   if (projectTarget === "new") {
     const project = await prisma.project.create({
@@ -124,6 +127,7 @@ export async function createPost(
     const project = await prisma.project.findUnique({ where: { id: projectTarget } });
     if (project && project.authorId === author.id) {
       projectId = project.id;
+      aiCommentsEnabled = project.aiCommentsEnabled;
     }
   }
 
@@ -154,7 +158,7 @@ export async function createPost(
     });
   }
 
-  if (projectId) {
+  if (projectId && aiCommentsEnabled) {
     // 制作タイムラインの投稿者は常にそのProjectの作者と同一(冒頭の
     // コメント参照)なので、projectAuthorIdはauthor.idでよい。応援コメント
     // 生成はレスポンスをブロックしたくない(将来LLM APIに差し替えたときの

@@ -129,3 +129,15 @@ export async function updateProject(
   revalidatePath("/");
   redirect(`/work/${projectId}`);
 }
+
+// EmailNotificationToggle.tsxと同じ、楽観トグルの裏側で呼ぶだけの最小構成。
+export async function setAiCommentsEnabled(projectId: string, enabled: boolean): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+  if (!project || project.authorId !== user.id) return;
+
+  await prisma.project.update({ where: { id: projectId }, data: { aiCommentsEnabled: enabled } });
+  revalidatePath(`/work/${projectId}`);
+}
