@@ -136,13 +136,17 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
           />
           <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
         </div>
+        {/* 投稿先の指定と投稿ボタンを、以前は別の行(mt-2で分けた2段)に
+            分けていたが、行間が詰まって見えて高さが揃っていないように
+            見えるという指摘が続いたため、同じ1行にまとめた(items-centerで
+            確実に同じ基準線に揃う)。狭い画面ではflex-wrapで自然に折り返す。 */}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="text-[11px] text-[var(--ink-faint)]">投稿先</span>
           <select
             name="projectTarget"
             value={projectTarget}
             onChange={(e) => setProjectTarget(e.target.value)}
-            className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
           >
             <option value="">💬 つぶやき</option>
             <option value="new">🆕 新しいプロジェクトとして</option>
@@ -158,28 +162,24 @@ export function PostComposer({ myProjects }: { myProjects: Work[] }) {
               name="newProjectTitle"
               placeholder="プロジェクト名(空欄なら投稿内容から自動生成)"
               maxLength={40}
-              className="min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 py-1.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+              className="h-8 min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
             />
           )}
-        </div>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <span
-            className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
+            className={`ml-auto inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
               trimmed ? "opacity-100" : "opacity-0"
             }`}
           >
             {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}っぽい投稿として判定
           </span>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
-            <button
-              type="submit"
-              disabled={(!trimmed && !imagePreview) || pending}
-              className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
-            >
-              {pending ? "投稿中…" : "投稿する"}
-            </button>
-          </div>
+          <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
+          <button
+            type="submit"
+            disabled={(!trimmed && !imagePreview) || pending}
+            className="h-8 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
+          >
+            {pending ? "投稿中…" : "投稿する"}
+          </button>
         </div>
         {state.error && <p className="mt-2 text-[12px] text-[var(--accent)]">{state.error}</p>}
       </form>

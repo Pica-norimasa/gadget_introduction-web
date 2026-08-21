@@ -24,7 +24,8 @@ export type Platform =
   | "Web"
   | "拡張機能"
   | "Unity"
-  | "Unreal Engine";
+  | "Unreal Engine"
+  | "その他";
 
 export type Work = {
   id: string;

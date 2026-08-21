@@ -20,17 +20,17 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
   return (
     <div className="flex items-center gap-3 rounded-lg px-2.5 py-2.5 hover:bg-[var(--bg-sunken)]">
       <span className="w-5 shrink-0 font-mono text-sm font-bold text-[var(--ink-faint)]">{rank}</span>
-      <a href={`#work-${work.id}`} className="w-10 shrink-0">
+      <Link href={`/work/${work.id}`} className="w-10 shrink-0">
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} compact />
         ) : (
           <WorkThumb hue={work.hue} glyph={work.glyph} compact />
         )}
-      </a>
+      </Link>
       <div className="min-w-0 flex-1">
-        <a href={`#work-${work.id}`} className="block truncate text-[13.5px] font-medium text-[var(--ink)] hover:underline">
+        <Link href={`/work/${work.id}`} className="block truncate text-[13.5px] font-medium text-[var(--ink)] hover:underline">
           {work.title}
-        </a>
+        </Link>
         <Link
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
           className="block truncate text-[12px] text-[var(--ink-faint)] hover:underline"
@@ -55,12 +55,12 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
         ・ {POST_TYPE_META[post.type].icon}
         {formatRelativeHours(post.hoursAgo)}・{POST_TYPE_META[post.type].label}
       </p>
-      <a href={`#work-${post.projectId}`} className="block">
+      <Link href={`/work/${post.projectId}`} className="block">
         <p className="text-[13.5px] text-[var(--ink)]">
           <span className="text-[var(--teal)]">{work.title}</span>
         </p>
         <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{post.body}</p>
-      </a>
+      </Link>
     </div>
   );
 }

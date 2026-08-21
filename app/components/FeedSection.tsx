@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Category, Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
+import type { Platform, Post, ReactionKey, Work } from "@/app/lib/mock-data";
 import type { InspirationSignalView, RepostView } from "@/app/lib/queries";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
@@ -13,18 +13,6 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "new", label: "新着" },
   { id: "trend", label: "急上昇" },
   { id: "recommend", label: "あなたへ" },
-];
-
-const CATEGORY_ORDER: Category[] = [
-  "Webアプリ",
-  "スマホアプリ",
-  "PCアプリ",
-  "ゲーム",
-  "AIツール",
-  "AI Agent",
-  "拡張機能",
-  "プロトタイプ",
-  "その他",
 ];
 
 const BATCH_SIZE = 6;
@@ -75,21 +63,10 @@ export function FeedSection({
   inspirations: InspirationSignalView[];
 }) {
   const [tab, setTab] = useState<Tab>("new");
-  const [categoryFilter, setCategoryFilter] = useState<Set<Category>>(new Set());
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const followedAuthors = useFollowedAuthors();
-
-  function toggleCategory(c: Category) {
-    setCategoryFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(c)) next.delete(c);
-      else next.add(c);
-      return next;
-    });
-    setLoadedCount(BATCH_SIZE);
-  }
 
   function togglePlatform(p: Platform) {
     setPlatformFilter((prev) => {
@@ -125,12 +102,9 @@ export function FeedSection({
   }, [tab, works, myReactions, followedAuthors, reposts, inspirations]);
 
   const visible = useMemo(() => {
-    return sorted.filter(
-      (w) =>
-        (categoryFilter.size === 0 || categoryFilter.has(w.category)) &&
-        (platformFilter.size === 0 || w.platforms.some((p) => platformFilter.has(p))),
-    );
-  }, [sorted, categoryFilter, platformFilter]);
+    if (platformFilter.size === 0) return sorted;
+    return sorted.filter((w) => w.platforms.some((p) => platformFilter.has(p)));
+  }, [sorted, platformFilter]);
 
   function selectTab(t: Tab) {
     setTab(t);
@@ -156,7 +130,6 @@ export function FeedSection({
   }, [visible.length]);
 
   const shown = visible.slice(0, loadedCount);
-  const hasFilters = categoryFilter.size > 0 || platformFilter.size > 0;
 
   return (
     <section id="feed" className="scroll-mt-24">
@@ -176,28 +149,6 @@ export function FeedSection({
             )}
           </button>
         ))}
-      </div>
-
-      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-[12px] text-[var(--ink-faint)]">カテゴリ</span>
-        {CATEGORY_ORDER.map((c) => {
-          const active = categoryFilter.has(c);
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => toggleCategory(c)}
-              aria-pressed={active}
-              className={`rounded-full border px-2.5 py-1 text-[12px] transition-colors ${
-                active
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                  : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-              }`}
-            >
-              {c}
-            </button>
-          );
-        })}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-1.5">
@@ -222,11 +173,10 @@ export function FeedSection({
             </button>
           );
         })}
-        {hasFilters && (
+        {platformFilter.size > 0 && (
           <button
             type="button"
             onClick={() => {
-              setCategoryFilter(new Set());
               setPlatformFilter(new Set());
               setLoadedCount(BATCH_SIZE);
             }}

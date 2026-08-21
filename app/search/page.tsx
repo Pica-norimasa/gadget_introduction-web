@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { AiTool, Category, Platform } from "@/app/lib/mock-data";
+import type { AiTool, Platform } from "@/app/lib/mock-data";
 import { getMyReactions, getPosts, searchStandalonePosts, searchWorks, type SearchFilters } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
@@ -8,17 +8,6 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
 
-const CATEGORIES: Category[] = [
-  "Webアプリ",
-  "スマホアプリ",
-  "PCアプリ",
-  "ゲーム",
-  "AIツール",
-  "AI Agent",
-  "拡張機能",
-  "プロトタイプ",
-  "その他",
-];
 const TOOL_OPTIONS: { value: AiTool; label: string }[] = [
   { value: "Claude", label: "Claude" },
   { value: "ChatGPT", label: "ChatGPT" },
@@ -30,22 +19,20 @@ const TOOL_OPTIONS: { value: AiTool; label: string }[] = [
   { value: "multiple", label: "複数のAIツール" },
 ];
 
-type RawSearchParams = { q?: string; category?: string; tool?: string; platform?: string };
+type RawSearchParams = { q?: string; tool?: string; platform?: string };
 
 function parseFilters(params: RawSearchParams): SearchFilters {
   return {
-    category: CATEGORIES.find((c) => c === params.category),
     tool: TOOL_OPTIONS.find((t) => t.value === params.tool)?.value,
     platform: PLATFORM_ORDER.find((p) => p === params.platform),
   };
 }
 
 // フィルタチップのhrefを組み立てる。同じ値を選び直したら解除(トグル)。
-function filterHref(params: RawSearchParams, key: "category" | "tool" | "platform", value: string): string {
+function filterHref(params: RawSearchParams, key: "tool" | "platform", value: string): string {
   const merged = { ...params, [key]: params[key] === value ? undefined : value };
   const usp = new URLSearchParams();
   if (merged.q) usp.set("q", merged.q);
-  if (merged.category) usp.set("category", merged.category);
   if (merged.tool) usp.set("tool", merged.tool);
   if (merged.platform) usp.set("platform", merged.platform);
   const qs = usp.toString();
@@ -70,7 +57,7 @@ export default async function SearchPage({
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
   const filters = parseFilters(params);
-  const hasFilters = Boolean(filters.category || filters.tool || filters.platform);
+  const hasFilters = Boolean(filters.tool || filters.platform);
 
   const [works, standalonePosts, posts, myReactions, currentUser] = await Promise.all([
     searchWorks(query, filters),
@@ -116,23 +103,6 @@ export default async function SearchPage({
             )}
           </summary>
           <div className="flex flex-col gap-2 pt-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[12px] text-[var(--ink-faint)]">カテゴリ</span>
-              {CATEGORIES.map((c) => (
-                <Link
-                  key={c}
-                  href={filterHref(params, "category", c)}
-                  aria-pressed={filters.category === c}
-                  className={`rounded-full border px-2.5 py-1 text-[12px] transition-colors ${
-                    filters.category === c
-                      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                      : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-                  }`}
-                >
-                  {c}
-                </Link>
-              ))}
-            </div>
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="mr-1 text-[12px] text-[var(--ink-faint)]">使用ツール</span>
               {TOOL_OPTIONS.map((t) => (
@@ -184,7 +154,7 @@ export default async function SearchPage({
 
         {!query && !hasFilters ? (
           <p className="rounded-2xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink-faint)]">
-            キーワードを入力するか、カテゴリ等の条件を選んで作品を探してみてください
+            キーワードを入力するか、使用ツール等の条件を選んで作品を探してみてください
           </p>
         ) : totalCount === 0 ? (
           <p className="rounded-2xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink-faint)]">

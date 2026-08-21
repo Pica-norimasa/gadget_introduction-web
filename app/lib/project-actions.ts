@@ -44,6 +44,7 @@ const PLATFORMS: Platform[] = [
   "拡張機能",
   "Unity",
   "Unreal Engine",
+  "その他",
 ];
 
 // 「公開中」に到達した作者のフォロワーへ一斉メール通知する。レスポンスを

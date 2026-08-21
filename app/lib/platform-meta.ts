@@ -5,6 +5,7 @@ import {
   AppleMark,
   ExtensionPuzzleMark,
   LinuxMark,
+  OtherMark,
   UnityMark,
   UnrealEngineMark,
   WebGlobeMark,
@@ -21,6 +22,7 @@ export const PLATFORM_META: Record<Platform, { label: string; Icon: ComponentTyp
   拡張機能: { label: "拡張機能", Icon: ExtensionPuzzleMark },
   Unity: { label: "Unity", Icon: UnityMark },
   "Unreal Engine": { label: "Unreal Engine", Icon: UnrealEngineMark },
+  その他: { label: "その他", Icon: OtherMark },
 };
 
 export const PLATFORM_ORDER: Platform[] = [
@@ -33,4 +35,5 @@ export const PLATFORM_ORDER: Platform[] = [
   "拡張機能",
   "Unity",
   "Unreal Engine",
+  "その他",
 ];

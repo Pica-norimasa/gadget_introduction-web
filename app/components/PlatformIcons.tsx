@@ -78,6 +78,29 @@ export function WebGlobeMark({ className }: IconProps) {
   );
 }
 
+// その他も特定ブランドが無いため、Web/拡張機能と同じ線画スタイルの
+// 汎用アイコン(Tabler Iconsの「dots」)にしている。
+export function OtherMark({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </svg>
+  );
+}
+
 export function ExtensionPuzzleMark({ className }: IconProps) {
   return (
     <svg
