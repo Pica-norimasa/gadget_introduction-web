@@ -75,8 +75,8 @@ export default async function Home() {
             ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
             Xからの初見の非ログインユーザーに一番見てほしい導線が埋もれて
             いた。ここに小さなピルボタンとして複製し、常時見える位置に出す
-            (lg以上はサイドバーに既にあるので重複させない)。投稿欄のすぐ下、
-            スワイプで発見の直前という並びにしている。 */}
+            (lg以上はサイドバーに既にあるので重複させない)。投稿欄のすぐ下に
+            置いている。 */}
         <div className="mx-auto max-w-[1180px] px-4 pt-3 pb-5 sm:px-6 lg:hidden">
           <Link
             href="/guide/build"
@@ -92,13 +92,13 @@ export default async function Home() {
 
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} />
         <StoriesStrip posts={posts} works={works} />
+        <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
         <HeroRail
           works={heroWorks}
           posts={posts}
           myReactions={myReactions}
           currentUserId={currentUser?.id ?? null}
         />
-        <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
 
         {/* サイドバー(ランキング・おすすめの作者等)はlg未満だとフィードの下に
             回り込む。フィードが無限スクロールで際限なく伸びるため、下まで

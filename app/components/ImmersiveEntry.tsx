@@ -16,22 +16,22 @@ export function ImmersiveEntry({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mx-auto max-w-[1180px] px-4 pt-4 sm:px-6">
+    <>
+      {/* 投稿ボタン(ComposerFab、右下固定)と対になる位置に、左下固定の
+          円形ボタンとして配置する。 */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
+        aria-label="スワイプで発見"
+        title="スワイプで発見"
+        className="fixed bottom-6 left-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-[var(--ink)] text-2xl text-[var(--bg)] shadow-lg shadow-[var(--shadow)] transition-transform hover:scale-105 active:scale-95"
       >
-        <span aria-hidden>🎬</span>
-        スワイプで発見
-        <span aria-hidden className="text-[var(--accent)]">
-          →
-        </span>
+        🎬
       </button>
 
       {open && (
         <ImmersiveViewer works={works} posts={posts} myReactions={myReactions} onClose={() => setOpen(false)} />
       )}
-    </div>
+    </>
   );
 }
