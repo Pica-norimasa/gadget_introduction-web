@@ -46,7 +46,17 @@ export function LinkifiedText({ text, className }: { text: string; className?: s
   );
 }
 
-function HashtagSegment({ text }: { text: string }) {
+// ExpandableText.tsx(WorkCardのカード説明文)からも同じ#タグ検出を再利用
+// するためexportしている。WorkCardはカード全体をstretched linkにしているため
+// (WorkCard.tsxのコメント参照)、その上でタグ単体をクリックできるように
+// linkClassNameで個別にz-20を足せるようにしてある。
+export function HashtagSegment({
+  text,
+  linkClassName = "text-[var(--accent)] hover:underline",
+}: {
+  text: string;
+  linkClassName?: string;
+}) {
   const parts = text.split(HASHTAG_PATTERN);
   if (parts.length === 1) return <>{text}</>;
 
@@ -54,11 +64,7 @@ function HashtagSegment({ text }: { text: string }) {
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <Link
-            key={i}
-            href={`/tag/${encodeURIComponent(part)}`}
-            className="text-[var(--accent)] hover:underline"
-          >
+          <Link key={i} href={`/tag/${encodeURIComponent(part)}`} className={linkClassName}>
             #{part}
           </Link>
         ) : (

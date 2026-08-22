@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
+import type { Post, ReactionKey, Work } from "@/app/lib/mock-data";
 import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib/queries";
-import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
+import { formatCount, formatPostedAgo } from "@/app/lib/format";
 import { AiCommentsToggle } from "./AiCommentsToggle";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { BookmarkButton } from "./BookmarkButton";
@@ -17,7 +17,7 @@ import { VerifiedBadge } from "./VerifiedBadge";
 import { PlatformBadges } from "./PlatformBadges";
 import { MoreActionsMenu } from "./MoreActionsMenu";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
-import { PostEditor } from "./PostEditor";
+import { ProjectTimelineList } from "./ProjectTimelineList";
 import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
 import { ShareButtons } from "./ShareButtons";
@@ -257,29 +257,7 @@ export function WorkDetail({
               label: "制作タイムライン",
               content: (
                 <div className="mb-6">
-                  <ol className="relative ml-2 border-l-2 border-[var(--line)] pl-5">
-                    {timeline.map((post) => (
-                      <li key={post.id} className="relative mb-5 last:mb-0">
-                        <span
-                          aria-hidden
-                          className="absolute -left-[22px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg)]"
-                          style={{ background: post.hoursAgo < 24 ? "var(--teal)" : "var(--ink-faint)" }}
-                        />
-                        <p className="mb-0.5 font-mono text-[11px] font-medium text-[var(--ink-faint)]">
-                          {POST_TYPE_META[post.type].icon} {POST_TYPE_META[post.type].label} ・{" "}
-                          {formatRelativeHours(post.hoursAgo)}
-                        </p>
-                        <PostEditor
-                          postId={post.id}
-                          body={post.body}
-                          imageUrl={post.imageUrl}
-                          youtubeUrl={post.youtubeUrl}
-                          isOwner={work.authorId === currentUserId}
-                          bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
-                        />
-                      </li>
-                    ))}
-                  </ol>
+                  <ProjectTimelineList timeline={timeline} isOwner={work.authorId === currentUserId} />
                   {work.authorId === currentUserId && (
                     <div className="mt-4">
                       <PostForm variant="timeline" projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
