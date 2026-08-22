@@ -7,7 +7,7 @@ import { AiCommentsToggle } from "./AiCommentsToggle";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { BookmarkButton } from "./BookmarkButton";
 import { CommentForm } from "./CommentForm";
-import { CommentThread } from "./CommentThread";
+import { CommentList } from "./CommentList";
 import { CoverImage } from "./CoverImage";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
@@ -289,23 +289,14 @@ export function WorkDetail({
               label: `コメント(${comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})`,
               content: (
                 <div className="mb-6">
-                  <div className="mb-4 flex flex-col gap-3.5">
-                    {comments.length === 0 ? (
-                      <p className="text-[13px] text-[var(--ink-faint)]">まだコメントはありません</p>
-                    ) : (
-                      comments.map((c) => (
-                        <CommentThread
-                          key={c.id}
-                          thread={c}
-                          target={{ type: "project", id: work.id }}
-                          currentUserId={currentUserId}
-                          isLoggedIn={isLoggedIn}
-                          guestCommentCount={guestCommentCount}
-                          contentAuthorId={work.authorId ?? ""}
-                        />
-                      ))
-                    )}
-                  </div>
+                  <CommentList
+                    comments={comments}
+                    target={{ type: "project", id: work.id }}
+                    currentUserId={currentUserId}
+                    isLoggedIn={isLoggedIn}
+                    guestCommentCount={guestCommentCount}
+                    contentAuthorId={work.authorId ?? ""}
+                  />
                   {blockedByAuthor ? (
                     <p className="text-[13px] text-[var(--ink-faint)]">
                       この作品の作者にブロックされているため、コメントできません

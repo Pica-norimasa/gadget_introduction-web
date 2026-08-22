@@ -182,21 +182,17 @@ export function WorkCard({
         <ExpandableText text={work.catch} />
 
         {latestPost && (
-          <div
-            className={`flex items-start gap-2 rounded-lg px-2.5 py-2 text-[11.5px] leading-snug ${
-              latestPost.hoursAgo < 24 ? "bg-[var(--teal-soft)]" : "bg-[var(--bg-sunken)]"
-            }`}
-          >
+          <p className="flex items-baseline gap-1.5 text-[11.5px] leading-snug">
             <span
               className={`shrink-0 font-mono font-medium ${
                 latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
               }`}
             >
               {POST_TYPE_META[latestPost.type].icon}
-              {formatRelativeHours(latestPost.hoursAgo)}・{POST_TYPE_META[latestPost.type].label}
+              {formatRelativeHours(latestPost.hoursAgo)}
             </span>
-            <span className="line-clamp-1 text-[var(--ink-soft)]">{latestPost.body}</span>
-          </div>
+            <span className="line-clamp-1 text-[var(--ink-faint)]">{latestPost.body}</span>
+          </p>
         )}
 
         <div className="mt-auto flex flex-col gap-2 pt-3">
