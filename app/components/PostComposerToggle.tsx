@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Work } from "@/app/lib/mock-data";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { openComposer, openComposerWithInspiration, useComposerOpen } from "@/app/lib/composer-store";
-import { PostComposer } from "./PostComposer";
+import { PostForm } from "./PostForm";
 
 // トップページを開いた瞬間から作品一覧を見せたいので、投稿フォームは
 // 常時表示せず、折りたたんだ状態のバーだけを最初に見せる。展開後は
@@ -82,7 +82,7 @@ export function PostComposerToggle({
   if (expanded) {
     return (
       <>
-        <PostComposer myProjects={myProjects} />
+        <PostForm variant="compose" myProjects={myProjects} />
         {guestNotice}
       </>
     );

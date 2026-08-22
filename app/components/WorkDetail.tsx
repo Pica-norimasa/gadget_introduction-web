@@ -24,7 +24,7 @@ import { ShareButtons } from "./ShareButtons";
 import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
 import { StandalonePostCard } from "./StandalonePostCard";
-import { TimelinePostForm } from "./TimelinePostForm";
+import { PostForm } from "./PostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkCard } from "./WorkCard";
 import { WorkMediaTabs } from "./WorkMediaTabs";
@@ -58,8 +58,8 @@ export function WorkDetail({
   isLoggedIn: boolean;
   // ログイン済みの場合は上限が無いので無視される。
   guestCommentCount: number;
-  // TimelinePostForm(作者本人にしか出ないが、その作者がゲストのことも
-  // ある)向け。同じくログイン済みの場合は無視される。
+  // PostForm(variant="timeline"、作者本人にしか出ないが、その作者が
+  // ゲストのこともある)向け。同じくログイン済みの場合は無視される。
   guestPostCount: number;
   inspiredItems: InspiredItem[];
   // 「この作品からインスパイアされた投稿」でProjectカード(WorkCard)を
@@ -282,7 +282,7 @@ export function WorkDetail({
                   </ol>
                   {work.authorId === currentUserId && (
                     <div className="mt-4">
-                      <TimelinePostForm projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
+                      <PostForm variant="timeline" projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
                     </div>
                   )}
 

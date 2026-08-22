@@ -19,7 +19,7 @@ const CATEGORIES = [
 ] as const;
 const STAGES = ["アイデア", "プロトタイプ", "ベータ", "公開中"] as const;
 const TOOL_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "アイデアのみ(ツール未定)" },
+  { value: "", label: "ツール未定" },
   { value: "self", label: "AIを使わず自作" },
   { value: "Claude", label: "Claude" },
   { value: "ChatGPT", label: "ChatGPT" },

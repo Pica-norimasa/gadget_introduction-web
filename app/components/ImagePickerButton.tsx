@@ -2,7 +2,7 @@
 
 import type { ChangeEvent, RefObject } from "react";
 
-// 投稿フォーム(PostComposer/TimelinePostForm/CommentForm)で共通の
+// 投稿フォーム(PostForm/CommentForm)で共通の
 // 画像選択ボタン+プレビュー。プレビュー用のblob URL状態は各フォーム側で
 // 持たせ(フォームのリセットタイミングで一緒にクリアする必要があるため)、
 // この部品自体は見た目だけを担当する。

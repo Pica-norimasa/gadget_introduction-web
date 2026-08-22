@@ -4,7 +4,7 @@ import { useState } from "react";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import { YouTubeCard } from "./YouTubeCard";
 
-// 投稿フォーム(PostComposer/TimelinePostForm)で共通のYouTube URL入力+
+// 投稿フォーム(PostForm)で共通のYouTube URL入力+
 // サムネイルのライブプレビュー。ImagePickerButton.tsxと同じく「押すと
 // 入力欄が現れる」形にして、普段は composer を圧迫しないようにしている。
 export function YouTubeUrlInput({ value, onChange }: { value: string; onChange: (value: string) => void }) {
