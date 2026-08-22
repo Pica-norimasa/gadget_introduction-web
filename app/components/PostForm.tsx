@@ -177,6 +177,7 @@ export function PostForm(props: PostFormProps) {
   const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
   const showProjectTarget = variant === "compose" && selectedType !== "question";
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
+  const createdHref = state.projectId ? `/work/${state.projectId}` : state.postId ? `/post/${state.postId}` : null;
 
   // timelineだけ、ゲスト投稿の上限に達した場合ログイン導線に差し替える
   // (createPost自体は上限を検証済みだが、UIとして残り件数が見えないと
@@ -352,6 +353,28 @@ export function PostForm(props: PostFormProps) {
         </button>
       </div>
       {state.error && <p className="mt-2 text-[12px] text-[var(--accent)]">{state.error}</p>}
+      {state.success && (
+        <div className="mt-3 rounded-xl border border-[var(--teal)] bg-[var(--teal-soft)] px-3 py-2">
+          <p className="text-[13px] font-medium text-[var(--teal)]">投稿しました</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {createdHref && (
+              <Link
+                href={createdHref}
+                className="rounded-full bg-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal-soft)]"
+              >
+                投稿を確認する
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() => textareaRef.current?.focus()}
+              className="rounded-full border border-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal)] hover:bg-[var(--bg-sunken)]/30"
+            >
+              もう1件投稿する
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 

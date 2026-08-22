@@ -14,7 +14,7 @@ import { isRateLimited } from "@/app/lib/rate-limit";
 import type { PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
-export type CreatePostState = { error?: string; success?: boolean; projectId?: string };
+export type CreatePostState = { error?: string; success?: boolean; projectId?: string; postId?: string };
 
 const POST_TYPES = ["idea", "making", "screenshot", "demo", "prototype", "release", "update", "question"] as const;
 
@@ -195,7 +195,7 @@ export async function createPost(
   revalidatePath("/");
   if (projectId) revalidatePath(`/work/${projectId}`);
   if (inspiredByProject) revalidatePath(`/work/${inspiredByProject.id}`);
-  return { success: true, projectId: projectId ?? undefined };
+  return { success: true, projectId: projectId ?? undefined, postId: post.id };
 }
 
 export type UpdatePostState = { error?: string; success?: boolean };
