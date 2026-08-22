@@ -24,6 +24,8 @@ import { ShareButtons } from "./ShareButtons";
 import { SiteHeader } from "./SiteHeader";
 import { StageBadge } from "./StageBadge";
 import { StandalonePostCard } from "./StandalonePostCard";
+import { TrackedExternalLink } from "./TrackedExternalLink";
+import { TrackedLink } from "./TrackedLink";
 import { PostForm } from "./PostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkCard } from "./WorkCard";
@@ -126,8 +128,10 @@ export function WorkDetail({
         </div>
 
         <div className="mb-5 flex items-center gap-2.5">
-          <Link
+          <TrackedLink
             href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
+            trackType="profile_click"
+            trackTarget={work.authorHandle ?? work.author}
             className="flex min-w-0 flex-1 items-center gap-2.5"
           >
             <AuthorAvatar name={work.author} image={work.authorImage} size={36} />
@@ -141,7 +145,7 @@ export function WorkDetail({
               </p>
               <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
             </div>
-          </Link>
+          </TrackedLink>
           {work.authorId !== currentUserId && (
             <FollowButton author={work.authorHandle ?? work.author} size="md" />
           )}
@@ -162,28 +166,26 @@ export function WorkDetail({
           {(work.appStoreUrl || work.googlePlayUrl) && (
             <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
               {work.appStoreUrl && (
-                <a
+                <TrackedExternalLink
                   href={work.appStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="external_link_appstore"
                   title="App Store"
-                  aria-label="App Store"
+                  ariaLabel="App Store"
                   className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
                 >
                   <AppleMark className="h-4 w-4" />
-                </a>
+                </TrackedExternalLink>
               )}
               {work.googlePlayUrl && (
-                <a
+                <TrackedExternalLink
                   href={work.googlePlayUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="external_link_googleplay"
                   title="Google Play"
-                  aria-label="Google Play"
+                  ariaLabel="Google Play"
                   className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
                 >
                   <AndroidMark className="h-4 w-4" />
-                </a>
+                </TrackedExternalLink>
               )}
             </div>
           )}
@@ -196,9 +198,9 @@ export function WorkDetail({
         <div className="mb-5 flex flex-wrap items-center gap-2.5">
           <StageBadge stage={work.stage} />
           {work.tool ? (
-            <Link href={`/tool/${work.tool}`}>
+            <TrackedLink href={`/tool/${work.tool}`} trackType="tool_badge_click" trackTarget={work.tool}>
               <ToolBadge tool={work.tool} />
-            </Link>
+            </TrackedLink>
           ) : (
             <ToolBadge tool={work.tool} />
           )}

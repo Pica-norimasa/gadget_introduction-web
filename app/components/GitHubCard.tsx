@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackClick } from "@/app/lib/analytics-actions";
 import { languageColor } from "@/app/lib/language-colors";
 import { GitHubMark } from "./BrandIcons";
 
@@ -55,6 +56,7 @@ export function GitHubCard({ githubUrl, size = "md" }: { githubUrl: string; size
         href={githubUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => void trackClick("external_link_github", window.location.pathname, githubUrl)}
         className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[var(--line)] bg-[var(--bg-sunken)] p-4 text-center ${shape}`}
       >
         <GitHubMark className="text-[var(--ink-faint)]" />
@@ -72,6 +74,7 @@ export function GitHubCard({ githubUrl, size = "md" }: { githubUrl: string; size
       href={data.htmlUrl}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => void trackClick("external_link_github", window.location.pathname, data.htmlUrl)}
       className={`flex flex-col justify-between gap-2 rounded-xl border border-white/10 p-4 text-left ${shape}`}
       style={{ background: "#161b22" }}
     >

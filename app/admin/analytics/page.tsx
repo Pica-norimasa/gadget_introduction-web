@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { isAdminAuthed } from "@/app/lib/admin-auth";
 import { getDailyVisitStats, getTopLandingPaths, getTrafficByReferrer } from "@/app/lib/cloudflare-analytics";
+import { getClickEventCounts } from "@/app/lib/click-analytics";
 import { getActivationStats, getDailyFunnelStats, getRetentionStats } from "@/app/lib/product-funnel";
 import { AdminLoginForm } from "@/app/components/AdminLoginForm";
 import { AdminLogoutButton } from "@/app/components/AdminLogoutButton";
@@ -9,6 +10,19 @@ import { AdminNav } from "@/app/components/AdminNav";
 // 運営専用ページ(管理画面・ログイン・設定)は「新規ユーザーを連れてくる
 // ページ」の分析対象外なので、流入ページランキングからは除外する。
 const NON_CONTENT_PATH_PREFIXES = ["/admin", "/login", "/settings", "/api"];
+
+const CLICK_EVENT_LABELS: Record<string, string> = {
+  share_line: "SNS共有(LINE)",
+  share_x: "SNS共有(X)",
+  share_copy_link: "SNS共有(リンクコピー)",
+  external_link_github: "外部リンク(GitHub)",
+  external_link_appstore: "外部リンク(App Store)",
+  external_link_googleplay: "外部リンク(Google Play)",
+  work_card_click: "作品カードクリック",
+  profile_click: "作者プロフィールクリック",
+  tool_badge_click: "ツールバッジクリック",
+  platform_badge_click: "対応環境バッジクリック",
+};
 
 export const metadata: Metadata = { title: "アクセス状況 | Draftly Admin" };
 
@@ -48,10 +62,11 @@ export default async function AdminAnalyticsPage() {
   } catch (e) {
     loadError = e instanceof Error ? e.message : "取得に失敗しました";
   }
-  const [funnel, activation, retention] = await Promise.all([
+  const [funnel, activation, retention, clickEvents] = await Promise.all([
     getDailyFunnelStats(30),
     getActivationStats(),
     getRetentionStats(),
+    getClickEventCounts(7),
   ]);
   const contentTopPaths = topPaths
     .filter((p) => !NON_CONTENT_PATH_PREFIXES.some((prefix) => p.path.startsWith(prefix)))
@@ -198,6 +213,39 @@ export default async function AdminAnalyticsPage() {
                   Google Search Console(検索クエリ・表示回数・掲載順位)は未連携です。連携すると「どんな検索語で表示されているか」が分かるようになります。
                 </p>
               </div>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="mb-2 text-[13px] font-bold text-[var(--ink)]">クリックイベント(過去7日間)</h2>
+              {clickEvents.length === 0 ? (
+                <p className="text-[12px] text-[var(--ink-faint)]">データがありません</p>
+              ) : (
+                <div className="max-w-[420px] overflow-x-auto rounded-xl border border-[var(--line)]">
+                  <table className="w-full text-left text-[13px]">
+                    <thead>
+                      <tr className="border-b border-[var(--line)] text-[12px] text-[var(--ink-faint)]">
+                        <th className="px-3 py-2 font-medium">種別</th>
+                        <th className="px-3 py-2 font-medium tabular-nums">件数</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clickEvents.map((e) => (
+                        <tr key={e.type} className="border-b border-[var(--line)] last:border-0">
+                          <td className="px-3 py-2 text-[var(--ink)]">{CLICK_EVENT_LABELS[e.type] ?? e.type}</td>
+                          <td className="px-3 py-2 tabular-nums text-[var(--ink)]">
+                            {e.count.toLocaleString("ja-JP")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="mt-2 text-[11px] text-[var(--ink-faint)]">
+                ※ 作品カード・作者プロフィール・ツール/対応環境バッジ・SNS共有・外部リンク(GitHub/App
+                Store/Google Play)のクリックを計測中。「作品カードクリック」はpath(どのページで押されたか)と
+                合わせて見ると、関連作品タブ・ランキング・ホームフィード等どこからの流入が効いているか分かります。
+              </p>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-[var(--line)]">

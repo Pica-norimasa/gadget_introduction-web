@@ -65,6 +65,7 @@ model User {
   comments       Comment[]
   reposts        Repost[]
   bookmarks      Bookmark[]
+  analyticsEvents AnalyticsEvent[]
   following      Follow[]   @relation("Follower")
   followedBy     Follow[]   @relation("Following")
 
@@ -308,6 +309,26 @@ model Bookmark {
   @@unique([projectId, userId])
   @@unique([postId, userId])
   @@index([userId])
+}
+
+// SNS共有・外部リンクなどのクリック計測用(app/lib/analytics-actions.ts)。
+// 計測のためだけに匿名訪問者のゲストUser行を新規作成したくないので、
+// userIdは意図的にnullable(既存ユーザーなら紐付け、未ログインならnullのまま)。
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  // "share_line" | "share_x" | "share_copy_link" |
+  // "external_link_github" | "external_link_appstore" | "external_link_googleplay"
+  type      String
+  // クリックが発生したページのpathname
+  path      String
+  // クリック先URL等(あれば)
+  target    String?
+  createdAt DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([type, createdAt])
 }
 
 model Notification {

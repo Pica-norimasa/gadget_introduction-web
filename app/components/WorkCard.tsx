@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
@@ -15,6 +14,7 @@ import { ReactionBar } from "./ReactionBar";
 import { RepostButton } from "./RepostButton";
 import { StageBadge } from "./StageBadge";
 import { ToolBadge } from "./ToolBadge";
+import { TrackedLink } from "./TrackedLink";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { WorkThumb } from "./WorkThumb";
 import { YouTubeCard } from "./YouTubeCard";
@@ -52,11 +52,19 @@ export function WorkCard({
       {/* カード全体を詳細ページへのリンクにする(stretched link)。上に重なる
           FollowButton/ReactionBar/GitHubCardリンク/続きを読むボタンだけは
           relative z-20を付けて個別にクリックできるようにしている。 */}
-      <Link href={`/work/${work.id}`} aria-label={work.title} className="absolute inset-0 z-10" />
+      <TrackedLink
+        href={`/work/${work.id}`}
+        trackType="work_card_click"
+        trackTarget={work.id}
+        ariaLabel={work.title}
+        className="absolute inset-0 z-10"
+      />
 
       <div className="mb-3 flex items-center gap-2">
-        <Link
+        <TrackedLink
           href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
+          trackType="profile_click"
+          trackTarget={work.authorHandle ?? work.author}
           className="relative z-20 flex min-w-0 flex-1 items-center gap-2"
         >
           <AuthorAvatar name={work.author} image={work.authorImage} />
@@ -72,7 +80,7 @@ export function WorkCard({
               最終更新: {formatPostedAgo(work.lastActivityDaysAgo ?? work.daysAgo)}
             </p>
           </div>
-        </Link>
+        </TrackedLink>
         {work.authorId !== currentUserId && (
           <div className="relative z-20">
             <FollowButton author={work.authorHandle ?? work.author} />

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { Platform } from "@/app/lib/mock-data";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
+import { TrackedLink } from "./TrackedLink";
 
 // WorkCard.tsxではカード全体がstretched linkになっているため、各アイコンを
 // クリックできるようにするにはrelative z-20が要る(WorkCard.tsxの
@@ -12,14 +12,16 @@ export function PlatformBadges({ platforms }: { platforms: Platform[] }) {
       {platforms.map((p) => {
         const { Icon, label } = PLATFORM_META[p];
         return (
-          <Link
+          <TrackedLink
             key={p}
             href={`/platform/${encodeURIComponent(p)}`}
+            trackType="platform_badge_click"
+            trackTarget={p}
             title={label}
             className="relative z-20 grid h-5 w-5 place-items-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] text-[var(--ink-soft)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
             <Icon className="h-3 w-3" />
-          </Link>
+          </TrackedLink>
         );
       })}
     </span>

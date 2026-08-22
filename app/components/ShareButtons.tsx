@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { trackClick } from "@/app/lib/analytics-actions";
 
 export function ShareButtons({ title }: { title: string }) {
   const [url, setUrl] = useState("");
@@ -27,6 +28,7 @@ export function ShareButtons({ title }: { title: string }) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
+      void trackClick("share_copy_link", window.location.pathname, url);
     } catch {
       // クリップボードAPIが使えない環境では何もしない(アドレスバーから手動コピー可能)
     }
@@ -38,6 +40,7 @@ export function ShareButtons({ title }: { title: string }) {
         href={lineHref}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => void trackClick("share_line", window.location.pathname, url)}
         className="inline-flex items-center gap-1.5 rounded-full bg-[#06C755] px-3 py-1.5 text-[12.5px] font-medium text-white"
       >
         LINEで送る
@@ -46,6 +49,7 @@ export function ShareButtons({ title }: { title: string }) {
         href={xHref}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => void trackClick("share_x", window.location.pathname, url)}
         className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--bg)]"
       >
         Xでポスト
