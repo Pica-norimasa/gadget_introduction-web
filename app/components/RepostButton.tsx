@@ -78,7 +78,7 @@ export function RepostButton({
   const reposted = useHasReposted(projectId);
   const [choosing, setChoosing] = useState(false);
   const [composing, setComposing] = useState(false);
-  const padding = size === "md" ? "px-3 py-1.5 text-[13px]" : "px-2 py-1 text-[11px]";
+  const padding = size === "md" ? "px-3 py-1.5 text-[13px]" : "px-2.5 py-1 text-[11px]";
 
   function handleClick() {
     if (reposted) {
@@ -99,17 +99,18 @@ export function RepostButton({
       <button
         type="button"
         aria-pressed={reposted}
-        aria-label="紹介"
-        title="紹介"
+        aria-label={reposted ? "紹介を取り消す" : "紹介する"}
+        title={reposted ? "紹介中" : "紹介する"}
         onClick={handleClick}
-        className={`inline-flex w-fit items-center gap-1 rounded-full border font-mono transition-all active:scale-90 ${padding} ${
+        className={`inline-flex w-fit items-center gap-1 rounded-full border transition-all active:scale-90 ${padding} ${
           reposted
             ? "border-[var(--teal)] bg-[var(--teal-soft)] text-[var(--teal)]"
             : "border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
         }`}
       >
         <span aria-hidden>🔁</span>
-        {count}
+        <span className="font-medium">{reposted ? "紹介中" : "紹介"}</span>
+        <span className="font-mono text-[0.95em] opacity-80">{count}</span>
       </button>
 
       {choosing && (
