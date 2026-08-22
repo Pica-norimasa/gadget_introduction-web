@@ -213,7 +213,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               </div>
               <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2">
                 <p className="font-mono text-lg font-semibold text-[var(--ink)]">{profile.repostedWorks.length}</p>
-                <p className="text-[11px] text-[var(--ink-faint)]">リポスト</p>
+                <p className="text-[11px] text-[var(--ink-faint)]">紹介</p>
               </div>
             </div>
 
@@ -251,7 +251,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
 
         <ProfileTabs
           postedLabel={`投稿した作品(${profile.works.length})`}
-          repostedLabel={`リポストした作品(${profile.repostedWorks.length})`}
+          repostedLabel={`紹介した作品(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
           followingLabel={`フォロー中(${followingList.length})`}
           bookmarkedLabel={`ブックマーク(${bookmarkedWorks.length})`}
@@ -277,7 +277,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           }
           repostedContent={
             profile.repostedWorks.length === 0 ? (
-              <p className="text-[13px] text-[var(--ink-faint)]">まだリポストした作品はありません</p>
+              <p className="text-[13px] text-[var(--ink-faint)]">まだ紹介した作品はありません</p>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {profile.repostedWorks.map((work) => (

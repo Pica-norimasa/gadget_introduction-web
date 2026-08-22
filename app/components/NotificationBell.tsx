@@ -126,7 +126,7 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     n.type === "comment"
       ? `が「${n.projectTitle}」にコメントしました`
       : n.type === "repost"
-        ? `が「${n.projectTitle}」をリポストしました`
+        ? `が「${n.projectTitle}」を紹介しました`
         : `が「${n.projectTitle}」に${REACTION_META.find((m) => m.key === n.reactionType)?.icon ?? ""}リアクションしました`;
   // コメント通知だけコメントタブを開いた状態で遷移させる。リポスト/
   // リアクションは制作タイムライン(既定のタブ)を見せたいのでそのまま。

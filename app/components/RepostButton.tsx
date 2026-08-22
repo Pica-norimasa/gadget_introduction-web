@@ -28,7 +28,7 @@ function QuoteComposeForm({ projectId, onDone }: { projectId: string; onDone: ()
         maxLength={200}
         rows={2}
         autoFocus
-        placeholder="コメントを添えてリポスト"
+        placeholder="コメントを添えて紹介"
         className="w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
       />
       <div className="flex items-center justify-between gap-2">
@@ -46,7 +46,7 @@ function QuoteComposeForm({ projectId, onDone }: { projectId: string; onDone: ()
             disabled={pending || !comment.trim()}
             className="rounded-full bg-[var(--accent)] px-3 py-1 text-[12px] font-medium text-[var(--accent-ink)] disabled:opacity-40"
           >
-            {pending ? "投稿中…" : "引用リポスト"}
+            {pending ? "投稿中…" : "コメント付き紹介"}
           </button>
         </div>
       </div>
@@ -99,8 +99,8 @@ export function RepostButton({
       <button
         type="button"
         aria-pressed={reposted}
-        aria-label="リポスト"
-        title="リポスト"
+        aria-label="紹介"
+        title="紹介"
         onClick={handleClick}
         className={`inline-flex w-fit items-center gap-1 rounded-full border font-mono transition-all active:scale-90 ${padding} ${
           reposted
@@ -122,7 +122,7 @@ export function RepostButton({
             }}
             className="rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
           >
-            🔁 そのままリポスト
+            🔁 そのまま紹介
           </button>
           <button
             type="button"
@@ -132,7 +132,7 @@ export function RepostButton({
             }}
             className="rounded-full border border-[var(--line)] px-3 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
           >
-            💬 コメントを付けて引用
+            💬 コメント付きで紹介
           </button>
         </div>
       )}

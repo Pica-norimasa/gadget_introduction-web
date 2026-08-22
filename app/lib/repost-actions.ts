@@ -65,7 +65,7 @@ export async function quoteRepost(
   if (!existing) {
     const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
     if (!project) return { error: "作品が見つかりません" };
-    if (await isBlockedBy(project.authorId, user.id)) return { error: "このリポストはできません" };
+    if (await isBlockedBy(project.authorId, user.id)) return { error: "この作品は紹介できません" };
   }
 
   await prisma.repost.upsert({

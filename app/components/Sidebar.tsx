@@ -76,7 +76,7 @@ function RepostRow({ repost, work }: { repost: RepostView; work: Work }) {
         >
           {repost.userName}
         </Link>
-        さんが{repost.comment ? "引用リポスト" : "リポスト"} ・ {formatRelativeHours(repost.hoursAgo)}
+        さんが{repost.comment ? "コメント付き紹介" : "紹介"} ・ {formatRelativeHours(repost.hoursAgo)}
       </p>
       <Link href={`/work/${work.id}`} className="block">
         {repost.comment && (
@@ -341,7 +341,7 @@ export function Sidebar({
         </h3>
         {followedFeed.length === 0 ? (
           <p className="px-2 py-3 text-[12.5px] text-[var(--ink-faint)]">
-            気になる作者をフォローすると、ここに投稿やリポストが届きます
+            気になる作者をフォローすると、ここに投稿や紹介が届きます
           </p>
         ) : (
           <div className="flex flex-col divide-y divide-[var(--line)]">
