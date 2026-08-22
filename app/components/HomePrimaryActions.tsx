@@ -22,7 +22,7 @@ export function HomePrimaryActions() {
           探
         </span>
         <span className="min-w-0">
-          <span className="block text-[11px] font-medium text-[var(--accent)]">見るだけなら</span>
+          <span className="mb-0.5 block text-[11px] font-medium text-[var(--accent)]">見るだけなら</span>
           <span className="block text-[13px] font-bold">作品を探す</span>
           <span className="block text-[11px] text-[var(--ink-faint)]">新着・急上昇から眺める</span>
         </span>
@@ -40,7 +40,7 @@ export function HomePrimaryActions() {
           投
         </span>
         <span className="min-w-0">
-          <span className="block text-[11px] font-medium text-[var(--teal)]">作っているなら</span>
+          <span className="mb-0.5 block text-[11px] font-medium text-[var(--teal)]">作っているなら</span>
           <span className="block text-[13px] font-bold">投稿する</span>
           <span className="block text-[11px] text-[var(--ink-faint)]">つぶやき・アイデアを残す</span>
         </span>
@@ -54,7 +54,7 @@ export function HomePrimaryActions() {
           学
         </span>
         <span className="min-w-0">
-          <span className="block text-[11px] font-medium text-[var(--violet)]">これから作るなら</span>
+          <span className="mb-0.5 block text-[11px] font-medium text-[var(--violet)]">これから作るなら</span>
           <span className="block text-[13px] font-bold">作り方を見る</span>
           <span className="block text-[11px] text-[var(--ink-faint)]">最初の一本までの流れ</span>
         </span>
