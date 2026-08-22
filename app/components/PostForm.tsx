@@ -300,7 +300,7 @@ export function PostForm(props: PostFormProps) {
       />
       {variant === "compose" && selectedType === "question" && (
         <p className="mt-2 text-[12px] text-[var(--ink-faint)]">
-          つぶやきは作品に紐づけず、タイムラインに投稿されます
+          つぶやきは作品に紐づけず、つぶやきタイムラインに投稿されます
         </p>
       )}
       {showProjectTarget && (

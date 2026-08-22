@@ -23,7 +23,12 @@ export function MurmurStrip({
 
   return (
     <div id="murmurs" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-[54px] sm:px-6">
-      <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">つぶやき</p>
+      <div className="mb-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
+          つぶやきタイムライン
+        </p>
+        <p className="mt-1 text-[12px] text-[var(--ink-faint)]">作品に紐づかない、気軽な投稿が流れます。</p>
+      </div>
       <HorizontalScroller className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
         {posts.map((post) => (
           <div
