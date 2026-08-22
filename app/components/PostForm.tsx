@@ -202,7 +202,7 @@ export function PostForm(props: PostFormProps) {
       className={`rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] ${variant === "compose" ? "p-4" : "p-3"}`}
     >
       {variant === "timeline" && <input type="hidden" name="projectTarget" value={props.projectId} />}
-      {selectedType && <input type="hidden" name="postType" value={selectedType} />}
+      {variant === "compose" && selectedType && <input type="hidden" name="postType" value={selectedType} />}
       {variant === "compose" && inspiredBy && (
         <div className="mb-2 flex items-center gap-1.5">
           <input type="hidden" name="inspiredByProjectId" value={inspiredBy.id} />
@@ -224,35 +224,53 @@ export function PostForm(props: PostFormProps) {
           🔓 ログインなしでもあと{guestRemaining}件投稿できます(ログインすると無制限に投稿できます)
         </p>
       )}
-      <div className="mb-3">
-        <p className="mb-1.5 text-[12px] font-medium text-[var(--ink-soft)]">何を投稿しますか?</p>
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-          {promptOptions.map((option) => {
-            const active = selectedType === option.type;
-            return (
-              <button
-                key={option.type}
-                type="button"
-                aria-pressed={active}
-                onClick={() => {
-                  setSelectedType(option.type);
-                  textareaRef.current?.focus();
-                }}
-                className={`min-h-14 rounded-xl border px-3 py-2 text-left transition-colors ${
-                  active
-                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                    : "border-[var(--line)] bg-[var(--bg-sunken)]/35 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-                }`}
-              >
-                <span className="block text-[12px] font-bold">
-                  {POST_TYPE_META[option.type].icon} {option.title}
-                </span>
-                <span className="block text-[11px] opacity-75">{option.hint}</span>
-              </button>
-            );
-          })}
+      {variant === "compose" ? (
+        <div className="mb-3">
+          <p className="mb-1.5 text-[12px] font-medium text-[var(--ink-soft)]">何を投稿しますか?</p>
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {promptOptions.map((option) => {
+              const active = selectedType === option.type;
+              return (
+                <button
+                  key={option.type}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setSelectedType(option.type);
+                    textareaRef.current?.focus();
+                  }}
+                  className={`min-h-14 rounded-xl border px-3 py-2 text-left transition-colors ${
+                    active
+                      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                      : "border-[var(--line)] bg-[var(--bg-sunken)]/35 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+                  }`}
+                >
+                  <span className="block text-[12px] font-bold">
+                    {POST_TYPE_META[option.type].icon} {option.title}
+                  </span>
+                  <span className="block text-[11px] opacity-75">{option.hint}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-[11px] text-[var(--ink-faint)]">種類</span>
+          <select
+            name="postType"
+            value={selectedType}
+            onChange={(event) => setSelectedType(event.target.value as PostType)}
+            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+          >
+            {promptOptions.map((option) => (
+              <option key={option.type} value={option.type}>
+                {POST_TYPE_META[option.type].icon} {option.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <textarea
         ref={textareaRef}
         name="body"
