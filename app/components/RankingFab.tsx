@@ -12,7 +12,7 @@ const CLASS_NAME =
 export function RankingFab() {
   const pathname = usePathname();
 
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname.startsWith("/u/")) return null;
 
   return (
     <Link href="/ranking" aria-label="ランキングを見る" title="ランキング" className={CLASS_NAME}>

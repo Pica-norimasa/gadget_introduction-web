@@ -16,6 +16,8 @@ const CLASS_NAME =
 export function ComposerFab() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/u/")) return null;
+
   if (pathname === "/") {
     return (
       <button

@@ -126,77 +126,81 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           ← ホームに戻る
         </Link>
 
-        <div className="mb-8 flex items-start gap-3">
-          {isOwnProfile ? (
-            <AvatarEditor name={profile.displayName} image={profile.image} size={56} />
-          ) : (
-            <AuthorAvatar name={profile.displayName} image={profile.image} size={56} />
-          )}
-          <div className="min-w-0 flex-1">
+        <div className="mb-8">
+          <div className="flex items-start gap-3">
             {isOwnProfile ? (
-              <DisplayNameEditor name={profile.displayName} />
+              <AvatarEditor name={profile.displayName} image={profile.image} size={56} />
             ) : (
-              <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
-                {profile.displayName}
-              </h1>
+              <AuthorAvatar name={profile.displayName} image={profile.image} size={56} />
             )}
-            <p className="truncate text-[13px] text-[var(--ink-faint)]">@{profile.name}</p>
-            {(profile.githubUsername || profile.xUsername) && (
-              <p className="mt-0.5 flex items-center gap-2.5">
-                {profile.githubUsername && (
-                  <a
-                    href={`https://github.com/${profile.githubUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`GitHub: @${profile.githubUsername}`}
-                    className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
-                  >
-                    <GitHubMark />@{profile.githubUsername}
-                  </a>
-                )}
-                {profile.xUsername && (
-                  <a
-                    href={`https://x.com/${profile.xUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`X: @${profile.xUsername}`}
-                    className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
-                  >
-                    <XMark />@{profile.xUsername}
-                  </a>
-                )}
+            <div className="min-w-0 flex-1">
+              {isOwnProfile ? (
+                <DisplayNameEditor name={profile.displayName} />
+              ) : (
+                <h1 className="truncate font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">
+                  {profile.displayName}
+                </h1>
+              )}
+              <p className="truncate text-[13px] text-[var(--ink-faint)]">@{profile.name}</p>
+              {(profile.githubUsername || profile.xUsername) && (
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  {profile.githubUsername && (
+                    <a
+                      href={`https://github.com/${profile.githubUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`GitHub: @${profile.githubUsername}`}
+                      className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
+                    >
+                      <GitHubMark />@{profile.githubUsername}
+                    </a>
+                  )}
+                  {profile.xUsername && (
+                    <a
+                      href={`https://x.com/${profile.xUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`X: @${profile.xUsername}`}
+                      className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)] hover:underline"
+                    >
+                      <XMark />@{profile.xUsername}
+                    </a>
+                  )}
+                </p>
+              )}
+              <p className="text-[13px] text-[var(--ink-faint)]">
+                フォロワー{profile.followers} ・ フォロー中{profile.following}
               </p>
+            </div>
+            {isOwnProfile ? (
+              <Link
+                href="/settings"
+                title="設定"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
+              >
+                ⚙️
+              </Link>
+            ) : (
+              <div className="flex shrink-0 items-center gap-1">
+                <FollowButton author={profile.name} size="md" />
+                <MoreActionsMenu
+                  reportTarget={{ type: "user", id: profile.id }}
+                  author={{ id: profile.id, name: profile.name }}
+                />
+              </div>
             )}
-            <p className="text-[13px] text-[var(--ink-faint)]">
-              フォロワー{profile.followers} ・ フォロー中{profile.following}
-            </p>
+          </div>
+          <div className="mt-3 sm:ml-[68px]">
             {isOwnProfile ? (
               <BioEditor bio={profile.bio} />
             ) : (
               profile.bio && (
-                <p className="mt-1 whitespace-pre-line text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+                <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
                   {profile.bio}
                 </p>
               )
             )}
           </div>
-          {isOwnProfile ? (
-            <Link
-              href="/settings"
-              title="設定"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)] hover:text-[var(--ink-soft)]"
-            >
-              ⚙️
-            </Link>
-          ) : (
-            <div className="flex items-center gap-1">
-              <FollowButton author={profile.name} size="md" />
-              <MoreActionsMenu
-                reportTarget={{ type: "user", id: profile.id }}
-                author={{ id: profile.id, name: profile.name }}
-              />
-            </div>
-          )}
         </div>
 
         <div className="mb-8 grid gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 lg:grid-cols-[1fr_320px]">
