@@ -51,8 +51,10 @@ export function PostForm(props: PostFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // composer-store(インスパイア元)はホームの投稿欄限定の概念。
-  const inspiredBy = variant === "compose" ? useInspiredBy() : null;
+  // composer-store(インスパイア元)はホームの投稿欄限定の概念。Hookは
+  // variantにかかわらず同じ順序で呼び、timelineでは値だけを使わない。
+  const storedInspiredBy = useInspiredBy();
+  const inspiredBy = variant === "compose" ? storedInspiredBy : null;
 
   // 行数固定だと複数行書きたい時に窮屈なので、内容に合わせて高さを伸ばす。
   function autoGrow(el: HTMLTextAreaElement) {
