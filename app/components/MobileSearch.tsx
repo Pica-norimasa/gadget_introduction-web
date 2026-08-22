@@ -44,9 +44,9 @@ export function MobileSearch({ defaultQuery }: { defaultQuery?: string }) {
       type="button"
       aria-label="検索"
       onClick={() => setOpen(true)}
-      className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[var(--line)] px-3 text-[12px] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
+      className="inline-flex h-9 min-w-[78px] shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 text-[12px] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
     >
-      <span aria-hidden className="text-[15px] leading-none">
+      <span aria-hidden className="text-[18px] leading-none">
         ⌕
       </span>
       <span>検索</span>
