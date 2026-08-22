@@ -58,10 +58,11 @@ function RankedGrid({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {works.map((work, index) => (
-        <div key={work.id} className="relative">
-          <span className="absolute left-3 top-3 z-20 rounded-full border border-white/10 bg-black/65 px-2.5 py-1 font-mono text-[12px] font-semibold text-white shadow-[0_4px_16px_var(--shadow)]">
-            #{index + 1}
-          </span>
+        <div key={work.id} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 px-1">
+            <span className="font-mono text-[13px] font-semibold text-[var(--accent)]">#{index + 1}</span>
+            <span className="h-px flex-1 bg-[var(--line)]" />
+          </div>
           <WorkCard
             work={work}
             posts={posts}
