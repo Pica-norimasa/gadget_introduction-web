@@ -142,7 +142,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
   return (
     <>
       <div className="mx-auto max-w-[1180px] px-4 pt-6 sm:px-6">
-        <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">
+        <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
           フォロー中ユーザー
         </p>
         <HorizontalScroller className="flex gap-4 overflow-x-auto pb-1 [scrollbar-width:thin]">
