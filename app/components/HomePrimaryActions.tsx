@@ -9,7 +9,7 @@ function scrollTo(id: string) {
 
 export function HomePrimaryActions() {
   return (
-    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+    <div className="mt-4 grid gap-2 sm:grid-cols-3" aria-label="最初にできること">
       <a
         href="#feed"
         onClick={(event) => {
@@ -22,8 +22,9 @@ export function HomePrimaryActions() {
           探
         </span>
         <span className="min-w-0">
+          <span className="block text-[11px] font-medium text-[var(--accent)]">見るだけなら</span>
           <span className="block text-[13px] font-bold">作品を探す</span>
-          <span className="block text-[11px] text-[var(--ink-faint)]">新着・急上昇をすぐ見る</span>
+          <span className="block text-[11px] text-[var(--ink-faint)]">新着・急上昇から眺める</span>
         </span>
       </a>
 
@@ -39,8 +40,9 @@ export function HomePrimaryActions() {
           投
         </span>
         <span className="min-w-0">
+          <span className="block text-[11px] font-medium text-[var(--teal)]">作っているなら</span>
           <span className="block text-[13px] font-bold">投稿する</span>
-          <span className="block text-[11px] text-[var(--ink-faint)]">思いつきを残す</span>
+          <span className="block text-[11px] text-[var(--ink-faint)]">つぶやき・アイデアを残す</span>
         </span>
       </button>
 
@@ -52,8 +54,9 @@ export function HomePrimaryActions() {
           学
         </span>
         <span className="min-w-0">
+          <span className="block text-[11px] font-medium text-[var(--violet)]">これから作るなら</span>
           <span className="block text-[13px] font-bold">作り方を見る</span>
-          <span className="block text-[11px] text-[var(--ink-faint)]">公開までの流れを確認</span>
+          <span className="block text-[11px] text-[var(--ink-faint)]">最初の一本までの流れ</span>
         </span>
       </Link>
     </div>

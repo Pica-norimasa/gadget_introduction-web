@@ -85,7 +85,7 @@ export default async function Home() {
             個人開発者が作った面白いサービス・アプリ・ゲームを発見しよう
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-soft)]">
-            見つける、投稿する、作り方を知る。まずやりたいことから始められます。
+            見るだけでも、作りかけを残すだけでも大丈夫。気になる作品を探すところから始められます。
           </p>
           <HomePrimaryActions />
         </div>
