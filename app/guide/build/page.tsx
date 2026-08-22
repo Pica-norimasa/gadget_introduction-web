@@ -39,6 +39,13 @@ export default function BuildGuidePage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← ホームに戻る
+        </Link>
+
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">
           プロダクト作りの始め方
         </h1>
