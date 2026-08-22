@@ -4,6 +4,7 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { HorizontalScroller } from "./HorizontalScroller";
 import { LikeButton } from "./LikeButton";
+import { OpenComposerButton } from "./OpenComposerButton";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -35,12 +36,7 @@ export function MurmurStrip({
         <div className="flex items-center gap-2 text-[11px] text-[var(--ink-faint)]">
           <span className="rounded-full border border-[var(--line)] px-2 py-1">{posts.length}件</span>
           <span className="hidden sm:inline">横にスクロールできます</span>
-          <Link
-            href="/#composer"
-            className="rounded-full border border-[var(--line)] px-3 py-1 text-[var(--ink-soft)] hover:border-[var(--accent)]"
-          >
-            つぶやく
-          </Link>
+          <OpenComposerButton />
         </div>
       </div>
       <HorizontalScroller className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
