@@ -242,7 +242,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                 type="button"
                 aria-label="前へ"
                 onClick={prev}
-                className="absolute left-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/30 text-white"
+                className="absolute left-2 top-[42%] z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/30 text-white"
               >
                 ‹
               </button>
@@ -251,24 +251,24 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
               type="button"
               aria-label="次へ"
               onClick={next}
-              className="absolute right-2 top-1/2 z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/30 text-white"
+              className="absolute right-2 top-[42%] z-10 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-black/30 text-white"
             >
               ›
             </button>
 
-            <div className="flex min-h-0 flex-1 items-center justify-center px-4 pb-2 pt-20">
-              <div className="w-full overflow-hidden rounded-2xl bg-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-sm">
-                <div className="aspect-[4/3] w-full">{storyVisual(currentEntry.work)}</div>
+            <div className="px-4 pb-2 pt-20">
+              <div className="h-[clamp(140px,28vh,220px)] w-full overflow-hidden rounded-2xl bg-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+                {storyVisual(currentEntry.work)}
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 p-4 pt-1">
+            <div className="mt-auto flex flex-col gap-3 p-4 pt-1">
               <div className="rounded-xl bg-[var(--bg)]/90 p-3 backdrop-blur-sm">
-                <p className="mb-1 text-[11px] text-[var(--ink-faint)]">
+                <p className="mb-1 line-clamp-2 text-[11px] leading-snug text-[var(--ink-faint)]">
                   {POST_TYPE_META[currentEntry.post.type].icon} {formatRelativeHours(currentEntry.post.hoursAgo)}・
                   {POST_TYPE_META[currentEntry.post.type].label}・{currentEntry.work.title}
                 </p>
-                <p className="text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
+                <p className="line-clamp-6 text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
                   {currentEntry.post.body}
                 </p>
                 <a
