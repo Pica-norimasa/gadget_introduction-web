@@ -63,7 +63,7 @@ export function ProfileTabs({
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`relative shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors ${
+            className={`relative shrink-0 whitespace-nowrap px-2.5 py-2 text-[13px] font-medium transition-colors sm:px-3 sm:text-sm ${
               tab === t.id ? "text-[var(--ink)]" : "text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
             }`}
           >

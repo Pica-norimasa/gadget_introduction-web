@@ -254,11 +254,11 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
         {isOwnProfile && <AuthorStats works={profile.works} />}
 
         <ProfileTabs
-          postedLabel={`投稿した作品(${profile.works.length})`}
-          repostedLabel={`紹介した作品(${profile.repostedWorks.length})`}
+          postedLabel={`作品(${profile.works.length})`}
+          repostedLabel={`紹介(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
-          followingLabel={`フォロー中(${followingList.length})`}
-          bookmarkedLabel={`ブックマーク(${bookmarkedWorks.length})`}
+          followingLabel={`フォロー(${followingList.length})`}
+          bookmarkedLabel={`保存(${bookmarkedWorks.length})`}
           showBlockedTab={isOwnProfile}
           showBookmarksTab={isOwnProfile}
           postedContent={
