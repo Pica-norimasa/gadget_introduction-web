@@ -26,7 +26,7 @@ export function IdentityBadge({
   // 表示名の変更はDisplayNameEditor(プロフィールページ)で行う。ここは
   // 純粋にプロフィールへのリンク兼表示。
   return (
-    <div className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--line)] pl-2.5 pr-3 py-1">
+    <div className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--line)] pl-2.5 pr-3">
       {handle ? (
         <Link
           href={`/u/${encodeURIComponent(handle)}`}
