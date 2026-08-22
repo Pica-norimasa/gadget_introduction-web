@@ -215,7 +215,7 @@ export function FeedSection({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {shown.map((w) => (
               <WorkCard
                 key={w.id}
