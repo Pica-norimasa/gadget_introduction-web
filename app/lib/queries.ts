@@ -252,6 +252,34 @@ export async function searchWorks(query: string, filters: SearchFilters = {}): P
   });
 }
 
+// sitemap.ts専用。件数分だけ返せればよいので、getWorksWhere()のような
+// リアクション集計・ブックマーク判定込みの重い読み込みはせず、
+// id/createdAtだけの軽量な問い合わせにする。
+export async function getSitemapProjectIds(): Promise<{ id: string; createdAt: Date }[]> {
+  return prisma.project.findMany({ select: { id: true, createdAt: true }, orderBy: { createdAt: "desc" } });
+}
+
+// プロジェクトに紐づかない単独投稿(つぶやき)のみ。プロジェクト紐づきの
+// タイムライン投稿は/work/[id]側に集約されて表示されるため、単独のURLとして
+// クロールさせる意味があるのはこちらだけ。
+export async function getSitemapStandalonePostIds(): Promise<{ id: string; createdAt: Date }[]> {
+  return prisma.post.findMany({
+    where: { projectId: null },
+    select: { id: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+// 退会済み(deletedAt非null)ユーザーのプロフィールは中身が空になっている
+// ため対象外。GitHub/Xで実際にサインアップしたユーザーのみ(匿名ゲストや
+// シードデータのプロフィールは検索エンジンに載せる価値が薄いため除外)。
+export async function getSitemapUserNames(): Promise<{ name: string; createdAt: Date }[]> {
+  return prisma.user.findMany({
+    where: { email: { not: null }, deletedAt: null },
+    select: { name: true, createdAt: true },
+  });
+}
+
 export type UserProfile = {
   id: string;
   name: string;
