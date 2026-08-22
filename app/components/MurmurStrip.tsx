@@ -62,16 +62,13 @@ export function MurmurStrip({
               {post.body && (
                 <p className="line-clamp-3 text-[13px] leading-relaxed text-[var(--ink)]">{post.body}</p>
               )}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-faint)]">
-                  💬 つぶやき
-                </span>
-                {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+              {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">
                     🌱 {post.inspiredByProjectTitle}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
               {post.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
                 <img src={post.imageUrl} alt="" className="h-20 w-full rounded-lg object-cover" />
