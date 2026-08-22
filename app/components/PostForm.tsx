@@ -356,23 +356,14 @@ export function PostForm(props: PostFormProps) {
       {state.success && (
         <div className="mt-3 rounded-xl border border-[var(--teal)] bg-[var(--teal-soft)] px-3 py-2">
           <p className="text-[13px] font-medium text-[var(--teal)]">投稿しました</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {createdHref && (
-              <Link
-                href={createdHref}
-                className="rounded-full bg-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal-soft)]"
-              >
-                投稿を確認する
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={() => textareaRef.current?.focus()}
-              className="rounded-full border border-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal)] hover:bg-[var(--bg-sunken)]/30"
+          {createdHref && (
+            <Link
+              href={createdHref}
+              className="mt-2 inline-flex rounded-full bg-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal-soft)]"
             >
-              もう1件投稿する
-            </button>
-          </div>
+              投稿を確認する
+            </Link>
+          )}
         </div>
       )}
     </form>
