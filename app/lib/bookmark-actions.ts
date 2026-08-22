@@ -22,6 +22,15 @@ export async function toggleBookmark(target: { type: "project" | "post"; id: str
   if (existing) {
     await prisma.bookmark.delete({ where: { id: existing.id } });
   } else {
+    // 削除済みの作品/投稿IDが渡された場合(古い画面が残っていた等)に
+    // FK制約エラーでクラッシュしないよう、他のトグル系アクション
+    // (reaction-actions.ts、repost-actions.ts)と同じく存在確認してから作る。
+    const exists =
+      target.type === "project"
+        ? await prisma.project.findUnique({ where: { id: target.id }, select: { id: true } })
+        : await prisma.post.findUnique({ where: { id: target.id }, select: { id: true } });
+    if (!exists) return;
+
     await prisma.bookmark.create({
       data: {
         userId: user.id,

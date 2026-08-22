@@ -193,3 +193,47 @@ export async function setAiCommentsEnabled(projectId: string, enabled: boolean):
   await prisma.project.update({ where: { id: projectId }, data: { aiCommentsEnabled: enabled } });
   revalidatePath(`/work/${projectId}`);
 }
+
+export type DeleteProjectState = { error?: string };
+
+// 作品の完全削除。schema.prismaのFK制約はほとんどON DELETE SET NULLに
+// なっている(Post.projectId等)ため、何もせずprisma.project.delete()だけ
+// 呼ぶと、タイムライン投稿が孤立したつぶやきとして残ったり、コメント/
+// リアクション/ブックマーク/通知/通報が対象を失ったまま残ってしまう
+// (実際にマイグレーションSQLを確認して判明)。Repost.projectIdだけは
+// ON DELETE RESTRICTなので、先に消さないとdelete自体が失敗する。
+// そのため、依存する行を子→親の順に明示的に消してから最後にProject本体を
+// 消す。inspiredByProjectId(このProjectを「インスパイア元」として参照する
+// 他人の投稿)だけはON DELETE SET NULLのままでよい(投稿自体は無関係な
+// コンテンツなので消さず、参照だけ外れれば十分)。
+export async function deleteProject(
+  _prevState: DeleteProjectState,
+  formData: FormData,
+): Promise<DeleteProjectState> {
+  const projectId = String(formData.get("projectId") ?? "");
+  if (!projectId) return { error: "作品が見つかりません" };
+
+  const user = await getCurrentUser();
+  if (!user) return { error: "権限がありません" };
+
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { authorId: true } });
+  if (!project || project.authorId !== user.id) return { error: "権限がありません" };
+
+  const posts = await prisma.post.findMany({ where: { projectId }, select: { id: true } });
+  const postIds = posts.map((p) => p.id);
+  const postOr = postIds.length > 0 ? [{ postId: { in: postIds } }] : [];
+
+  await prisma.$transaction([
+    prisma.comment.deleteMany({ where: { OR: [{ projectId }, ...postOr] } }),
+    prisma.reaction.deleteMany({ where: { OR: [{ projectId }, ...postOr] } }),
+    prisma.bookmark.deleteMany({ where: { OR: [{ projectId }, ...postOr] } }),
+    prisma.notification.deleteMany({ where: { OR: [{ projectId }, { sourceProjectId: projectId }, ...postOr] } }),
+    prisma.report.deleteMany({ where: { OR: [{ projectId }, ...postOr] } }),
+    prisma.repost.deleteMany({ where: { projectId } }),
+    prisma.post.deleteMany({ where: { projectId } }),
+    prisma.project.delete({ where: { id: projectId } }),
+  ]);
+
+  revalidatePath("/");
+  redirect("/");
+}

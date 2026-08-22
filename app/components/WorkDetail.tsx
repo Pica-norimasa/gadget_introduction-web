@@ -9,6 +9,7 @@ import { BookmarkButton } from "./BookmarkButton";
 import { CommentForm } from "./CommentForm";
 import { CommentList } from "./CommentList";
 import { CoverImage } from "./CoverImage";
+import { DeleteProjectButton } from "./DeleteProjectButton";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { LinkifiedText } from "./LinkifiedText";
@@ -126,6 +127,12 @@ export function WorkDetail({
             />
           )}
         </div>
+
+        {work.authorId === currentUserId && (
+          <div className="mb-5 flex justify-end">
+            <DeleteProjectButton projectId={work.id} />
+          </div>
+        )}
 
         <div className="mb-5 flex items-center gap-2.5">
           <TrackedLink
