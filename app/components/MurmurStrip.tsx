@@ -23,11 +23,25 @@ export function MurmurStrip({
 
   return (
     <div id="murmurs" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-[54px] sm:px-6">
-      <div className="mb-2">
-        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
-          つぶやきタイムライン
-        </p>
-        <p className="mt-1 text-[12px] text-[var(--ink-faint)]">作品に紐づかない、気軽な投稿が流れます。</p>
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
+            つぶやきタイムライン
+          </p>
+          <p className="mt-1 text-[12px] text-[var(--ink-faint)]">
+            作品に紐づかない、気軽な投稿が新しい順に流れます。
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-[var(--ink-faint)]">
+          <span className="rounded-full border border-[var(--line)] px-2 py-1">{posts.length}件</span>
+          <span className="hidden sm:inline">横にスクロールできます</span>
+          <Link
+            href="/#composer"
+            className="rounded-full border border-[var(--line)] px-3 py-1 text-[var(--ink-soft)] hover:border-[var(--accent)]"
+          >
+            つぶやく
+          </Link>
+        </div>
       </div>
       <HorizontalScroller className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:thin]">
         {posts.map((post) => (
@@ -52,16 +66,21 @@ export function MurmurStrip({
               {post.body && (
                 <p className="line-clamp-3 text-[13px] leading-relaxed text-[var(--ink)]">{post.body}</p>
               )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex rounded-full border border-[var(--line)] px-2 py-0.5 text-[11px] text-[var(--ink-faint)]">
+                  💬 つぶやき
+                </span>
+                {post.inspiredByProjectId && post.inspiredByProjectTitle && (
+                  <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">
+                    🌱 {post.inspiredByProjectTitle}
+                  </span>
+                )}
+              </div>
               {post.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
                 <img src={post.imageUrl} alt="" className="h-20 w-full rounded-lg object-cover" />
               )}
               {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} />}
-              {post.inspiredByProjectId && post.inspiredByProjectTitle && (
-                <span className="inline-flex max-w-full items-center gap-1 truncate self-start rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">
-                  🌱 {post.inspiredByProjectTitle}
-                </span>
-              )}
             </Link>
             <div className="mt-auto flex items-center gap-3">
               <LikeButton postId={post.id} liked={likedPostIds.has(post.id)} count={post.likesCount} />
