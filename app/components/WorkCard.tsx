@@ -1,4 +1,4 @@
-import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
+import { type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
@@ -184,16 +184,15 @@ export function WorkCard({
         </div>
 
         {latestPost && (
-          <p className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2 text-[11.5px] leading-snug">
+          <p className="rounded-full border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-1.5 text-[11.5px] leading-snug">
             <span
               className={`mr-1.5 font-mono font-medium ${
                 latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
               }`}
             >
-              {POST_TYPE_META[latestPost.type].icon}
               {formatRelativeHours(latestPost.hoursAgo)}
             </span>
-            <span className="text-[var(--ink-faint)]">{latestPost.body}</span>
+            <span className="text-[var(--ink-faint)]">制作タイムライン最終更新</span>
           </p>
         )}
 
