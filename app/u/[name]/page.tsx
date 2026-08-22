@@ -10,8 +10,11 @@ import {
   getPosts,
   getStandalonePostsByAuthor,
   getUserProfile,
+  type UserProfile,
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
+import { TOOL_META } from "@/app/lib/tool-meta";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { AuthorStats } from "@/app/components/AuthorStats";
 import { AvatarEditor } from "@/app/components/AvatarEditor";
@@ -23,6 +26,7 @@ import { FollowButton } from "@/app/components/FollowButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { MutedBlockedList } from "@/app/components/MutedBlockedList";
 import { ProfileTabs } from "@/app/components/ProfileTabs";
+import { ShareButtons } from "@/app/components/ShareButtons";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
@@ -35,7 +39,47 @@ export async function generateMetadata({
   const { name } = await params;
   const profile = await getUserProfile(decodeURIComponent(name));
   if (!profile) return { title: "ユーザーが見つかりません | Draftly" };
-  return { title: `${profile.displayName} | Draftly` };
+
+  const title = profile.displayName;
+  const description = profile.bio || `${profile.displayName}さんがDraftlyに投稿した作品一覧`;
+
+  return {
+    title: `${title} | Draftly`,
+    description,
+    openGraph: { title, description, type: "profile", siteName: "Draftly" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
+
+// プロフィールを検索エンジン・SNS双方から辿れるようにする構造化データ
+// (schema.org/Person)。/work・/postと同じくSITE_URLで絶対URLを組み立てる。
+function profileJsonLd(profile: UserProfile) {
+  const sameAs = [
+    profile.githubUsername ? `https://github.com/${profile.githubUsername}` : null,
+    profile.xUsername ? `https://x.com/${profile.xUsername}` : null,
+  ].filter((url): url is string => !!url);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile.displayName,
+    url: `${SITE_URL}/u/${encodeURIComponent(profile.name)}`,
+    ...(profile.image ? { image: profile.image } : {}),
+    ...(profile.bio ? { description: profile.bio } : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+  };
+}
+
+// 訪問者に「何で作っている人か」を一目で伝える公開向けの集計
+// (AuthorStats.tsxは「自分にだけ表示」の非公開分析なので別物)。
+// 新規クエリ不要、既に取得済みのworksをその場で集計するだけ。
+function topTools(works: UserProfile["works"], limit = 3): (keyof typeof TOOL_META)[] {
+  const counts = new Map<keyof typeof TOOL_META, number>();
+  for (const w of works) {
+    if (!w.tool) continue;
+    counts.set(w.tool, (counts.get(w.tool) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([tool]) => tool);
 }
 
 export default async function UserProfilePage({ params }: { params: Promise<{ name: string }> }) {
@@ -60,9 +104,14 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
   const [mutedUsers, blockedUsers, bookmarkedWorks] = isOwnProfile
     ? await Promise.all([getMutedUsers(), getBlockedUsers(), getMyBookmarkedWorks()])
     : [[], [], []];
+  const featuredTools = topTools(profile.works);
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd(profile)) }}
+      />
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
@@ -144,6 +193,26 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               />
             </div>
           )}
+        </div>
+
+        {featuredTools.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-1.5">
+            <span className="text-[12px] text-[var(--ink-faint)]">よく使うツール:</span>
+            {featuredTools.map((tool) => (
+              <Link
+                key={tool}
+                href={`/tool/${tool}`}
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-0.5 text-[11px] font-mono text-[var(--ink-soft)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              >
+                {TOOL_META[tool].label}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+          <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">このプロフィールを共有</p>
+          <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
         </div>
 
         {isOwnProfile && <AuthorStats works={profile.works} />}
