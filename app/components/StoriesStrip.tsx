@@ -271,13 +271,16 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
                 <p className="line-clamp-6 text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
                   {currentEntry.post.body}
                 </p>
-                <a
-                  href={`#work-${currentEntry.post.projectId}`}
+                <p className="mt-2 text-[11px] text-[var(--ink-faint)]">
+                  全文は作品ページの制作タイムラインで読めます
+                </p>
+                <Link
+                  href={`/work/${currentEntry.post.projectId}`}
                   onClick={close}
                   className="mt-2 inline-flex items-center gap-1 rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12px] font-medium text-[var(--bg)]"
                 >
-                  作品を見る →
-                </a>
+                  続きを読む →
+                </Link>
               </div>
             </div>
           </div>

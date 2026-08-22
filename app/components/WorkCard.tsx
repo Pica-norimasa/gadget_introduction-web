@@ -199,7 +199,7 @@ export function WorkCard({
         <div className="flex flex-col gap-2 pt-3">
           <div className="relative z-20 flex flex-wrap items-center gap-2">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
-            <RepostButton projectId={work.id} count={work.reposts} />
+            <RepostButton projectId={work.id} />
             <BookmarkButton target={{ type: "project", id: work.id }} bookmarked={work.bookmarked ?? false} className="ml-auto" />
           </div>
         </div>

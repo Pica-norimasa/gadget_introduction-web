@@ -252,7 +252,7 @@ export function WorkDetail({
             ) : (
               <>
                 <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
-                <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+                <RepostButton projectId={work.id} size="md" allowQuote />
               </>
             )}
             <Link

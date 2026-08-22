@@ -66,12 +66,10 @@ function QuoteComposeForm({ projectId, onDone }: { projectId: string; onDone: ()
 // 通常のリポストになる(元の挙動のまま)。
 export function RepostButton({
   projectId,
-  count,
   size = "sm",
   allowQuote = false,
 }: {
   projectId: string;
-  count: number;
   size?: "sm" | "md";
   allowQuote?: boolean;
 }) {
@@ -110,7 +108,6 @@ export function RepostButton({
       >
         <span aria-hidden>🔁</span>
         <span className="font-medium">{reposted ? "紹介中" : "紹介"}</span>
-        <span className="font-mono text-[0.95em] opacity-80">{count}</span>
       </button>
 
       {choosing && (
