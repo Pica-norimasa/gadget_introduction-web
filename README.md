@@ -1,33 +1,89 @@
-# gadget_introduction-web
+# Draftly
 
-「アイデアを、育てながら見せる場所」— AI創作物 作品発表プラットフォームの企画・プロトタイプ。
+「アイデアを、育てながら見せる場所」を掲げる、AI創作物・個人開発作品の発表プラットフォームです。作品そのものだけでなく、アイデア、制作過程、更新、公開までの活動を投稿・共有できます。
 
-- 企画書: [docs/plan.html](docs/plan.html)
-- 再設計企画書v2(創作活動そのものを投稿する案、批判的評価つき): [docs/plan-v2.html](docs/plan-v2.html)
-- トップページUIモック: `app/page.tsx`（モックデータのみ、バックエンド連携なし。DBは用意したがアプリからはまだ未接続）
-- 今後の技術的な宿題: [docs/todo.md](docs/todo.md)
+## 主な機能
 
-## 開発
+- 作品の作成・編集・削除、画像・GitHub・YouTube・ストアURLの掲載
+- アイデアや制作記録を投稿するタイムラインと、作品に紐づけない単独投稿
+- 作品・投稿へのリアクション、コメントと1階層の返信、リポスト、ブックマーク
+- フォロー、通知、検索、人気順・新着順のランキング、タグ・ツール・対応プラットフォーム別の閲覧
+- GitHub / X (Twitter) / Google / LINE によるログインと、匿名ゲストセッションの併用
+- プロフィール編集、メールアドレス確認、通知設定、ミュート・ブロック・通報
+- 管理画面での通報・ユーザー・クリック分析の確認
+- Open Graph画像、sitemap、robots.txt、プライバシーポリシー・利用規約
+
+企画の背景と画面構成は [docs/plan.html](docs/plan.html)、再設計案は [docs/plan-v2.html](docs/plan-v2.html) を参照してください。未完了の技術課題は [docs/todo.md](docs/todo.md) に記録しています。
+
+## 技術構成
+
+- Next.js 16 / React 19 / TypeScript
+- Prisma 7 + MySQL（AWS RDSを想定）
+- Auth.js（OAuth）
+- AWS S3（投稿・コメント画像。ローカル開発では `public/uploads` にフォールバック）
+- Docker（Next.js standalone出力）+ AWS App Runner / ECR / CodeBuild
+
+## ローカル開発
+
+Node.js 22系と、接続可能なMySQLデータベースが必要です。現在のPrismaスキーマはMySQL専用のため、SQLiteでは起動できません。
 
 ```bash
 npm install
+Copy-Item .env.example .env
+```
+
+`.env` の `DATABASE_URL` を開発用MySQLへ設定します。OAuthログインや管理画面、画像アップロードを試す場合は、必要な環境変数も `.env.example` を参考に設定してください。秘密情報をコミットしないでください。
+
+```bash
+npm run db:migrate
+npm run db:seed
 npm run dev
 ```
 
-http://localhost:3000 を開く。
+ブラウザで http://localhost:3000 を開きます。
 
-## DB(Prisma)
-
-開発中はSQLite、本番はAWS RDS(MySQL)を想定。`app/lib/mock-data.ts`の内容を
-そのままDBに投入できるシードスクリプトを用意している。
+利用可能な主なコマンド:
 
 ```bash
-npm run db:migrate   # ローカルSQLiteにスキーマを反映
-npm run db:seed      # mock-data.tsの内容を投入
-npm run db:studio    # ブラウザでDBの中身を確認
+npm run lint       # ESLint
+npm run build      # 本番ビルド
+npm run start      # ビルド済みアプリを起動
+npm run db:migrate # Prismaマイグレーションを開発DBへ反映
+npm run db:seed    # 開発データを投入
+npm run db:studio  # Prisma Studioを開く
+npm run db:up      # 開発用RDSを起動
+npm run db:down    # 開発用RDSを停止
 ```
 
-本番(MySQL)へ切り替える際は `prisma/schema.prisma` の `datasource.provider` を
-`"mysql"` にし、`app/lib/prisma.ts` のアダプタを `@prisma/adapter-mariadb` 等の
-MySQL用アダプタに差し替える。アプリのコンポーネント側はまだ`mock-data.ts`を
-直接読んでおり、Prisma経由には未接続([docs/todo.md](docs/todo.md)参照)。
+`npm run build` はDBへ到達できる環境で実行してください。また、`next dev` と `next build` を同時に実行すると `.next` を競合させることがあるため、ビルド検証後は開発サーバーを再起動してください。
+
+## 環境変数
+
+最低限必要なのは `DATABASE_URL` です。設定例と説明は [.env.example](.env.example) にあります。
+
+| 変数 | 用途 |
+| --- | --- |
+| `DATABASE_URL` | MySQL接続文字列 |
+| `AUTH_SECRET` | Auth.jsのJWT署名用シークレット |
+| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | GitHub OAuth |
+| `AUTH_TWITTER_ID` / `AUTH_TWITTER_SECRET` | X OAuth |
+| `GITHUB_TOKEN` | GitHubリポジトリプレビュー取得のレート制限緩和（任意） |
+| `ADMIN_KEY` | `/admin` の管理画面用合言葉 |
+| `S3_BUCKET_NAME` / `AWS_REGION` / `S3_PUBLIC_URL_BASE` | S3画像保存・配信設定（任意） |
+| `AUTH_URL` | App Runnerなどプロキシ配下の本番URL。OAuthのコールバックURLをHTTPSで固定するため本番では設定 |
+
+Google / LINE OAuthを有効にする場合も、各プロバイダーのAuth.js環境変数を設定し、コールバックURLを `/api/auth/callback/<provider>` に登録してください。
+
+## 本番デプロイ
+
+Dockerイメージは [Dockerfile](Dockerfile) でビルドします。`next.config.ts` は `output: "standalone"` を有効にしており、App Runnerでの実行を想定しています。[buildspec.yml](buildspec.yml) はCodeBuildからECRへイメージをpushする設定です。
+
+本番では次を設定します。
+
+- MySQL（RDS）へマイグレーションを適用し、`DATABASE_URL` をシークレットとして注入する
+- `AUTH_SECRET`、OAuthのcredentials、必要に応じて `GITHUB_TOKEN` をシークレットとして注入する
+- App Runnerのヘルスチェックを `/api/health` に設定する
+- App Runner環境では `AUTH_URL` に公開HTTPS URLを設定する
+- アップロードを使う場合はS3バケットと、書き込み権限を持つ実行ロールを設定する
+
+`/api/health` はDBへ接続せず、アプリケーションプロセスが応答できるかだけを確認します。
