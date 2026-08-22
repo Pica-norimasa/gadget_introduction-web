@@ -262,7 +262,7 @@ export function PostForm(props: PostFormProps) {
       {variant === "compose" ? (
         <div className="mb-3">
           <p className="mb-1.5 text-[12px] font-medium text-[var(--ink-soft)]">何を投稿しますか?</p>
-          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0">
             {promptOptions.map((option) => {
               const active = selectedType === option.type;
               return (
@@ -275,7 +275,7 @@ export function PostForm(props: PostFormProps) {
                     if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
-                  className={`min-h-14 rounded-xl border px-3 py-2 text-left transition-colors ${
+                  className={`min-h-11 shrink-0 rounded-full border px-3 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
                     active
                       ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
                       : "border-[var(--line)] bg-[var(--bg-sunken)]/35 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
@@ -284,7 +284,7 @@ export function PostForm(props: PostFormProps) {
                   <span className="block text-[12px] font-bold">
                     {POST_TYPE_META[option.type].icon} {option.title}
                   </span>
-                  <span className="block text-[11px] opacity-75">{option.hint}</span>
+                  <span className="hidden text-[11px] opacity-75 sm:block">{option.hint}</span>
                 </button>
               );
             })}
@@ -334,13 +334,13 @@ export function PostForm(props: PostFormProps) {
       )}
       {showProjectTarget && (
         <div className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/25 px-3 py-2">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
             <span className="text-[11px] text-[var(--ink-faint)]">作品</span>
             <select
               name="projectTarget"
               value={projectTarget}
               onChange={(e) => setProjectTarget(e.target.value)}
-              className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+              className="h-8 min-w-0 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none sm:min-w-fit"
             >
               <option value="new">🆕 新しい作品として投稿</option>
               {props.myProjects.map((p) => (
@@ -355,7 +355,7 @@ export function PostForm(props: PostFormProps) {
                 name="newProjectTitle"
                 placeholder="作品名(空欄なら投稿内容から自動生成)"
                 maxLength={40}
-                className="h-8 min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+                className="h-8 min-w-0 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)] sm:min-w-[180px] sm:flex-1"
               />
             )}
           </div>
@@ -372,7 +372,7 @@ export function PostForm(props: PostFormProps) {
           文字数が折り返しても、投稿ボタンだけ変な位置に流れないよう
           左右のグループに分ける。 */}
       <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <ImagePickerButton
             fileInputRef={fileInputRef}
             preview={imagePreview}
@@ -381,7 +381,7 @@ export function PostForm(props: PostFormProps) {
           />
           <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
         </div>
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <span
             className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
               trimmed ? "opacity-100" : "opacity-0"
