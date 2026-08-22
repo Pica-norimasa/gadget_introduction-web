@@ -7,8 +7,9 @@ import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { HorizontalScroller } from "./HorizontalScroller";
+import { WorkThumb } from "./WorkThumb";
 
-type StoryEntry = { post: Post; projectTitle: string };
+type StoryEntry = { post: Post; work: Work };
 type AuthorStory = {
   author: string;
   authorHandle: string;
@@ -37,7 +38,7 @@ function groupByAuthor(postsList: Post[], works: Work[]): AuthorStory[] {
       });
       order.push(work.authorHandle);
     }
-    map.get(work.authorHandle)!.entries.push({ post, projectTitle: work.title });
+    map.get(work.authorHandle)!.entries.push({ post, work });
   }
   return order.map((handle) => map.get(handle)!);
 }
@@ -138,6 +139,17 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
   // フォロー中の作者が誰もいない(≒新規訪問者の大半)ときは、見出しだけが
   // 中身の無いまま浮いて見えてしまうため、セクションごと非表示にする。
   if (stories.length === 0) return null;
+
+  function storyVisual(work: Work) {
+    if (work.coverImageUrl) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードの作品画像をそのまま表示する
+        <img src={work.coverImageUrl} alt="" className="h-full w-full object-cover" />
+      );
+    }
+
+    return <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size="lg" />;
+  }
 
   return (
     <>
@@ -244,14 +256,17 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
               ›
             </button>
 
-            <div className="mt-auto flex flex-col gap-3 p-4">
-              <span className="text-5xl" aria-hidden>
-                {current.glyph}
-              </span>
+            <div className="flex min-h-0 flex-1 items-center justify-center px-4 pb-2 pt-20">
+              <div className="w-full overflow-hidden rounded-2xl bg-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+                <div className="aspect-[4/3] w-full">{storyVisual(currentEntry.work)}</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 p-4 pt-1">
               <div className="rounded-xl bg-[var(--bg)]/90 p-3 backdrop-blur-sm">
                 <p className="mb-1 text-[11px] text-[var(--ink-faint)]">
                   {POST_TYPE_META[currentEntry.post.type].icon} {formatRelativeHours(currentEntry.post.hoursAgo)}・
-                  {POST_TYPE_META[currentEntry.post.type].label}・{currentEntry.projectTitle}
+                  {POST_TYPE_META[currentEntry.post.type].label}・{currentEntry.work.title}
                 </p>
                 <p className="text-[14.5px] font-medium leading-relaxed text-[var(--ink)]">
                   {currentEntry.post.body}
