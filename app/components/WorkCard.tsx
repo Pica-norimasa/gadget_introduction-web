@@ -171,7 +171,7 @@ export function WorkCard({
 
       <div className="flex flex-1 flex-col gap-3 pt-4">
         <div>
-          <h3 className="font-[family-name:var(--font-display)] text-[18px] font-bold leading-snug text-[var(--ink)] transition-colors group-hover:text-[var(--accent)]">
+          <h3 className="font-[family-name:var(--font-display)] text-[18px] font-bold leading-snug text-[var(--ink)] decoration-[var(--ink-faint)] decoration-1 underline-offset-4 transition-[text-decoration-color] group-hover:underline">
             {work.title}
           </h3>
           <ExpandableText text={work.catch} className="mt-1.5" />
