@@ -36,13 +36,13 @@ export function ShareButtons({ title }: { title: string }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <a
         href={lineHref}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => void trackClick("share_line", window.location.pathname, url)}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#06C755] px-3 py-1.5 text-[12.5px] font-medium text-white"
+        className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full bg-[#06C755] px-3 py-1.5 text-center text-[12.5px] font-medium text-white"
       >
         LINEで送る
       </a>
@@ -51,14 +51,14 @@ export function ShareButtons({ title }: { title: string }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => void trackClick("share_x", window.location.pathname, url)}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[var(--ink)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--bg)]"
+        className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full bg-[var(--ink)] px-3 py-1.5 text-center text-[12.5px] font-medium text-[var(--bg)]"
       >
         Xでポスト
       </a>
       <button
         type="button"
         onClick={copyLink}
-        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+        className="col-span-2 inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-[var(--line)] px-3 py-1.5 text-center text-[12.5px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
       >
         {copied ? "コピーしました" : "🔗 リンクをコピー"}
       </button>
