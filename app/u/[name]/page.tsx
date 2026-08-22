@@ -242,13 +242,22 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-3">
-            <p className="mb-1 text-[12px] font-medium text-[var(--ink-soft)]">このプロフィールを共有</p>
-            <p className="mb-3 text-[11px] leading-relaxed text-[var(--ink-faint)]">
-              気になる制作者を、SNSやチャットで紹介できます。
-            </p>
-            <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
-          </div>
+          <details className="group rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-3">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-medium text-[var(--ink-soft)] [&::-webkit-details-marker]:hidden">
+              <span>
+                このプロフィールを共有
+                <span className="mt-0.5 block text-[11px] font-normal text-[var(--ink-faint)]">
+                  LINE・X・リンクコピー
+                </span>
+              </span>
+              <span className="text-[var(--ink-faint)] transition-transform group-open:rotate-180" aria-hidden>
+                ⌄
+              </span>
+            </summary>
+            <div className="mt-3">
+              <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
+            </div>
+          </details>
         </div>
 
         {isOwnProfile && <AuthorStats works={profile.works} />}
