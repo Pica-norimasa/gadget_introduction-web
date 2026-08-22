@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 // スマホ幅ではヘッダーの検索フォーム(sm:block)自体が非表示になるため、
-// 虫眼鏡アイコン→タップでヘッダー行いっぱいに検索欄を展開する代替UIを出す。
+// 小さな「検索」ボタン→タップでヘッダー行いっぱいに検索欄を展開する代替UIを出す。
 export function MobileSearch({ defaultQuery }: { defaultQuery?: string }) {
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,9 +44,10 @@ export function MobileSearch({ defaultQuery }: { defaultQuery?: string }) {
       type="button"
       aria-label="検索"
       onClick={() => setOpen(true)}
-      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
+      className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full border border-[var(--line)] px-2.5 text-[12px] text-[var(--ink-soft)] hover:text-[var(--ink)] sm:hidden"
     >
-      ⌕
+      <span aria-hidden>⌕</span>
+      <span>検索</span>
     </button>
   );
 }
