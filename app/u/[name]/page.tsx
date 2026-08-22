@@ -74,13 +74,16 @@ function profileJsonLd(profile: UserProfile) {
 // 訪問者に「何で作っている人か」を一目で伝える公開向けの集計
 // (AuthorStats.tsxは「自分にだけ表示」の非公開分析なので別物)。
 // 新規クエリ不要、既に取得済みのworksをその場で集計するだけ。
-function topTools(works: UserProfile["works"], limit = 3): (keyof typeof TOOL_META)[] {
+function topTools(works: UserProfile["works"], limit = 3): { tool: keyof typeof TOOL_META; count: number }[] {
   const counts = new Map<keyof typeof TOOL_META, number>();
   for (const w of works) {
     if (!w.tool) continue;
     counts.set(w.tool, (counts.get(w.tool) ?? 0) + 1);
   }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([tool]) => tool);
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([tool, count]) => ({ tool, count }));
 }
 
 export default async function UserProfilePage({ params }: { params: Promise<{ name: string }> }) {
@@ -196,24 +199,52 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           )}
         </div>
 
-        {featuredTools.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-1.5">
-            <span className="text-[12px] text-[var(--ink-faint)]">よく使うツール:</span>
-            {featuredTools.map((tool) => (
-              <Link
-                key={tool}
-                href={`/tool/${tool}`}
-                className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-0.5 text-[11px] font-mono text-[var(--ink-soft)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-              >
-                {TOOL_META[tool].label}
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="mb-8 grid gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 lg:grid-cols-[1fr_320px]">
+          <div>
+            <p className="text-[13px] font-semibold text-[var(--ink)]">活動サマリー</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2">
+                <p className="font-mono text-lg font-semibold text-[var(--ink)]">{profile.works.length}</p>
+                <p className="text-[11px] text-[var(--ink-faint)]">投稿作品</p>
+              </div>
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2">
+                <p className="font-mono text-lg font-semibold text-[var(--ink)]">{murmurs.length}</p>
+                <p className="text-[11px] text-[var(--ink-faint)]">つぶやき</p>
+              </div>
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2">
+                <p className="font-mono text-lg font-semibold text-[var(--ink)]">{profile.repostedWorks.length}</p>
+                <p className="text-[11px] text-[var(--ink-faint)]">リポスト</p>
+              </div>
+            </div>
 
-        <div className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
-          <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">このプロフィールを共有</p>
-          <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
+            <div className="mt-4">
+              <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">よく使うツール</p>
+              {featuredTools.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {featuredTools.map(({ tool, count }) => (
+                    <Link
+                      key={tool}
+                      href={`/tool/${tool}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 py-1 text-[11px] font-mono text-[var(--ink-soft)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    >
+                      {TOOL_META[tool].label}
+                      <span className="text-[var(--ink-faint)]">×{count}</span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[12px] text-[var(--ink-faint)]">まだ作品の使用ツールは登録されていません</p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-3">
+            <p className="mb-1 text-[12px] font-medium text-[var(--ink-soft)]">このプロフィールを共有</p>
+            <p className="mb-3 text-[11px] leading-relaxed text-[var(--ink-faint)]">
+              気になる制作者を、SNSやチャットで紹介できます。
+            </p>
+            <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
+          </div>
         </div>
 
         {isOwnProfile && <AuthorStats works={profile.works} />}
