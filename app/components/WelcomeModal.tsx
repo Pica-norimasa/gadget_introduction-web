@@ -39,7 +39,7 @@ export function WelcomeModal() {
       role="dialog"
       aria-modal="true"
       aria-label="Draftlyへようこそ"
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-4 sm:items-center"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
       onClick={close}
     >
       <div
