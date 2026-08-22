@@ -198,7 +198,7 @@ export function FeedSection({
         <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-raised)] p-8 text-center">
           <p className="text-sm font-medium text-[var(--ink-soft)]">この条件に合う作品はまだありません</p>
           <p className="mt-2 text-[12px] leading-relaxed text-[var(--ink-faint)]">
-            対応環境の条件を外すか、質問投稿で「こんな作品ありませんか?」と聞いてみてください。
+            対応環境の条件を外すか、つぶやきで「こんな作品ありませんか?」と聞いてみてください。
           </p>
           {platformFilter.size > 0 && (
             <button

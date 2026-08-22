@@ -15,9 +15,9 @@ const initialState: CreatePostState = {};
 const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholder: string }[] = [
   {
     type: "question",
-    title: "質問",
-    hint: "相談したい",
-    placeholder: "例: この機能、先に作るならAとBどっちが良さそうですか?",
+    title: "つぶやき",
+    hint: "気軽に投稿",
+    placeholder: "例: この機能、A案とB案で少し迷っている。まずは小さく試してみたい",
   },
   {
     type: "idea",
@@ -60,9 +60,9 @@ const TIMELINE_PROMPTS: { type: PostType; title: string; hint: string; placehold
   },
   {
     type: "question",
-    title: "質問",
-    hint: "意見募集",
-    placeholder: "例: この作品に次に足すなら、通知と検索どちらが良さそうですか?",
+    title: "つぶやき",
+    hint: "ひとこと",
+    placeholder: "例: 次は通知か検索を足したい。まずは使い勝手を見ながら決める予定",
   },
 ];
 
@@ -94,10 +94,11 @@ export function PostForm(props: PostFormProps) {
   // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
   // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
   // 直近のものを既定にして、「書くだけで投稿できる」を最短動線にする。
-  // まだプロジェクトが無い(=初めての投稿になりやすい)人には、プロジェクト
-  // 新規作成(タイトル入力が要る分ハードルが上がる)ではなく、一番身軽な
-  // つぶやきを既定にする。timelineは常にこのProjectへの投稿固定。
-  const defaultProjectTarget = variant === "compose" ? (props.myProjects.length > 0 ? props.myProjects[0].id : "") : props.projectId;
+  // つぶやきは「投稿先」を持たない独立投稿。アイデア/制作メモ/公開は
+  // 作品に紐づく投稿なので、投稿先は既存Projectか新規Projectに限る。
+  // まだProjectが無い人がつぶやき以外を選んだ時は、新規Projectを既定にする。
+  // timelineは常にこのProjectへの投稿固定。
+  const defaultProjectTarget = variant === "compose" ? (props.myProjects[0]?.id ?? "new") : props.projectId;
   const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -238,6 +239,7 @@ export function PostForm(props: PostFormProps) {
                   aria-pressed={active}
                   onClick={() => {
                     setSelectedType(option.type);
+                    if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
                   className={`min-h-14 rounded-xl border px-3 py-2 text-left transition-colors ${
@@ -294,7 +296,7 @@ export function PostForm(props: PostFormProps) {
       />
       {variant === "compose" && selectedType === "question" && (
         <p className="mt-2 text-[12px] text-[var(--ink-faint)]">
-          質問は作品に紐づけず、つぶやきとして投稿されます
+          つぶやきは作品に紐づけず、タイムラインに投稿されます
         </p>
       )}
       {showProjectTarget && (
@@ -306,7 +308,6 @@ export function PostForm(props: PostFormProps) {
             onChange={(e) => setProjectTarget(e.target.value)}
             className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
           >
-            <option value="">💬 つぶやき</option>
             <option value="new">🆕 新しいプロジェクトとして</option>
             {props.myProjects.map((p) => (
               <option key={p.id} value={p.id}>

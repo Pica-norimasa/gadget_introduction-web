@@ -485,7 +485,7 @@ export const POST_TYPE_META: Record<PostType, { icon: string; label: string }> =
   prototype: { icon: "🚀", label: "プロトタイプ公開" },
   release: { icon: "✨", label: "リリース" },
   update: { icon: "🔧", label: "アップデート" },
-  question: { icon: "💬", label: "質問" },
+  question: { icon: "💬", label: "つぶやき" },
 };
 
 export type Post = {

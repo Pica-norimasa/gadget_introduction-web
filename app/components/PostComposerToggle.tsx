@@ -97,7 +97,7 @@ export function PostComposerToggle({
           className="flex w-full items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[15px] text-[var(--ink-faint)] transition-colors hover:border-[var(--accent)]"
         >
           <span aria-hidden>✎</span>
-          アイデア・制作メモ・質問を気軽に投稿する
+          アイデア・制作メモ・つぶやきを気軽に投稿する
         </button>
       </div>
       {guestNotice}
