@@ -43,7 +43,7 @@ export function StageUpCelebration({ items }: { items: StageUpView[] }) {
       role="dialog"
       aria-modal="true"
       aria-label="ステージアップのお知らせ"
-      className="fixed inset-0 z-[55] flex items-end justify-center bg-black/60 p-4 sm:items-center"
+      className="fixed inset-0 z-[55] flex items-center justify-center bg-black/60 p-4"
       onClick={close}
     >
       <div

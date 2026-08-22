@@ -42,9 +42,8 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
               href="/login"
               aria-label="ログイン"
               title="ログイン"
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 text-[12px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
+              className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-[var(--line)] px-2.5 text-[12px] font-medium text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
             >
-              <span aria-hidden>👤</span>
               <span>ログイン</span>
             </Link>
           )}
