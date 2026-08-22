@@ -13,7 +13,9 @@ export function PostXShareButton({ text }: { text: string }) {
     setUrl(window.location.href);
   }, []);
 
-  const xHref = url ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}` : undefined;
+  const preview = text.length > 90 ? `${text.slice(0, 90)}…` : text;
+  const xText = preview ? `Draftlyにつぶやきを投稿しました\n\n${preview}` : "Draftlyにつぶやきを投稿しました";
+  const xHref = url ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(xText)}` : undefined;
 
   return (
     <a

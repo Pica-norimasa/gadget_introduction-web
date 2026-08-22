@@ -44,7 +44,8 @@ export async function generateMetadata({
     return { title: "作品が見つかりません | Draftly" };
   }
 
-  const description = work.catch.length > 120 ? `${work.catch.slice(0, 120)}…` : work.catch;
+  const catchPreview = work.catch.length > 96 ? `${work.catch.slice(0, 96)}…` : work.catch;
+  const description = `${catchPreview} — Draftlyで制作過程を見る`;
 
   return {
     title: `${work.title} | Draftly`,
@@ -54,14 +55,14 @@ export async function generateMetadata({
     // ないよう、クエリ無しの正規URLを明示する。
     alternates: { canonical: `${SITE_URL}/work/${work.id}` },
     openGraph: {
-      title: work.title,
+      title: `${work.title} | Draftly`,
       description,
       type: "article",
       siteName: "Draftly",
     },
     twitter: {
       card: "summary_large_image",
-      title: work.title,
+      title: `${work.title} | Draftly`,
       description,
     },
   };

@@ -26,7 +26,20 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Draftly | アイデアを、育てながら見せる場所",
   description:
-    "非エンジニアがAIで作った作品を発表し、発見し合う創作プラットフォームのコンセプトモック。",
+    "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+  openGraph: {
+    title: "Draftly | アイデアを、育てながら見せる場所",
+    description:
+      "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+    type: "website",
+    siteName: "Draftly",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Draftly | アイデアを、育てながら見せる場所",
+    description:
+      "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+  },
 };
 
 // モバイルでピンチ操作によるページ全体の拡大・縮小を無効化する。

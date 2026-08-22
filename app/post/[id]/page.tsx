@@ -32,16 +32,19 @@ export async function generateMetadata({
   const post = await getPostById(id);
   if (!post) return { title: "投稿が見つかりません | Draftly" };
 
-  const titlePreview = post.body.length > 40 ? `${post.body.slice(0, 40)}…` : post.body;
-  const description = post.body.length > 100 ? `${post.body.slice(0, 100)}…` : post.body;
-  const title = `${post.authorName}の投稿「${titlePreview}」`;
+  const description = post.body
+    ? post.body.length > 110
+      ? `${post.body.slice(0, 110)}…`
+      : post.body
+    : "Draftlyに投稿されたつぶやき";
+  const title = `${post.authorName}のつぶやき`;
 
   return {
     title: `${title} | Draftly`,
     description,
     alternates: { canonical: `${SITE_URL}/post/${post.id}` },
-    openGraph: { title, description, type: "article", siteName: "Draftly" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title: `${title} | Draftly`, description, type: "article", siteName: "Draftly" },
+    twitter: { card: "summary_large_image", title: `${title} | Draftly`, description },
   };
 }
 

@@ -15,11 +15,12 @@ export function ShareButtons({ title }: { title: string }) {
     setUrl(window.location.href);
   }, []);
 
+  const xText = `Draftlyで見つけた作品「${title}」\n作りかけや進捗も見られます`;
   const lineHref = url
     ? `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
     : undefined;
   const xHref = url
-    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(xText)}`
     : undefined;
 
   async function copyLink() {
