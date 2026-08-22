@@ -34,7 +34,6 @@ export function MurmurStrip({
           </p>
         </div>
         <div className="flex items-center gap-2 text-[11px] text-[var(--ink-faint)]">
-          <span className="rounded-full border border-[var(--line)] px-2 py-1">{posts.length}件</span>
           <span className="hidden sm:inline">横にスクロールできます</span>
           <OpenComposerButton />
         </div>
