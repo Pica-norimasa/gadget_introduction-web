@@ -158,6 +158,9 @@ export type DeleteAccountState = { error?: string };
 // 共有)。匿名ゲスト(sessionIdのみ)には「退会」という概念が無いため、
 // 実ログイン(auth()のセッション)を必須にする。
 export async function deleteAccount(_prevState: DeleteAccountState, _formData: FormData): Promise<DeleteAccountState> {
+  void _prevState;
+  void _formData;
+
   const session = await auth();
   if (!session?.user) return { error: "ログインが必要です" };
 

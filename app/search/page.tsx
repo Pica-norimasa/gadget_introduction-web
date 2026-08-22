@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { AiTool, Platform } from "@/app/lib/mock-data";
+import type { AiTool } from "@/app/lib/mock-data";
 import { getMyReactions, getPosts, searchStandalonePosts, searchWorks, type SearchFilters } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
