@@ -196,7 +196,7 @@ export function WorkCard({
           </p>
         )}
 
-        <div className="mt-auto flex flex-col gap-2 pt-3">
+        <div className="flex flex-col gap-2 pt-3">
           <div className="relative z-20 flex flex-wrap items-center gap-2">
             <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions[work.id] ?? []} />
             <RepostButton projectId={work.id} count={work.reposts} />
