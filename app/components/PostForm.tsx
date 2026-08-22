@@ -14,6 +14,12 @@ const initialState: CreatePostState = {};
 
 const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholder: string }[] = [
   {
+    type: "question",
+    title: "質問",
+    hint: "相談したい",
+    placeholder: "例: この機能、先に作るならAとBどっちが良さそうですか?",
+  },
+  {
     type: "idea",
     title: "アイデア",
     hint: "思いつきだけ",
@@ -24,12 +30,6 @@ const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholde
     title: "制作メモ",
     hint: "途中経過",
     placeholder: "例: 今日ここまで作った。次は〇〇を直す予定",
-  },
-  {
-    type: "question",
-    title: "質問",
-    hint: "相談したい",
-    placeholder: "例: この機能、先に作るならAとBどっちが良さそうですか?",
   },
   {
     type: "release",
