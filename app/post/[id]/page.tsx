@@ -8,8 +8,10 @@ import {
   getMyLikeForPost,
   getPostById,
   isBlockedByAuthor,
+  type PostDetailView,
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "@/app/components/AuthorAvatar";
 import { CommentForm } from "@/app/components/CommentForm";
@@ -42,6 +44,23 @@ export async function generateMetadata({
   };
 }
 
+// 検索エンジン向けの構造化データ(schema.org/SocialMediaPosting)。
+// 短文の単独投稿(つぶやき)向けにCreativeWorkのサブタイプを使う。
+function postJsonLd(post: PostDetailView) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SocialMediaPosting",
+    articleBody: post.body,
+    url: `${SITE_URL}/post/${post.id}`,
+    datePublished: post.createdAtIso,
+    author: {
+      "@type": "Person",
+      name: post.authorName,
+      url: `${SITE_URL}/u/${encodeURIComponent(post.authorHandle)}`,
+    },
+  };
+}
+
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
@@ -62,6 +81,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd(post)) }} />
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">

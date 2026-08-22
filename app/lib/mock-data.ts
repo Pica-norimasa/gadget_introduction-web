@@ -88,6 +88,11 @@ export type Work = {
   // 自分がブックマーク(あとで見る)済みかどうか。mock-data.ts由来の
   // シードWorkはfalse扱い(queries.tsのtoWork()が実データを埋める)。
   bookmarked?: boolean;
+  // JSON-LD(構造化データ)のdatePublished用に絶対日時が要る場面のみ使う
+  // ISO 8601文字列。表示自体はdaysAgo/lastActivityDaysAgoの相対表記を使い
+  // 続けるため、通常のUIロジックはこのフィールドを見に行かない。
+  // mock-data.ts由来のシードWorkは省略可(queries.tsのtoWork()が実データを埋める)。
+  createdAtIso?: string;
 };
 
 export type ReactionKey = keyof Work["reactions"];

@@ -163,6 +163,7 @@ function toWork(
     views: project.views,
     daysAgo,
     lastActivityDaysAgo,
+    createdAtIso: project.createdAt.toISOString(),
     aiCommentsEnabled: project.aiCommentsEnabled,
     trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
@@ -250,6 +251,24 @@ export async function searchWorks(query: string, filters: SearchFilters = {}): P
     if (filters.platform && !w.platforms.includes(filters.platform)) return false;
     return true;
   });
+}
+
+// 作品詳細ページの「関連作品」向け。categoryは投稿時に実質固定値
+// (post-actions.tsのcreatePost参照)であてにならないため、代わりに
+// tool一致 or platforms重複という、実際に投稿時点で意味のある値が
+// 入っているフィールドで関連度を見る。searchWorks()と同じくDBのJSON列
+// (platforms)を直接クエリせず、取得済みのWork[]をJSで絞り込む方式。
+export async function getRelatedWorks(work: Work, limit = 4): Promise<Work[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const candidates = await getWorksWhere({
+    id: { not: work.id },
+    ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+  });
+
+  return candidates
+    .filter((w) => (work.tool && w.tool === work.tool) || w.platforms.some((p) => work.platforms.includes(p)))
+    .sort((a, b) => b.trendScore - a.trendScore)
+    .slice(0, limit);
 }
 
 // sitemap.ts専用。件数分だけ返せればよいので、getWorksWhere()のような
@@ -972,6 +991,8 @@ export type PostDetailView = {
   likesCount: number;
   inspiredByProjectId?: string;
   inspiredByProjectTitle?: string;
+  // JSON-LD(構造化データ)のdatePublished用。Work型のcreatedAtIsoと同じ用途。
+  createdAtIso: string;
 };
 
 // /post/[id]専用。単独投稿1件の詳細。
@@ -1002,6 +1023,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     hoursAgo: hoursAgoOf(post.createdAt),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,
+    createdAtIso: post.createdAt.toISOString(),
     inspiredByProjectId: post.inspiredByProject?.id,
     inspiredByProjectTitle: post.inspiredByProject?.title,
   };

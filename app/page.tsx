@@ -70,6 +70,17 @@ export default async function Home() {
       <StageUpCelebration items={stageUps} />
 
       <main className="flex-1">
+        {/* 初見の訪問者(特に検索/SNS経由)が数秒で「何のサイトか」を理解できる
+            ようにする一言。SNS的な機能(フォロー/つぶやき)は活かしつつ、
+            「発見の場所」という価値をトップに明示する。ページ内で唯一の
+            h1でもある(以前はh1が無かった、見出し構造のSEO対応も兼ねる)。 */}
+        <div className="mx-auto max-w-[1180px] px-4 pt-6 sm:px-6">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">Discover</p>
+          <h1 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)] sm:text-2xl">
+            個人開発者が作った面白いサービス・アプリ・ゲームを発見しよう
+          </h1>
+        </div>
+
         <PostComposerToggle
           myProjects={myProjects}
           isLoggedIn={!!session?.user}

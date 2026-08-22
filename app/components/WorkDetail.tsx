@@ -45,6 +45,7 @@ export function WorkDetail({
   inspiredMyReactions,
   blockedByAuthor,
   initialTab,
+  relatedWorks,
 }: {
   work: Work;
   timeline: Post[];
@@ -73,6 +74,9 @@ export function WorkDetail({
   // 通知(NotificationBell.tsx)の?tab=クエリから渡される、開いた直後に
   // 表示したいタブ("comments"等)。未指定なら従来通り制作タイムライン。
   initialTab?: string;
+  // 同じtool/対応環境の他作品(getRelatedWorks()参照)。検索流入者が
+  // この作品だけ見て離脱せず、Draftly内を回遊してもらうための導線。
+  relatedWorks: Work[];
 }) {
   // 表紙画像・GitHub・YouTubeのうち設定されているものだけをタブとして
   // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
@@ -336,6 +340,28 @@ export function WorkDetail({
                 </div>
               ),
             },
+            ...(relatedWorks.length > 0
+              ? [
+                  {
+                    id: "related",
+                    label: "関連作品",
+                    content: (
+                      <div className="mb-6 flex flex-col gap-3.5">
+                        {relatedWorks.map((relatedWork) => (
+                          <WorkCard
+                            key={relatedWork.id}
+                            work={relatedWork}
+                            posts={posts}
+                            myReactions={inspiredMyReactions}
+                            currentUserId={currentUserId}
+                            showAnchor={false}
+                          />
+                        ))}
+                      </div>
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       </main>
