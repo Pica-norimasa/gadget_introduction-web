@@ -88,6 +88,35 @@ Dockerイメージは [Dockerfile](Dockerfile) でビルドします。`next.con
 
 `/api/health` はDBへ接続せず、アプリケーションプロセスが応答できるかだけを確認します。
 
+### 手動デプロイ手順
+
+コストを抑えるため、通常の `git push` では本番デプロイしません。GitHub ActionsのCIも `pull_request` と手動実行（`workflow_dispatch`）のみで動きます。
+
+本番へ反映する場合は、必要なタイミングでCodeBuildとApp Runnerを手動実行します。CodeBuildはDockerイメージをビルドしてECRの `latest` を更新し、App Runnerはその `latest` イメージを取り込んで再デプロイします。
+
+```bash
+aws codebuild start-build \
+  --region ap-northeast-1 \
+  --project-name gadget-introduction-web-build \
+  --source-version develop
+```
+
+CodeBuildが `SUCCEEDED` になったら、App Runnerを再デプロイします。
+
+```bash
+aws apprunner start-deployment \
+  --region ap-northeast-1 \
+  --service-arn arn:aws:apprunner:ap-northeast-1:342940030749:service/gadget-introduction-web/e40b386d1a32419db09789de707612e5
+```
+
+デプロイ後は次を確認します。
+
+```bash
+curl https://3hsybuysg2.ap-northeast-1.awsapprunner.com/api/health
+```
+
+期待値は `{"status":"ok"}` です。CodeBuildの実行にはビルド時間に応じた費用が発生するため、細かい修正ごとではなく、いくつか変更をまとめてから実行してください。
+
 ## バックアップと復旧
 
 RDS `gadget-introduction-web-dev` は自動バックアップを有効にしています。
