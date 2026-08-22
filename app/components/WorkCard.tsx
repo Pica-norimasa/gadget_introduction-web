@@ -170,28 +170,30 @@ export function WorkCard({
       </div>
 
       <div className="flex flex-1 flex-col gap-3 pt-4">
-        <div className="flex flex-wrap items-center gap-2">
+        <div>
+          <h3 className="font-[family-name:var(--font-display)] text-[18px] font-bold leading-snug text-[var(--ink)] transition-colors group-hover:text-[var(--accent)]">
+            {work.title}
+          </h3>
+          <ExpandableText text={work.catch} className="mt-1.5" />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
           <StageBadge stage={work.stage} />
           <ToolBadge tool={work.tool} />
           <PlatformBadges platforms={work.platforms} />
         </div>
 
-        <h3 className="font-[family-name:var(--font-display)] text-[17px] font-bold leading-snug text-[var(--ink)]">
-          {work.title}
-        </h3>
-        <ExpandableText text={work.catch} />
-
         {latestPost && (
-          <p className="flex items-baseline gap-1.5 text-[11.5px] leading-snug">
+          <p className="rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2 text-[11.5px] leading-snug">
             <span
-              className={`shrink-0 font-mono font-medium ${
+              className={`mr-1.5 font-mono font-medium ${
                 latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
               }`}
             >
               {POST_TYPE_META[latestPost.type].icon}
               {formatRelativeHours(latestPost.hoursAgo)}
             </span>
-            <span className="line-clamp-1 text-[var(--ink-faint)]">{latestPost.body}</span>
+            <span className="text-[var(--ink-faint)]">{latestPost.body}</span>
           </p>
         )}
 
