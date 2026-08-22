@@ -195,10 +195,23 @@ export function NotificationBell({
       <button
         type="button"
         aria-label="通知"
+        title="通知"
         onClick={toggle}
         className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
       >
-        <span aria-hidden className="text-[13px] font-bold">!</span>
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+        </svg>
         {localUnread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-[var(--accent-ink)]">
             {localUnread > 9 ? "9+" : localUnread}
