@@ -29,8 +29,17 @@ export async function generateMetadata({
   const { id } = await params;
   const post = await getPostById(id);
   if (!post) return { title: "投稿が見つかりません | Draftly" };
-  const preview = post.body.length > 40 ? `${post.body.slice(0, 40)}…` : post.body;
-  return { title: `${post.authorName}の投稿「${preview}」 | Draftly` };
+
+  const titlePreview = post.body.length > 40 ? `${post.body.slice(0, 40)}…` : post.body;
+  const description = post.body.length > 100 ? `${post.body.slice(0, 100)}…` : post.body;
+  const title = `${post.authorName}の投稿「${titlePreview}」`;
+
+  return {
+    title: `${title} | Draftly`,
+    description,
+    openGraph: { title, description, type: "article", siteName: "Draftly" },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {

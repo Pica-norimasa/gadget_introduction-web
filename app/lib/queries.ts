@@ -1,5 +1,6 @@
 import { Prisma } from "@/app/generated/prisma/client";
 import { AI_BOT_NAME } from "@/app/lib/ai-bot-name";
+import { extractHashtags } from "@/app/lib/hashtag";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
 import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
@@ -682,6 +683,41 @@ export async function searchStandalonePosts(query: string): Promise<StandalonePo
   const q = query.trim();
   if (!q) return [];
   return loadStandalonePosts({ OR: [{ body: { contains: q } }, { author: { name: { contains: q } } }] });
+}
+
+export type HashtagResults = { works: Work[]; posts: StandalonePostView[] };
+
+// #タグ一覧ページ(/tag/[tag])向け。tagは表示名(#を含まない)で受け取る。
+// DB側の`contains`は部分一致しかできない(例:「#AI」が「#AIツール」にも
+// マッチしてしまう)ため、いったん広めに候補を取得したうえで、
+// extractHashtags()で本文から抽出したタグと完全一致するものだけに絞り込む。
+// プロジェクトはcatchText自体にタグが書かれている場合と、紐づく
+// タイムライン投稿(Post.body)にタグが書かれている場合の両方を対象にする。
+export async function searchByHashtag(tag: string): Promise<HashtagResults> {
+  const needle = `#${tag}`;
+  const tagLower = tag.toLowerCase();
+  const matchesTag = (text: string) => extractHashtags(text).some((t) => t.toLowerCase() === tagLower);
+
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const [candidateWorks, candidatePosts, standalonePosts] = await Promise.all([
+    getWorksWhere({
+      OR: [{ catchText: { contains: needle } }, { posts: { some: { body: { contains: needle } } } }],
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    }),
+    prisma.post.findMany({
+      where: { projectId: { not: null }, body: { contains: needle } },
+      select: { projectId: true, body: true },
+    }),
+    loadStandalonePosts({ body: { contains: needle } }),
+  ]);
+
+  const postMatchedProjectIds = new Set(
+    candidatePosts.filter((p) => matchesTag(p.body)).map((p) => p.projectId as string),
+  );
+  const works = candidateWorks.filter((w) => matchesTag(w.catch) || postMatchedProjectIds.has(w.id));
+  const posts = standalonePosts.filter((p) => matchesTag(p.body));
+
+  return { works, posts };
 }
 
 export type RepostView = {
