@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMyReactions, getPosts, getWorksByTool } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
 import { TOOL_META, TOOL_ORDER } from "@/app/lib/tool-meta";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
@@ -31,6 +32,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Draftly`,
     description,
+    alternates: { canonical: `${SITE_URL}/tool/${tool}` },
     openGraph: { title, description, type: "website", siteName: "Draftly" },
     twitter: { card: "summary_large_image", title, description },
   };

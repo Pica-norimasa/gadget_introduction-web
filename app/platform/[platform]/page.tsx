@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMyReactions, getPosts, getWorksByPlatform } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
 import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
@@ -32,6 +33,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Draftly`,
     description,
+    alternates: { canonical: `${SITE_URL}/platform/${encodeURIComponent(platform)}` },
     openGraph: { title, description, type: "website", siteName: "Draftly" },
     twitter: { card: "summary_large_image", title, description },
   };

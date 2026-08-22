@@ -46,6 +46,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Draftly`,
     description,
+    alternates: { canonical: `${SITE_URL}/u/${encodeURIComponent(profile.name)}` },
     openGraph: { title, description, type: "profile", siteName: "Draftly" },
     twitter: { card: "summary_large_image", title, description },
   };

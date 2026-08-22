@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getMyReactions, getPosts, searchByHashtag } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
@@ -25,6 +26,7 @@ export async function generateMetadata({
   return {
     title: `${title} | Draftly`,
     description,
+    alternates: { canonical: `${SITE_URL}/tag/${encodeURIComponent(decoded)}` },
     openGraph: { title, description, type: "website", siteName: "Draftly" },
     twitter: { card: "summary_large_image", title, description },
   };

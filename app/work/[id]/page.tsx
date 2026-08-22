@@ -49,6 +49,10 @@ export async function generateMetadata({
   return {
     title: `${work.title} | Draftly`,
     description,
+    // XでのシェアURLに?v=Nのようなキャッシュバスティング用クエリを付けて
+    // きたため、クエリ違いを別ページ(重複コンテンツ)とGoogleに誤認され
+    // ないよう、クエリ無しの正規URLを明示する。
+    alternates: { canonical: `${SITE_URL}/work/${work.id}` },
     openGraph: {
       title: work.title,
       description,
