@@ -368,32 +368,36 @@ export function PostForm(props: PostFormProps) {
           </p>
         </div>
       )}
-      {/* 添付ボタン列と送信ボタンを別の行に分けると高さが揃って見えないと
-          いう指摘が続いたため、同じ1行にまとめている(items-centerで
-          確実に同じ基準線に揃う)。狭い画面ではflex-wrapで自然に折り返す。 */}
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <ImagePickerButton
-          fileInputRef={fileInputRef}
-          preview={imagePreview}
-          onChange={handleImageChange}
-          onClear={clearImage}
-        />
-        <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
-        <span
-          className={`ml-auto inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
-            trimmed ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}として投稿
-        </span>
-        <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
-        <button
-          type="submit"
-          disabled={(!trimmed && !imagePreview) || pending}
-          className="h-8 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
-        >
-          {pending ? "投稿中…" : "投稿する"}
-        </button>
+      {/* 送信ボタンはフォーム右下に固定感を出す。添付ボタン・判定ラベル・
+          文字数が折り返しても、投稿ボタンだけ変な位置に流れないよう
+          左右のグループに分ける。 */}
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <ImagePickerButton
+            fileInputRef={fileInputRef}
+            preview={imagePreview}
+            onChange={handleImageChange}
+            onClear={clearImage}
+          />
+          <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
+        </div>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
+              trimmed ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}として投稿
+          </span>
+          <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
+          <button
+            type="submit"
+            disabled={(!trimmed && !imagePreview) || pending}
+            className="h-8 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
+          >
+            {pending ? "投稿中…" : "投稿する"}
+          </button>
+        </div>
       </div>
       {state.error && <p className="mt-2 text-[12px] text-[var(--accent)]">{state.error}</p>}
       {state.success && (
