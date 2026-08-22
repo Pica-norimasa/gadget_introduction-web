@@ -16,6 +16,12 @@ import { prisma } from "@/app/lib/prisma";
 
 export type CreatePostState = { error?: string; success?: boolean; projectId?: string };
 
+const POST_TYPES = ["idea", "making", "screenshot", "demo", "prototype", "release", "update", "question"] as const;
+
+function isPostType(value: string): value is PostType {
+  return POST_TYPES.includes(value as PostType);
+}
+
 // 新規Project作成時の初期stage。投稿から継続的にstageを追従させるのは
 // 別スコープ(このマッピングは作成された瞬間の初期値だけを決める)。
 function initialStageFor(type: PostType): Stage {
@@ -47,6 +53,7 @@ export async function createPost(
   const newProjectTitle = String(formData.get("newProjectTitle") ?? "").trim();
   const inspiredByProjectIdRaw = String(formData.get("inspiredByProjectId") ?? "").trim();
   const youtubeUrl = String(formData.get("youtubeUrl") ?? "").trim();
+  const postTypeRaw = String(formData.get("postType") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
   if (!body && !imageFile && !youtubeUrl) {
@@ -100,7 +107,7 @@ export async function createPost(
       })
     : null;
 
-  const type = inferPostType(body);
+  const type = isPostType(postTypeRaw) ? postTypeRaw : inferPostType(body);
   let projectId: string | null = null;
   // 新規Projectは常にaiCommentsEnabled: true(schemaのデフォルト)で
   // 作られるため、既存Projectに投稿する場合だけそのProjectの設定を見る。

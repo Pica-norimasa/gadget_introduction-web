@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { POST_TYPE_META, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type PostType, type Work } from "@/app/lib/mock-data";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { clearInspiredBy, useInspiredBy } from "@/app/lib/composer-store";
@@ -11,6 +11,60 @@ import { ImagePickerButton } from "./ImagePickerButton";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
 const initialState: CreatePostState = {};
+
+const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholder: string }[] = [
+  {
+    type: "idea",
+    title: "アイデア",
+    hint: "思いつきだけ",
+    placeholder: "例: 〇〇できるアプリがあったら便利そう。まずは小さく試したい",
+  },
+  {
+    type: "making",
+    title: "制作メモ",
+    hint: "途中経過",
+    placeholder: "例: 今日ここまで作った。次は〇〇を直す予定",
+  },
+  {
+    type: "question",
+    title: "質問",
+    hint: "相談したい",
+    placeholder: "例: この機能、先に作るならAとBどっちが良さそうですか?",
+  },
+  {
+    type: "release",
+    title: "公開",
+    hint: "できた報告",
+    placeholder: "例: β版を公開しました。触ってみて気づいた点があれば教えてください",
+  },
+];
+
+const TIMELINE_PROMPTS: { type: PostType; title: string; hint: string; placeholder: string }[] = [
+  {
+    type: "making",
+    title: "制作中",
+    hint: "進捗",
+    placeholder: "例: 今日はログインまわりを直しました。次は投稿画面を触ります",
+  },
+  {
+    type: "screenshot",
+    title: "スクショ",
+    hint: "画面共有",
+    placeholder: "例: 新しい一覧画面です。カードの余白を少し広げました",
+  },
+  {
+    type: "update",
+    title: "更新",
+    hint: "改善報告",
+    placeholder: "例: 検索条件を保存できるようにしました",
+  },
+  {
+    type: "question",
+    title: "質問",
+    hint: "意見募集",
+    placeholder: "例: この作品に次に足すなら、通知と検索どちらが良さそうですか?",
+  },
+];
 
 // ホームの投稿欄(PostComposer)と作品詳細ページからその場でタイムラインに
 // 追記する簡易フォーム(TimelinePostForm)は、以前は別ファイルとしてほぼ
@@ -34,6 +88,8 @@ export function PostForm(props: PostFormProps) {
   const { variant } = props;
   const [state, formAction, pending] = useActionState(createPost, initialState);
   const [body, setBody] = useState("");
+  const promptOptions = variant === "compose" ? COMPOSE_PROMPTS : TIMELINE_PROMPTS;
+  const [selectedType, setSelectedType] = useState<PostType | "">(promptOptions[0].type);
   // 投稿のたびに「新しいプロジェクトとして」を選び直す必要があると、
   // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
   // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
@@ -83,6 +139,7 @@ export function PostForm(props: PostFormProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
     setBody("");
     setProjectTarget(defaultProjectTarget);
+    setSelectedType(promptOptions[0].type);
     formRef.current?.reset();
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     clearImage();
@@ -116,7 +173,8 @@ export function PostForm(props: PostFormProps) {
   }, [state.success, state.projectId, defaultProjectTarget]);
 
   const trimmed = body.trim();
-  const guessedType = inferPostType(body);
+  const guessedType = selectedType || inferPostType(body);
+  const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
 
   // timelineだけ、ゲスト投稿の上限に達した場合ログイン導線に差し替える
@@ -143,6 +201,7 @@ export function PostForm(props: PostFormProps) {
       className={`rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] ${variant === "compose" ? "p-4" : "p-3"}`}
     >
       {variant === "timeline" && <input type="hidden" name="projectTarget" value={props.projectId} />}
+      {selectedType && <input type="hidden" name="postType" value={selectedType} />}
       {variant === "compose" && inspiredBy && (
         <div className="mb-2 flex items-center gap-1.5">
           <input type="hidden" name="inspiredByProjectId" value={inspiredBy.id} />
@@ -164,6 +223,35 @@ export function PostForm(props: PostFormProps) {
           🔓 ログインなしでもあと{guestRemaining}件投稿できます(ログインすると無制限に投稿できます)
         </p>
       )}
+      <div className="mb-3">
+        <p className="mb-1.5 text-[12px] font-medium text-[var(--ink-soft)]">何を投稿しますか?</p>
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          {promptOptions.map((option) => {
+            const active = selectedType === option.type;
+            return (
+              <button
+                key={option.type}
+                type="button"
+                aria-pressed={active}
+                onClick={() => {
+                  setSelectedType(option.type);
+                  textareaRef.current?.focus();
+                }}
+                className={`min-h-14 rounded-xl border px-3 py-2 text-left transition-colors ${
+                  active
+                    ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                    : "border-[var(--line)] bg-[var(--bg-sunken)]/35 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+                }`}
+              >
+                <span className="block text-[12px] font-bold">
+                  {POST_TYPE_META[option.type].icon} {option.title}
+                </span>
+                <span className="block text-[11px] opacity-75">{option.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <textarea
         ref={textareaRef}
         name="body"
@@ -173,9 +261,10 @@ export function PostForm(props: PostFormProps) {
           autoGrow(e.target);
         }}
         placeholder={
-          variant === "compose"
+          selectedPrompt?.placeholder ??
+          (variant === "compose"
             ? "思いついたこと、気になってること、なんでもどうぞ(未完成・アイデアだけでもOK)"
-            : "進捗を投稿する(未完成でもOK)"
+            : "進捗を投稿する(未完成でもOK)")
         }
         rows={2}
         maxLength={280}
