@@ -16,7 +16,7 @@ export function HomePrimaryActions() {
           event.preventDefault();
           scrollTo("feed");
         }}
-        className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--accent)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-transform hover:-translate-y-0.5"
+        className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
       >
         <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] font-bold text-[var(--accent)]">
           探
