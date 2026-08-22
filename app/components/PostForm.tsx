@@ -175,6 +175,7 @@ export function PostForm(props: PostFormProps) {
   const trimmed = body.trim();
   const guessedType = selectedType || inferPostType(body);
   const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
+  const showProjectTarget = variant === "compose" && selectedType !== "question";
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
 
   // timelineだけ、ゲスト投稿の上限に達した場合ログイン導線に差し替える
@@ -272,7 +273,12 @@ export function PostForm(props: PostFormProps) {
           variant === "compose" ? "text-[15px]" : "text-[14px]"
         }`}
       />
-      {variant === "compose" && (
+      {variant === "compose" && selectedType === "question" && (
+        <p className="mt-2 text-[12px] text-[var(--ink-faint)]">
+          質問は作品に紐づけず、つぶやきとして投稿されます
+        </p>
+      )}
+      {showProjectTarget && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className="text-[11px] text-[var(--ink-faint)]">投稿先</span>
           <select
