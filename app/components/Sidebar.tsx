@@ -294,13 +294,19 @@ export function Sidebar({
         className="rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 scroll-mt-24"
       >
         <h3 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-          週間ランキング
+          人気ランキング
         </h3>
         <div className="flex flex-col gap-0.5">
           {ranking.map((w, i) => (
             <RankingRow key={w.id} rank={i + 1} work={w} />
           ))}
         </div>
+        <Link
+          href="/ranking"
+          className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-[var(--accent)] hover:underline"
+        >
+          もっと見る →
+        </Link>
       </div>
 
       {activity.length > 0 && (

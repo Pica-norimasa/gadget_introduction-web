@@ -195,7 +195,13 @@ export function WorkDetail({
 
         <div className="mb-5 flex flex-wrap items-center gap-2.5">
           <StageBadge stage={work.stage} />
-          <ToolBadge tool={work.tool} />
+          {work.tool ? (
+            <Link href={`/tool/${work.tool}`}>
+              <ToolBadge tool={work.tool} />
+            </Link>
+          ) : (
+            <ToolBadge tool={work.tool} />
+          )}
           <PlatformBadges platforms={work.platforms} />
         </div>
 

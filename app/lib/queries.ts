@@ -116,6 +116,21 @@ function computeTrendScore(totalReactions: number, totalComments: number, totalR
   return Math.min(100, Math.round(engagementScore / 5 + recencyBoost));
 }
 
+// ホームの「今日の掘り出し物」向け。trendScoreをそのまま使うと「週間
+// ランキング」(素の人気順)と事実上同じ並びになってしまい、
+// 「まだ知られていない作品を発見する」という体験にならない。
+// フォロワーが少ない作者ほどスコアを底上げすることで、既に人気な
+// アカウントの人気作品への偏りを弱め、無名の作者の掘り出し物が
+// 浮かびやすくする(フォロワー200人以上で補正なし、0人で最大60%割増)。
+function computeDiscoveryScore(work: Work): number {
+  const obscurity = Math.max(0, 1 - work.followers / 200);
+  return work.trendScore * (1 + obscurity * 0.6);
+}
+
+export function getDiscoveryPicks(works: Work[], limit = 6): Work[] {
+  return [...works].sort((a, b) => computeDiscoveryScore(b) - computeDiscoveryScore(a)).slice(0, limit);
+}
+
 function toWork(
   project: ProjectWithAuthor,
   realReactionCounts?: Partial<Record<ReactionKey, number>>,
@@ -271,6 +286,38 @@ export async function getRelatedWorks(work: Work, limit = 4): Promise<Work[]> {
     .slice(0, limit);
 }
 
+// /tool/[tool]・/platform/[platform]一覧ページ向け。categoryが実質機能して
+// いない(post-actions.tsのcreatePost参照)ため、カテゴリページの代わりに
+// 実際に投稿時点で埋まるこの2軸で一覧化する。getRelatedWorks()と同じく
+// DBのJSON列(platforms)を直接クエリせず、取得済みのWork[]をJSで絞り込む。
+export async function getWorksByTool(tool: AiTool): Promise<Work[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const works = await getWorksWhere(
+    excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined,
+  );
+  return works.filter((w) => w.tool === tool).sort((a, b) => b.trendScore - a.trendScore);
+}
+
+export async function getWorksByPlatform(platform: Platform): Promise<Work[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const works = await getWorksWhere(
+    excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : undefined,
+  );
+  return works.filter((w) => w.platforms.includes(platform)).sort((a, b) => b.trendScore - a.trendScore);
+}
+
+// /ranking専用。既存のgetWorks()結果をソートするだけで足りるため、
+// 新規のDB集計ロジックは持たせない。
+export async function getRankedWorks(limit = 20): Promise<Work[]> {
+  const works = await getWorks();
+  return [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, limit);
+}
+
+export async function getNewWorks(limit = 20): Promise<Work[]> {
+  const works = await getWorks();
+  return [...works].sort((a, b) => a.daysAgo - b.daysAgo).slice(0, limit);
+}
+
 // sitemap.ts専用。件数分だけ返せればよいので、getWorksWhere()のような
 // リアクション集計・ブックマーク判定込みの重い読み込みはせず、
 // id/createdAtだけの軽量な問い合わせにする。
@@ -297,6 +344,20 @@ export async function getSitemapUserNames(): Promise<{ name: string; createdAt: 
     where: { email: { not: null }, deletedAt: null },
     select: { name: true, createdAt: true },
   });
+}
+
+// /tool/[tool]・/platform/[platform]のsitemap向け。0件のfacetを検索
+// エンジンに晒す(中身の薄いページの大量生成)のを避けるため、実際に
+// 1件以上作品があるtool/platform値だけを返す。
+export async function getSitemapFacetUrls(): Promise<{ tools: AiTool[]; platforms: Platform[] }> {
+  const works = await getWorksWhere();
+  const tools = new Set<AiTool>();
+  const platforms = new Set<Platform>();
+  for (const w of works) {
+    if (w.tool) tools.add(w.tool);
+    for (const p of w.platforms) platforms.add(p);
+  }
+  return { tools: [...tools], platforms: [...platforms] };
 }
 
 export type UserProfile = {

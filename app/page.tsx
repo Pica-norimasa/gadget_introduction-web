@@ -1,4 +1,5 @@
 import {
+  getDiscoveryPicks,
   getMyLikedPostIds,
   getMyPostCount,
   getMyReactions,
@@ -59,7 +60,10 @@ export default async function Home() {
     getTickerActivity(),
     getRecentStageUps(),
   ]);
-  const heroWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 6);
+  // 「今日の掘り出し物」は素の人気順(rankingWorks)と別の並びにするため、
+  // フォロワーの少ない作者を優先するgetDiscoveryPicks()を使う
+  // (queries.tsのcomputeDiscoveryScore参照)。
+  const heroWorks = getDiscoveryPicks(works, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
   const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
 
