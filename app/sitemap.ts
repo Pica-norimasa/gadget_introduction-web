@@ -7,6 +7,15 @@ import { getSitemapProjectIds, getSitemapStandalonePostIds, getSitemapUserNames 
 // #タグページ(/tag/[tag])はタグを集約するモデルを持たず一覧取得が
 // 高コストなため、まずはコンテンツの本体である作品・投稿・プロフィールに
 // 絞って対応する。
+//
+// DockerfileのビルドステージではDATABASE_URLがダミーの接続不能な値
+// (実際のDB接続はApp Runner側の実行時シークレットで注入される)なので、
+// ここでDBを読むこのルートをビルド時にプリレンダーさせると
+// プールタイムアウトでビルド自体が失敗する(実際に発生させて確認済み)。
+// force-dynamicでビルド時プリレンダー対象から明示的に外し、実行時
+// (実DBが繋がる状態)にだけ生成させる。
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [projects, posts, users] = await Promise.all([
     getSitemapProjectIds(),

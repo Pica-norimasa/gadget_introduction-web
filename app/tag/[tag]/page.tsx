@@ -6,6 +6,12 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
 
+// タグは無数に生成されうるためgenerateStaticParamsは持たせず、DBの内容も
+// 都度変わるので/work/[id]と同じくビルド時プリレンダーの対象から明示的に
+// 外す(Dockerfileのビルド時DATABASE_URLはダミーの接続不能な値のため、
+// ここでDBを読もうとするとビルドがプールタイムアウトで失敗する)。
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
