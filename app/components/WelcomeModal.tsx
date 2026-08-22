@@ -90,7 +90,7 @@ export function WelcomeModal() {
             </Link>
           )}
           <Link
-            href={`/work/${FEEDBACK_PROJECT_ID}`}
+            href={`/work/${FEEDBACK_PROJECT_ID}?tab=comments`}
             onClick={close}
             className="w-full rounded-full border border-[var(--line)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
           >
