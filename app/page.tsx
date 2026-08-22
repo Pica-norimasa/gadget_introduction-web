@@ -27,6 +27,7 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
 import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
+import { HomePrimaryActions } from "@/app/components/HomePrimaryActions";
 
 export default async function Home() {
   const [
@@ -83,6 +84,10 @@ export default async function Home() {
           <h1 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)] sm:text-2xl">
             個人開発者が作った面白いサービス・アプリ・ゲームを発見しよう
           </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-soft)]">
+            見つける、投稿する、作り方を知る。まずやりたいことから始められます。
+          </p>
+          <HomePrimaryActions />
         </div>
 
         <PostComposerToggle
@@ -90,25 +95,6 @@ export default async function Home() {
           isLoggedIn={!!session?.user}
           guestPostCount={myPostCount}
         />
-
-        {/* 「プロダクトの作り方」ガイドは元々サイドバーにあったが、lg未満だと
-            ドロワーの奥(🏆ボタンを押さないと出てこない)に入ってしまい、
-            Xからの初見の非ログインユーザーに一番見てほしい導線が埋もれて
-            いた。ここに小さなピルボタンとして複製し、常時見える位置に出す。
-            lg以上はサイドバーにも既にあるが、投稿欄のすぐ下という目立つ
-            位置にも同様に置いてほしいとの要望で、幅を問わず表示する。 */}
-        <div className="mx-auto max-w-[1180px] px-4 pt-3 pb-5 sm:px-6">
-          <Link
-            href="/guide/build"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
-          >
-            <span aria-hidden>🔧</span>
-            プロダクト作りの始め方
-            <span aria-hidden className="text-[var(--accent)]">
-              →
-            </span>
-          </Link>
-        </div>
 
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} currentUserId={currentUser?.id ?? null} />
         <StoriesStrip posts={posts} works={works} />

@@ -1,0 +1,61 @@
+"use client";
+
+import Link from "next/link";
+import { openComposer } from "@/app/lib/composer-store";
+
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+export function HomePrimaryActions() {
+  return (
+    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+      <a
+        href="#feed"
+        onClick={(event) => {
+          event.preventDefault();
+          scrollTo("feed");
+        }}
+        className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-3 text-left text-[var(--accent-ink)] transition-transform hover:-translate-y-0.5"
+      >
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/10 text-lg">
+          🔎
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-bold">作品を探す</span>
+          <span className="block text-[11px] opacity-80">新着・急上昇をすぐ見る</span>
+        </span>
+      </a>
+
+      <button
+        type="button"
+        onClick={() => {
+          openComposer();
+          requestAnimationFrame(() => scrollTo("composer"));
+        }}
+        className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
+      >
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--teal-soft)] text-lg">
+          ✏️
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-bold">投稿する</span>
+          <span className="block text-[11px] text-[var(--ink-faint)]">思いつきを残す</span>
+        </span>
+      </button>
+
+      <Link
+        href="/guide/build"
+        className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
+      >
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--violet-soft)] text-lg">
+          🔧
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-bold">作り方を見る</span>
+          <span className="block text-[11px] text-[var(--ink-faint)]">公開までの流れを確認</span>
+        </span>
+      </Link>
+    </div>
+  );
+}
