@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/app/lib/session";
 import { SITE_URL } from "@/app/lib/email";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
+import { WorkMediaTabs } from "@/app/components/WorkMediaTabs";
 
 // ランキングを検索エンジンからも辿れる独立ページとして持たせる
 // (これまではSidebar.tsxのウィジェットとしてしか存在しなかった)。
@@ -46,43 +47,46 @@ export default async function RankingPage() {
 
         <h1 className="mb-6 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">{title}</h1>
 
-        <div className="flex flex-col gap-8">
-          <div>
-            <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-              人気
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {rankedWorks.map((w) => (
-                <WorkCard
-                  key={w.id}
-                  work={w}
-                  posts={posts}
-                  myReactions={myReactions}
-                  currentUserId={currentUser?.id ?? null}
-                  showAnchor={false}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-              新着
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {newWorks.map((w) => (
-                <WorkCard
-                  key={w.id}
-                  work={w}
-                  posts={posts}
-                  myReactions={myReactions}
-                  currentUserId={currentUser?.id ?? null}
-                  showAnchor={false}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <WorkMediaTabs
+          tabs={[
+            {
+              id: "popular",
+              label: "人気",
+              content: (
+                <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {rankedWorks.map((w) => (
+                    <WorkCard
+                      key={w.id}
+                      work={w}
+                      posts={posts}
+                      myReactions={myReactions}
+                      currentUserId={currentUser?.id ?? null}
+                      showAnchor={false}
+                    />
+                  ))}
+                </div>
+              ),
+            },
+            {
+              id: "new",
+              label: "新着",
+              content: (
+                <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {newWorks.map((w) => (
+                    <WorkCard
+                      key={w.id}
+                      work={w}
+                      posts={posts}
+                      myReactions={myReactions}
+                      currentUserId={currentUser?.id ?? null}
+                      showAnchor={false}
+                    />
+                  ))}
+                </div>
+              ),
+            },
+          ]}
+        />
       </main>
     </div>
   );
