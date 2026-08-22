@@ -6,6 +6,7 @@ import { SITE_URL } from "@/app/lib/email";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { WorkCard } from "@/app/components/WorkCard";
 import { WorkMediaTabs } from "@/app/components/WorkMediaTabs";
+import type { Work } from "@/app/lib/mock-data";
 
 // ランキングを検索エンジンからも辿れる独立ページとして持たせる
 // (これまではSidebar.tsxのウィジェットとしてしか存在しなかった)。
@@ -23,6 +24,56 @@ export const metadata: Metadata = {
   openGraph: { title, description, type: "website", siteName: "Draftly" },
   twitter: { card: "summary_large_image", title, description },
 };
+
+function RankedGrid({
+  works,
+  posts,
+  myReactions,
+  currentUserId,
+  emptyMessage,
+}: {
+  works: Work[];
+  posts: Awaited<ReturnType<typeof getPosts>>;
+  myReactions: Awaited<ReturnType<typeof getMyReactions>>;
+  currentUserId: string | null;
+  emptyMessage: string;
+}) {
+  if (works.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-raised)] p-8 text-center">
+        <p className="text-sm font-medium text-[var(--ink-soft)]">{emptyMessage}</p>
+        <p className="mt-2 text-[12px] leading-relaxed text-[var(--ink-faint)]">
+          気になる作品を投稿したり、リアクションするとランキングが育っていきます。
+        </p>
+        <Link
+          href="/#composer"
+          className="mt-4 inline-flex rounded-full border border-[var(--line)] px-3 py-1.5 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
+        >
+          投稿してみる
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {works.map((work, index) => (
+        <div key={work.id} className="relative">
+          <span className="absolute left-3 top-3 z-20 rounded-full border border-white/10 bg-black/65 px-2.5 py-1 font-mono text-[12px] font-semibold text-white shadow-[0_4px_16px_var(--shadow)]">
+            #{index + 1}
+          </span>
+          <WorkCard
+            work={work}
+            posts={posts}
+            myReactions={myReactions}
+            currentUserId={currentUserId}
+            showAnchor={false}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default async function RankingPage() {
   const [rankedWorks, newWorks, posts, myReactions, currentUser] = await Promise.all([
@@ -45,7 +96,15 @@ export default async function RankingPage() {
           ← ホームに戻る
         </Link>
 
-        <h1 className="mb-6 font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)]">{title}</h1>
+        <div className="mb-6">
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">Ranking</p>
+          <h1 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--ink)] sm:text-2xl">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-soft)]">
+            いま反応が集まっている作品と、新しく出てきた作品をまとめて見られます。
+          </p>
+        </div>
 
         <WorkMediaTabs
           tabs={[
@@ -53,17 +112,17 @@ export default async function RankingPage() {
               id: "popular",
               label: "人気",
               content: (
-                <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {rankedWorks.map((w) => (
-                    <WorkCard
-                      key={w.id}
-                      work={w}
-                      posts={posts}
-                      myReactions={myReactions}
-                      currentUserId={currentUser?.id ?? null}
-                      showAnchor={false}
-                    />
-                  ))}
+                <div className="pt-2">
+                  <p className="mb-4 text-[12px] leading-relaxed text-[var(--ink-faint)]">
+                    閲覧・コメント・リアクションなど、反応が伸びている作品を優先して表示します。
+                  </p>
+                  <RankedGrid
+                    works={rankedWorks}
+                    posts={posts}
+                    myReactions={myReactions}
+                    currentUserId={currentUser?.id ?? null}
+                    emptyMessage="まだ人気ランキングに表示できる作品がありません"
+                  />
                 </div>
               ),
             },
@@ -71,17 +130,17 @@ export default async function RankingPage() {
               id: "new",
               label: "新着",
               content: (
-                <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-3">
-                  {newWorks.map((w) => (
-                    <WorkCard
-                      key={w.id}
-                      work={w}
-                      posts={posts}
-                      myReactions={myReactions}
-                      currentUserId={currentUser?.id ?? null}
-                      showAnchor={false}
-                    />
-                  ))}
+                <div className="pt-2">
+                  <p className="mb-4 text-[12px] leading-relaxed text-[var(--ink-faint)]">
+                    最近公開・更新された作品から順に表示します。新しい個人開発を探す入口です。
+                  </p>
+                  <RankedGrid
+                    works={newWorks}
+                    posts={posts}
+                    myReactions={myReactions}
+                    currentUserId={currentUser?.id ?? null}
+                    emptyMessage="まだ新着ランキングに表示できる作品がありません"
+                  />
                 </div>
               ),
             },
