@@ -177,6 +177,10 @@ export function PostForm(props: PostFormProps) {
   const guessedType = selectedType || inferPostType(body);
   const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
   const showProjectTarget = variant === "compose" && selectedType !== "question";
+  const selectedProjectName =
+    variant === "compose" && projectTarget && projectTarget !== "new"
+      ? props.myProjects.find((project) => project.id === projectTarget)?.title
+      : null;
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
   const createdHref = state.projectId ? `/work/${state.projectId}` : state.postId ? `/post/${state.postId}` : null;
 
@@ -300,30 +304,39 @@ export function PostForm(props: PostFormProps) {
         </p>
       )}
       {showProjectTarget && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-[var(--ink-faint)]">投稿先</span>
-          <select
-            name="projectTarget"
-            value={projectTarget}
-            onChange={(e) => setProjectTarget(e.target.value)}
-            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
-          >
-            <option value="new">🆕 新しいプロジェクトとして</option>
-            {props.myProjects.map((p) => (
-              <option key={p.id} value={p.id}>
-                📁 {p.title}
-              </option>
-            ))}
-          </select>
-          {projectTarget === "new" && (
-            <input
-              type="text"
-              name="newProjectTitle"
-              placeholder="プロジェクト名(空欄なら投稿内容から自動生成)"
-              maxLength={40}
-              className="h-8 min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
-            />
-          )}
+        <div className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/25 px-3 py-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] text-[var(--ink-faint)]">作品</span>
+            <select
+              name="projectTarget"
+              value={projectTarget}
+              onChange={(e) => setProjectTarget(e.target.value)}
+              className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+            >
+              <option value="new">🆕 新しい作品として投稿</option>
+              {props.myProjects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  📁 {p.title} に追加
+                </option>
+              ))}
+            </select>
+            {projectTarget === "new" && (
+              <input
+                type="text"
+                name="newProjectTitle"
+                placeholder="作品名(空欄なら投稿内容から自動生成)"
+                maxLength={40}
+                className="h-8 min-w-[180px] flex-1 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+              />
+            )}
+          </div>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--ink-faint)]">
+            {projectTarget === "new"
+              ? "新しい作品ページを作り、最初の投稿として表示します。"
+              : selectedProjectName
+                ? `「${selectedProjectName}」の制作タイムラインに追加します。`
+                : "選んだ作品の制作タイムラインに追加します。"}
+          </p>
         </div>
       )}
       {/* 添付ボタン列と送信ボタンを別の行に分けると高さが揃って見えないと
@@ -342,7 +355,7 @@ export function PostForm(props: PostFormProps) {
             trimmed ? "opacity-100" : "opacity-0"
           }`}
         >
-          {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}っぽい投稿として判定
+          {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}として投稿
         </span>
         <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
         <button
