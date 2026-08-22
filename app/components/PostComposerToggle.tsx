@@ -8,7 +8,8 @@ import { openComposer, openComposerWithInspiration, useComposerOpen } from "@/ap
 import { PostForm } from "./PostForm";
 
 // トップページを開いた瞬間から作品一覧を見せたいので、投稿フォームは
-// 常時表示せず、折りたたんだ状態のバーだけを最初に見せる。展開後は
+// 常時表示しない。投稿入口は上部の「投稿する」カードと右下FABに集約し、
+// 未展開時はスクロール先として必要なアンカーだけを置く。展開後は
 // (投稿してもフォームが消えず継続して使えるXの挙動に合わせて)畳み直す
 // UIは用意していない。
 //
@@ -90,16 +91,7 @@ export function PostComposerToggle({
 
   return (
     <>
-      <div id="composer" className="mx-auto max-w-[1180px] scroll-mt-24 px-4 pt-6 sm:px-6">
-        <button
-          type="button"
-          onClick={openComposer}
-          className="flex w-full items-center gap-2 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[15px] text-[var(--ink-faint)] transition-colors hover:border-[var(--accent)]"
-        >
-          <span aria-hidden>✎</span>
-          アイデア・制作メモ・つぶやきを気軽に投稿する
-        </button>
-      </div>
+      <div id="composer" className="scroll-mt-24" />
       {guestNotice}
     </>
   );
