@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作品ではなく、創作活動を投稿する場所 — 再設計企画書 v2</title>
+<style>
+  :root {
+    --ink: #14181A;
+    --paper: #EEF0E9;
+    --paper-raised: #F8F9F3;
+    --ink-soft: #4B5551;
+    --ink-faint: #7C857E;
+    --rule: #D8DACE;
+    --accent: #B87C15;
+    --accent-2: #2F6E63;
+    --critical: #A23E2E;
+    --critical-bg: #F3E6DF;
+    --shadow: rgba(20, 24, 26, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #EDEAE0;
+      --paper: #101413;
+      --paper-raised: #1B211F;
+      --ink-soft: #ACB3AB;
+      --ink-faint: #7C857E;
+      --rule: #2B322F;
+      --accent: #E3A83B;
+      --accent-2: #5CB0A0;
+      --critical: #E0836F;
+      --critical-bg: #2C1D18;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", "Hoefler Text", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  a { color: var(--accent-2); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+  }
+
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  .masthead {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 4.5rem 1.75rem 3rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .masthead .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1.1rem;
+  }
+  .masthead h1 {
+    font-size: clamp(2rem, 4.2vw, 2.9rem);
+    line-height: 1.2;
+    margin: 0 0 1.1rem;
+    text-wrap: balance;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .masthead .lede {
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0 0 1.6rem;
+  }
+  .masthead .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+  .masthead .meta-row span::before { content: "— "; color: var(--rule); }
+
+  .frame {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 2.5rem;
+    padding: 0 1.75rem;
+  }
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 2.5rem 0 2rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.76rem;
+  }
+  nav.toc .toc-group + .toc-group { margin-top: 1.4rem; }
+  nav.toc .toc-label {
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.66rem;
+    margin-bottom: 0.5rem;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    display: block;
+    padding: 0.24rem 0;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    padding-left: 0.7rem;
+    margin-left: -0.7rem;
+    line-height: 1.35;
+  }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--rule); }
+  nav.toc a .n { color: var(--accent); margin-right: 0.35em; }
+
+  main { min-width: 0; padding: 2.5rem 0 6rem; }
+
+  section.item {
+    padding: 2.4rem 0;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 1.5rem;
+  }
+  section.item:first-child { padding-top: 0; }
+  .item-head { display: flex; align-items: baseline; gap: 0.85rem; margin: 0 0 1.1rem; }
+  .item-head .num {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    font-weight: 600;
+    min-width: 1.8em;
+  }
+  .item-head h2 { font-size: 1.4rem; margin: 0; font-weight: 600; text-wrap: balance; letter-spacing: -0.005em; }
+  section.item p { margin: 0 0 0.95rem; max-width: 68ch; }
+  section.item ul, section.item ol.speclist { margin: 0 0 0.95rem; padding-left: 1.3rem; max-width: 66ch; }
+  section.item li { margin: 0 0 0.45rem; }
+  section.item strong { color: var(--ink); font-weight: 600; }
+
+  .subhead {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--accent-2);
+    margin: 1.3rem 0 0.5rem;
+  }
+
+  .callout {
+    background: var(--paper-raised);
+    border-left: 3px solid var(--accent-2);
+    padding: 1rem 1.2rem;
+    margin: 1.1rem 0;
+    max-width: 64ch;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .callout-label {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-2);
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+  .callout.critical { border-left-color: var(--critical); background: var(--critical-bg); }
+  .callout.critical .callout-label { color: var(--critical); }
+  .callout.verdict { border-left-color: var(--accent); background: var(--paper-raised); }
+  .callout.verdict .callout-label { color: var(--accent); }
+
+  .tablewrap { overflow-x: auto; margin: 1rem 0 1.3rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.87rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  td.hero-col, th.hero-col { color: var(--accent); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+
+  .mvp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .mvp-cols { grid-template-columns: 1fr; } }
+  .mvp-col h3 {
+    font-family: ui-monospace, monospace; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-faint); margin: 0 0 0.7rem; font-weight: 500;
+  }
+  .mvp-col ul { list-style: none; margin: 0; padding: 0; }
+  .mvp-col li { padding-left: 1.4rem; position: relative; font-size: 0.92rem; margin-bottom: 0.55rem; color: var(--ink-soft); }
+  .mvp-col.now li::before { content: "●"; position: absolute; left: 0; color: var(--accent); font-size: 0.6rem; top: 0.4em; }
+  .mvp-col.later li::before { content: "○"; position: absolute; left: 0; color: var(--ink-faint); font-size: 0.6rem; top: 0.4em; }
+
+  .mock {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    padding: 1.1rem 1.2rem;
+    margin: 1rem 0 1.3rem;
+    font-size: 0.83rem;
+  }
+  .mock .mock-title { font-family: ui-monospace, monospace; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 0.8rem; }
+  .mock .row { display: flex; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px dashed var(--rule); align-items: baseline; }
+  .mock .row:last-child { border-bottom: none; }
+  .mock .row .k { color: var(--accent-2); min-width: 9.5em; font-family: ui-monospace, monospace; font-size: 0.74rem; flex-shrink: 0; }
+  .mock .row .v { color: var(--ink-soft); }
+
+  /* flow diagram */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 1.2rem 0; font-size: 0.86rem; }
+  .flow .step {
+    border: 1px solid var(--rule); background: var(--paper-raised); border-radius: 999px;
+    padding: 0.4rem 0.9rem; color: var(--ink-soft); white-space: nowrap;
+  }
+  .flow .step.weak { border-color: var(--critical); color: var(--critical); border-style: dashed; }
+  .flow .arrow { color: var(--ink-faint); }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .pill {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    padding: 0.22rem 0.6rem;
+    border-radius: 3px;
+    background: var(--paper-raised);
+  }
+
+  .synth-open { max-width: 920px; margin: 0 auto; padding: 3.5rem 1.75rem 0; }
+  .synth-open .eyebrow {
+    font-family: ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--critical); margin: 0 0 0.8rem;
+  }
+  .synth-open h2 { font-size: 1.8rem; margin: 0 0 0.6rem; text-wrap: balance; }
+  .synth-open .lede { color: var(--ink-soft); max-width: 62ch; margin: 0; }
+
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 3rem 1.75rem 4rem;
+    color: var(--ink-faint); font-size: 0.82rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+  }
+
+  @media (max-width: 760px) {
+    .frame { grid-template-columns: 1fr; }
+    nav.toc {
+      position: static; max-height: none; padding: 1.2rem 0 0;
+      overflow-x: auto; border-bottom: 1px solid var(--rule);
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">Platform Redesign Memo v2 — 2026.08</p>
+  <h1>作品ではなく、「創作活動」を投稿する場所</h1>
+  <p class="lede">
+    投稿の最小単位を「完成した作品」から「創作活動そのもの」に置き換える再設計案。
+    Idea・制作途中・完成・更新のすべてを1つのタイムライン(Project)に積み上げ、
+    投稿コストをX/Instagram並みまで下げる設計を検証する。最後に、この構想の中心的な問い——
+    「思いつき→発見→制作→完成→再発見」という循環は本当に回るのか——を厳しく評価する。
+  </p>
+  <div class="meta-row">
+    <span>全21項目の設計 + 総合企画</span>
+    <span>循環の成立可否を中心に批判的評価</span>
+    <span>前作(docs/plan.html)からの再設計</span>
+  </div>
+</header>
+
+<div class="frame">
+  <nav class="toc">
+    <div class="toc-group">
+      <p class="toc-label">Part 1 — 設計</p>
+      <ol>
+        <li><a href="#s1"><span class="n">01</span>投稿コストを下げるUX</a></li>
+        <li><a href="#s2"><span class="n">02</span>「投稿」の再定義</a></li>
+        <li><a href="#s3"><span class="n">03</span>Idea投稿者を増やす</a></li>
+        <li><a href="#s4"><span class="n">04</span>Creatorを増やす</a></li>
+        <li><a href="#s5"><span class="n">05</span>Idea×Creatorマッチング</a></li>
+        <li><a href="#s6"><span class="n">06</span>制作途中を面白く</a></li>
+        <li><a href="#s7"><span class="n">07</span>完成作品の発見</a></li>
+        <li><a href="#s8"><span class="n">08</span>Project/Post構造</a></li>
+        <li><a href="#s9"><span class="n">09</span>Post→Project自動生成</a></li>
+        <li><a href="#s10"><span class="n">10</span>GitHub連携</a></li>
+        <li><a href="#s11"><span class="n">11</span>AIによる自動投稿</a></li>
+        <li><a href="#s12"><span class="n">12</span>AIによる作品推薦</a></li>
+        <li><a href="#s13"><span class="n">13</span>AIによるマッチング</a></li>
+        <li><a href="#s14"><span class="n">14</span>毎日訪れる理由</a></li>
+        <li><a href="#s15"><span class="n">15</span>Creatorの継続理由</a></li>
+        <li><a href="#s16"><span class="n">16</span>Idea投稿者の継続理由</a></li>
+        <li><a href="#s17"><span class="n">17</span>X/IGから奪えるか</a></li>
+        <li><a href="#s18"><span class="n">18</span>PHとの差別化</a></li>
+        <li><a href="#s19"><span class="n">19</span>App Storeとの差別化</a></li>
+        <li><a href="#s20"><span class="n">20</span>Redditとの差別化</a></li>
+        <li><a href="#s21"><span class="n">21</span>TikTokとの差別化</a></li>
+      </ol>
+    </div>
+    <div class="toc-group">
+      <p class="toc-label">Part 2 — 総合</p>
+      <ol>
+        <li><a href="#verdict"><span class="n">—</span>循環は成立するか</a></li>
+        <li><a href="#concept"><span class="n">—</span>コンセプト統合</a></li>
+        <li><a href="#s8"><span class="n">—</span>データモデル(Part1 08)</a></li>
+        <li><a href="#stack"><span class="n">—</span>技術スタック</a></li>
+        <li><a href="#growth"><span class="n">—</span>獲得・成長・収益</a></li>
+        <li><a href="#critique"><span class="n">—</span>批判的評価</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+
+    <section class="item" id="s1">
+      <div class="item-head"><span class="num">01</span><h2>X/Instagramより投稿コストを下げる具体的なUX</h2></div>
+      <p>
+        投稿窓を常時1つだけ開いた状態にし、Xの「いまどうしてる?」と同じ感覚で使えるようにする。
+        必須項目はゼロ——タイトルも、カテゴリも、スクリーンショットも要求しない。1行のテキストだけで投稿は完了する。
+      </p>
+      <ul>
+        <li><strong>投稿種別は書かせず、AIが推測する。</strong>「〜が欲しい」→Idea、URL+「できた」→Demo、疑問文→Question、のように自動判定し、間違っていたらワンタップで種別チップを差し替えるだけにする。</li>
+        <li><strong>Projectへの紐付けも必須にしない。</strong>AIが「これは新しいProjectですか?」と提案するが、断っても投稿はそのまま公開される(孤立した投稿として存在できる)。</li>
+        <li>スクリーンショットの貼り付け、動画の直接添付、URLだけの投稿、10秒だけ喋った音声を自動文字起こしする投稿——すべてを正規の投稿として受け付ける。</li>
+      </ul>
+      <p>「投稿フォームを埋めさせる」思想を完全にやめ、「何か作ったら、とりあえず放り込む」体験に振り切ることが核心。</p>
+    </section>
+
+    <section class="item" id="s2">
+      <div class="item-head"><span class="num">02</span><h2>「投稿する」という概念そのものをどう再定義するか</h2></div>
+      <p>
+        「投稿する」=「作品を発表する」ではなく、「投稿する」=「今の創作活動を実況する」に定義し直す。
+        動詞のトーンも変える——「公開する」ではなく「つぶやく」「共有する」に近い言葉を使い、ボタンの文言・オンボーディングの説明文すべてで
+        「未完成でも呟いていい場所」であることを繰り返し伝える。
+      </p>
+      <p>UI上の比喩は「作品カタログに1件追加する」ではなく「タイムラインに1行書き込む」。この比喩のズレが投稿コストの体感を大きく左右する。</p>
+    </section>
+
+    <section class="item" id="s3">
+      <div class="item-head"><span class="num">03</span><h2>Ideaだけ投稿するユーザーをどう増やすか</h2></div>
+      <ul>
+        <li>「作れなくてもOK、思いついたら書くだけ」であることをオンボーディングで明言し、技術的な参加障壁をゼロにする。</li>
+        <li>Ideaそのものに独立した評価軸を与える——「これ欲しい」ボタン(需要シグナル、GitHub Issueの+1に近い)、リアクション、コメントを用意し、<strong>誰にも作られなくてもIdea単体で社会的な手応えが得られる</strong>ようにする。</li>
+        <li>「今週の妄想ランキング」のように、実現可否と無関係にIdeaの面白さだけを評価するランキングを常設する。</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s4">
+      <div class="item-head"><span class="num">04</span><h2>Ideaを実際に作るCreatorをどう増やすか</h2></div>
+      <ul>
+        <li>「これ作ってみる」ボタンを公開宣言として扱う(GitHubのIssue担当宣言に近い、緩やかな社会的コミットメント)。押した瞬間にProjectの雛形が自動生成され、Ideaが1件目の投稿として自動的に積まれる——Creator側のセットアップコストをゼロにする。</li>
+        <li>Creatorの過去のProjectのタグ・使用ツールから「作れそうな人」を推定し、Idea投稿者側とCreator側の双方に提案を出す。</li>
+        <li>1つのIdeaに対して複数人が並行して挑戦してよいことにする(排他的な「予約制」にしない)。理由は<a href="#critique">批判的評価</a>で詳述。</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s5">
+      <div class="item-head"><span class="num">05</span><h2>IdeaとCreatorをどうマッチングするか</h2></div>
+      <p>
+        Idea投稿とCreatorの過去作品を埋め込みベクトル化し、双方向に推薦する——Idea投稿者には「作れそうな人」、Creatorには「あなた向けのIdea」。
+        「🙋 WANTED」は共同制作を明示的に募る投稿種別とし、非エンジニアのIdea投稿者がノーコード的な役割(企画・デザイン・検証)でProjectに加われるオプションも用意する。
+      </p>
+      <p>似たIdeaが複数あれば自動でクラスタリングし、「10人がこのIdeaを欲しいと言っています」という需要の束としてCreatorに見せる。1件のIdeaより遥かに強い着手動機になる。</p>
+    </section>
+
+    <section class="item" id="s6">
+      <div class="item-head"><span class="num">06</span><h2>開発途中の投稿をどう面白く見せるか</h2></div>
+      <ul>
+        <li>MAKING/SCREENSHOT/DEMOをナラティブ(物語)として扱う——Before/After比較、「今日のバグ」投稿、Projectタイムライン上の進捗バーなど、経過そのものをコンテンツ化する。</li>
+        <li>完成品への「いいね」とは別に、制作中コンテンツ専用の軽い応援リアクション(「がんばれ」)を用意し、社会的な文脈を分ける。</li>
+        <li>AIがProjectの投稿群を15秒程度のダイジェスト動画に自動編集する機能(将来フェーズ)——TikTok的なフォーマットで、Projectの成長を1本の動画として追体験できるようにする。</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s7">
+      <div class="item-head"><span class="num">07</span><h2>完成作品をどう発見させるか</h2></div>
+      <p>
+        RELEASE投稿は視覚的に格上げされたカードで表示するが、発見の起点はリリース単体ではなく<strong>そのProjectの物語全体</strong>にする。
+        「このIdeaから生まれました」という出自バッジと元投稿へのリンクを常設し、Idea側の閲覧者とRelease側の閲覧者の間で相互に流入が起きる導線をつくる。
+      </p>
+    </section>
+
+    <section class="item" id="s8">
+      <div class="item-head"><span class="num">08</span><h2>ProjectとPostをどういうデータ構造にするか</h2></div>
+      <div class="mock">
+        <div class="mock-title">Project</div>
+        <div class="row"><span class="k">id / title / summary</span><span class="v">Projectの識別子と要約(AIが下書き生成)</span></div>
+        <div class="row"><span class="k">status</span><span class="v">idea / building / released / updated / abandoned</span></div>
+        <div class="row"><span class="k">originIdeaPostId</span><span class="v">null許容。元になったIdea投稿(他人の投稿でもよい)への参照</span></div>
+        <div class="row"><span class="k">creators[]</span><span class="v">{userId, role} の配列。複数人での共同制作に対応</span></div>
+        <div class="row"><span class="k">tags[] / coverImage</span><span class="v">AI生成タグ、直近の投稿から自動選定されるカバー画像</span></div>
+      </div>
+      <div class="mock">
+        <div class="mock-title">Post</div>
+        <div class="row"><span class="k">id / projectId</span><span class="v">projectIdはnull許容(孤立投稿を許す)</span></div>
+        <div class="row"><span class="k">type</span><span class="v">idea / making / screenshot / demo / prototype / release / update / question / wanted</span></div>
+        <div class="row"><span class="k">body / media[] / links[]</span><span class="v">本文・添付・リンク。すべて任意</span></div>
+        <div class="row"><span class="k">aiMeta</span><span class="v">{suggestedType, suggestedTags, suggestedProjectId, summary}</span></div>
+      </div>
+      <p>孤立していたIdea投稿は、後から誰かがそれを実装した際に<code class="mono">originIdeaPostId</code>を遡って紐付けられる。AIが候補を提案し、人間が最終確認する。</p>
+    </section>
+
+    <section class="item" id="s9">
+      <div class="item-head"><span class="num">09</span><h2>投稿からProjectを自動生成するUX</h2></div>
+      <p>
+        ユーザーが🛠/📷/🎥系の投稿をした際、直近の投稿と関連が薄そうであればAIが「これは新しいProjectですか?」と尋ね、投稿文から自動生成したタイトル案を添えて提示する。
+        ワンタップで承認すればProjectが生成され、その投稿が1件目の記録として自動的に組み込まれる。以降は「これは『AI旅行プランナー』の続きですか?」という形で、タグ付けの手間を確認1タップにまで圧縮する。
+      </p>
+    </section>
+
+    <section class="item" id="s10">
+      <div class="item-head"><span class="num">10</span><h2>GitHubなどとの連携</h2></div>
+      <p>
+        GitHubリポジトリをProjectに接続し、commit・release・PRマージを検知してAIが🔧UPDATE投稿の下書きを自動生成する。
+        <strong>ただし自動公開はしない。</strong>下書きとして本人に提示し、確認・編集した上でワンタップ公開する形に必ず留める(理由は<a href="#s11">次項</a>と<a href="#critique">批判的評価</a>)。
+        将来的にFigma(デザイン更新)、App Store/npm(リリース検知)など同様のコネクタを追加できる設計にしておく。
+      </p>
+    </section>
+
+    <section class="item" id="s11">
+      <div class="item-head"><span class="num">11</span><h2>AIによる自動投稿</h2></div>
+      <p>
+        AIは常に「下書きを作る」役割に限定し、人間の確認なしに公開される投稿は一切作らない。
+        これは投稿コストを下げるUX機能であると同時に、AIによる大量投稿・スパムを防ぐための最重要のガードレールでもある。両方の意味でこの一線は譲らない。
+      </p>
+    </section>
+
+    <section class="item" id="s12">
+      <div class="item-head"><span class="num">12</span><h2>AIによる作品推薦</h2></div>
+      <p>
+        投稿・Projectを埋め込みベクトル化し、フォロー・閲覧・リアクション履歴から個人化したフィードを構成する。
+        ただし全体をパーソナライズだけに委ねると人気者ばかりが増幅されるため、フィードの一定割合を「埋め込み距離が遠い・フォロワーが少ない投稿」に意図的に割り当てる<strong>意外性枠</strong>を固定で確保する。
+      </p>
+    </section>
+
+    <section class="item" id="s13">
+      <div class="item-head"><span class="num">13</span><h2>AIによるIdeaとCreatorのマッチング</h2></div>
+      <p>
+        <a href="#s5">05</a>の仕組みに加え、Creatorへの能動的な通知(「あなたの得意分野に近いIdeaが投稿されました」、オプトイン制)や、Idea同士のクラスタリングによる重複統合・需要の可視化を行う。
+        「◯件の似たIdeaをまとめて見る」という導線は、Creatorから見た着手優先度の判断材料になる。
+      </p>
+    </section>
+
+    <section class="item" id="s14">
+      <div class="item-head"><span class="num">14</span><h2>ユーザーが毎日訪れる理由</h2></div>
+      <ul>
+        <li>Idea・制作中・完成・更新が絶えず流れ込む、TikTok的に途切れないフィード。</li>
+        <li>通知が強い動機になる——「フォロー中のProjectが更新されました」に加え、<strong>「あなたのIdeaが作られ始めました」</strong>はIdea投稿だけのユーザーにとって最大級の再訪動機になる。</li>
+        <li>自分のProjectの閲覧数・反応数が伸びているかを確認する習慣的チェックループ(他のクリエイター系プラットフォーム共通の定番動機)。</li>
+      </ul>
+    </section>
+
+    <section class="item" id="s15">
+      <div class="item-head"><span class="num">15</span><h2>Creatorが継続的に投稿する理由</h2></div>
+      <p>
+        制作の「過程」自体が公開直後から観客を持つ——Product Huntのようなローンチ一発勝負ではなく、作っている最中から継続的に注目される。
+        すべてのProjectタイムラインは公開されたポートフォリオとして蓄積され、転職・案件獲得にも転用できる資産になっていく。
+      </p>
+    </section>
+
+    <section class="item" id="s16">
+      <div class="item-head"><span class="num">16</span><h2>Idea投稿者が継続的に投稿する理由</h2></div>
+      <p>
+        技術を一切持たなくても、発想の質だけで評価される創作的アイデンティティを築ける(ゲーム業界の「コンセプトアーティスト」的な立ち位置に近い)。
+        そして稀に、自分の思いつきが他人の手で本当に形になるという、他のプラットフォームには無い体験がある。ただしこの「稀に」の実現頻度については<a href="#critique">批判的評価</a>で厳しく検証する。
+      </p>
+    </section>
+
+    <section class="item" id="s17">
+      <div class="item-head"><span class="num">17</span><h2>X/Instagramからユーザーを奪える可能性</h2></div>
+      <p>
+        一般的な社会的発信・私的な写真共有という広い需要でX/Instagramと正面から張り合うのは現実的ではない。
+        正確には、<strong>X上で既に自然発生している「#個人開発」「#buildinpublic」的な投稿行動</strong>を、より適した構造(Project・出自・発見導線)を持つ専用の場に引き取る、という狙いが妥当。
+        Indie Hackers・WIP.co・Makerlogのような既存の類似コミュニティが一定の需要を証明済みであることも踏まえ、汎用SNSの代替ではなく<strong>特化型の受け皿</strong>として位置づけるべき。
+      </p>
+    </section>
+
+    <section class="item" id="s18">
+      <div class="item-head"><span class="num">18</span><h2>Product Huntとの差別化</h2></div>
+      <p>ローンチ当日の一発勝負ではなく常時発見。完成品前提ではなくIdea・制作中も一級コンテンツ。Idea→Creator→Productという出自の系譜を持つ点がPHには存在しない構造。</p>
+    </section>
+
+    <section class="item" id="s19">
+      <div class="item-head"><span class="num">19</span><h2>App Storeとの差別化</h2></div>
+      <p>App Storeは完成・審査済みアプリの流通チャネル。本プラットフォームはその手前・最中の発見とコミュニティ層であり、競合ではなく補完関係(RELEASE投稿からApp Storeへ外部リンクする形)。</p>
+    </section>
+
+    <section class="item" id="s20">
+      <div class="item-head"><span class="num">20</span><h2>Redditとの差別化</h2></div>
+      <p>r/SideProjectのような近い文化はあるが、フラットな投稿フィードに過ぎずProjectという構造も出自の系譜もIdea×Creatorマッチングも持たない。ビジュアル・時系列型の制作進捗の見せ方でも設計思想が異なる。</p>
+    </section>
+
+    <section class="item" id="s21">
+      <div class="item-head"><span class="num">21</span><h2>TikTokとの差別化</h2></div>
+      <p>
+        アルゴリズム発見の強さと縦型没入消費は参考にするが、コンテンツの性質が違う——TikTokは基本的に消費し切りの単発動画、本プラットフォームのProjectは<strong>数ヶ月かけて育つ物語</strong>を持つ。
+        エンゲージメント指標も「視聴時間」ではなく「発想の面白さ」「作ってみたい」寄りに再設計する。
+      </p>
+    </section>
+
+  </main>
+</div>
+
+<div class="synth-open" id="verdict">
+  <p class="eyebrow">Part 2 — 総合企画</p>
+  <h2>「思いつき→発見→制作→完成→再発見」の循環は本当に成立するか</h2>
+  <p class="lede">この構想全体の心臓部にあたる問いに、まず結論から答える。</p>
+</div>
+
+<div class="frame" style="grid-template-columns: 1fr;">
+  <main style="padding-top: 2rem;">
+    <section class="item">
+      <div class="callout verdict">
+        <span class="callout-label">結論</span>
+        <p>
+          <strong>「他人のIdeaを見知らぬCreatorが作る」という循環を、MVPの主エンジンにしてはいけない。</strong>
+          この輪の中で最も弱いのは「作ってみる」のステップ——見返りの不確かな他人の思いつきを無償で形にする行動は、
+          オープンソースの実例を見ても現実には稀な行動であり(メンテナーは大抵「自分のかゆい所」を掻くために作る)、
+          大量発生を前提に設計するのは楽観的すぎる。
+        </p>
+      </div>
+
+      <div class="flow">
+        <span class="step">1行投稿</span><span class="arrow">→</span>
+        <span class="step">発見される</span><span class="arrow">→</span>
+        <span class="step">面白いと思う</span><span class="arrow">→</span>
+        <span class="step weak">見知らぬ他人が作る</span><span class="arrow">→</span>
+        <span class="step">過程を投稿</span><span class="arrow">→</span>
+        <span class="step">完成</span><span class="arrow">→</span>
+        <span class="step">再発見</span>
+      </div>
+      <p style="max-width: 66ch; color: var(--ink-soft); font-size: 0.95rem;">
+        点線の一歩(見知らぬ他人が作る)だけが検証されていない、最も脆い接続点。ここに全体重を預けると、
+        Idea投稿は溜まるのに誰も拾わない「叶わない願いの墓場」になりかねない。
+      </p>
+
+      <div class="subhead">実際に回る、証明済みの循環</div>
+      <div class="flow">
+        <span class="step">自分でIdeaを持つ</span><span class="arrow">→</span>
+        <span class="step">自分で作り始める</span><span class="arrow">→</span>
+        <span class="step">過程を投稿</span><span class="arrow">→</span>
+        <span class="step">発見される</span><span class="arrow">→</span>
+        <span class="step">反応をもらう</span><span class="arrow">→</span>
+        <span class="step">改善</span><span class="arrow">→</span>
+        <span class="step">再発見</span>
+      </div>
+      <p style="max-width: 66ch;">
+        X・Indie Hackers・Makerlogで実際に日々起きているのは、Idea保有者=Creatorが同一人物の「セルフ循環」。
+        これは検証済みの需要であり、MVPはまずこの循環を極限まで気持ちよくすることに全リソースを使うべき。
+        「見知らぬ他人のIdeaを拾う」体験は、セルフ循環で十分な熱量が生まれた<strong>フェーズ2の上乗せ機能</strong>として設計し直す
+        (時々起きるバイラルな美談として機能すれば十分で、日常のコア導線に据えない)。
+      </p>
+    </section>
+  </main>
+</div>
+
+<div class="synth-open" id="concept" style="border-top: none;">
+  <p class="eyebrow" style="color: var(--accent-2);">コンセプト統合</p>
+  <h2>最も強いサービスコンセプト</h2>
+</div>
+
+<div class="frame" style="grid-template-columns: 1fr;">
+  <main style="padding-top: 1.5rem;">
+    <section class="item">
+      <p style="font-size: 1.05rem; max-width: 62ch;">
+        「<strong>自分の創作活動を、タイムラインとして育てて共有するBuild-in-Public特化SNS。</strong>」
+        主語は「作品」ではなく「Project」。誰か他人のIdeaを実現する市場ではなく、<em>自分のIdea→自分の実装</em>という
+        最も証明された行動を、Xより低コストかつ専用設計で気持ちよくする場所として立ち上げ、
+        Idea×Creatorマッチングは後から重ねる拡張機能として位置づける。
+      </p>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>MVPで実装すべき機能 / 実装しない機能</h2></div>
+      <div class="mvp-cols">
+        <div class="mvp-col now">
+          <h3>MVP</h3>
+          <ul>
+            <li>常設の投稿コンポーザー(AI種別推定・任意Project紐付け)</li>
+            <li>Project自動生成とタイムライン表示</li>
+            <li>混合フィード(Following / 急上昇 / 今日生まれたIdea / リリース速報)</li>
+            <li>複数軸リアクション + コメント + Repost</li>
+            <li>Follow(ユーザー単位 / Project単位)</li>
+            <li>GitHub連携(下書き自動生成、公開は必ず人間が確認)</li>
+            <li>基本的なAI分類・タグ付け・要約</li>
+          </ul>
+        </div>
+        <div class="mvp-col later">
+          <h3>later(フェーズ2以降)</h3>
+          <ul>
+            <li>他人Idea×Creatorのマッチング通知・募集機能</li>
+            <li>Projectダイジェスト動画の自動生成</li>
+            <li>GitHub以外のコネクタ(Figma、App Store等)</li>
+            <li>採用・スカウト、投げ銭などの収益化機能</li>
+            <li>Ideaクラスタリング・需要の束の可視化</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>最初のユーザー体験 / 投稿UX / Project UX / Discovery UX</h2></div>
+      <div class="subhead">最初のユーザー体験</div>
+      <p>プロフィール設定から始めない。「今なにか作ってますか?」の一言から最初の投稿を即座に促し、運営が仕込んだ実在感のあるProjectで先に埋まったフィードを見せる(空の棚問題を避ける)。</p>
+      <div class="subhead">投稿UX</div>
+      <p>常時開いた1つの入力欄、AI推定の種別チップ、Project紐付けの提案、ワンタップ公開。必須項目はゼロ。</p>
+      <div class="subhead">Project UX</div>
+      <p>自動生成されるタイムライン、直近投稿からのカバー自動選定、ステータスバッジ(idea/building/released/updated)、所有者だけに見える伸び方の統計。</p>
+      <div class="subhead">Discovery UX</div>
+      <p>タブ切り替え式フィード + 無限スクロール + 没入型フルスクリーンビュー(本セッションで既に試作済みのUIパターンを流用)。無名の逆転枠アルゴリズムで、フォロワー数に依らない急上昇を継続的に作る。</p>
+    </section>
+
+    <section class="item">
+      <div class="item-head"><h2>Idea → Creator → Productの仕組み / AIを使うべき場所</h2></div>
+      <p>フェーズ2機能として、「これ作ってみる」宣言→Project自動生成→出自バックリンク、の一連をそのまま実装(<a href="#s4">04</a>・<a href="#s5">05</a>参照)。AIは常に「下書き生成・推薦・要約・分類」に徹し、公開の最終判断は必ず人間に残す。これは低摩擦UXとスパム防止の両方に効く一線。</p>
+    </section>
+
+    <section class="item" id="stack">
+      <div class="item-head"><h2>技術スタック</h2></div>
+      <div class="mock">
+        <div class="row"><span class="k">フロントエンド</span><span class="v">Next.js + TypeScript(本セッションの試作と同一路線)</span></div>
+        <div class="row"><span class="k">API / バックエンド</span><span class="v">Node.js または Go</span></div>
+        <div class="row"><span class="k">DB</span><span class="v">MySQL(既定路線)。ただし埋め込みベクトル検索はMySQL単体では弱いため、pgvector系かOpenSearch等の専用ベクトルストアを併設する前提で設計する</span></div>
+        <div class="row"><span class="k">メディア</span><span class="v">S3互換オブジェクトストレージ + CDN</span></div>
+        <div class="row"><span class="k">連携基盤</span><span class="v">GitHub Webhook → キュー(SQS/EventBridge等) → AI下書き生成ジョブ、AWS想定</span></div>
+      </div>
+      <p>AWS + MySQLという既定の本番方針は維持しつつ、「ベクトル検索が必要になった時点でMySQL単体では足りない」という技術的制約だけは早めに明記しておく。</p>
+    </section>
+
+    <section class="item" id="growth">
+      <div class="item-head"><h2>初期ユーザー獲得 / 成長戦略 / マネタイズ / 最大のリスク / 捨てるべき機能</h2></div>
+      <div class="subhead">初期ユーザー獲得</div>
+      <p>X上の「#個人開発」「#buildinpublic」コミュニティを直接シードする。既存のXスレッドをワンクリックでProjectの過去ログとしてインポートできる導線を用意し、乗り換えコストを最小化する。</p>
+      <div class="subhead">成長戦略</div>
+      <p>Creator側の密度が先に育ってから、Idea×Creatorマッチングを段階的に開放する(cold start対策は<a href="#critique">批判的評価</a>参照)。</p>
+      <div class="subhead">マネタイズ</div>
+      <p>Proプラン(分析・優先露出)、スポンサーバッジ、将来的な採用・スカウト機能——前作の企画と同じ段階的モデルを踏襲。</p>
+      <div class="subhead">最大のリスク</div>
+      <p>Idea投稿者とCreatorの両方が同時に一定数活動していないと循環が体感できない、two-sided cold start。加えて、この需要の多くは既にX上の「#buildinpublic」文化がそこそこ満たしてしまっている。</p>
+      <div class="subhead">成功するために捨てるべき機能</div>
+      <ul>
+        <li>9種類の投稿タイプ全部出し(ローンチ時は idea / progress / release / question 程度に単純化)</li>
+        <li>他人Idea×Creatorマッチングのローンチ同時実装</li>
+        <li>GitHub連携の完全自動公開(必ず下書き確認を挟む)</li>
+        <li>「AIが自動で投稿する」という無承認の自動化路線</li>
+      </ul>
+    </section>
+
+    <section class="item" id="critique">
+      <div class="item-head"><h2>批判的評価</h2></div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念1 — 投稿コストを下げても、投稿する理由がない</span>
+        <p>Xの1行投稿が機能するのは、コストが低いからではなく、既に見てくれる人がいるから。ゼロオーディエンスの新規プラットフォームでは、投稿コストを下げても「誰も見ない場所に呟く虚しさ」という根本問題は解決しない。友人が既にいるXに#タグを付けて投稿する方が合理的な選択になりやすい。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念2 — Ideaだけ投稿する層の大半は報われない</span>
+        <p>投稿されたIdeaの大多数は誰にも作られない。GitHubのIssueの大半が放置されるのと同じ構造で、需要シグナルとしての価値付けを丁寧に設計しないと、Idea投稿者は「聞いてもらえなかった」感覚を蓄積し、離脱していく。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念3 — 他人のIdeaをCreatorが作る動機は薄い</span>
+        <p>すでに「循環は成立するか」で述べた通り、これが設計上いちばん危うい前提。Creatorの大半は「自分が作りたいもの」を作っており、他人発の依頼ベースで無償稼働する層は少数の例外だと想定すべき。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念4 — 9種の投稿タイプが混在するフィードは体験として散らかる</span>
+        <p>1行Ideaと10投稿からなる開発ログと完成品が同一フィードに無差別に流れると、Xの「短文で統一」・Instagramの「写真で統一」ほどの予測可能性がなくなる。フィルタ・タブ設計を誤ると「何が出てくるか分からない疲れるフィード」になる。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念5 — AI自動投稿はスパムの温床になりやすい</span>
+        <p>「AIで作ってAIで投稿できる」を売りにするほど、低品質なAI生成物とAI生成の説明文がフィードを埋め尽くすリスクは、既存のどのプラットフォームより高い。下書き必須・人間承認必須のガードは絶対に外してはいけない一線。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念6 — 有名Creatorの支配構造は「無名の逆転枠」だけでは解決しない</span>
+        <p>一度バズったCreatorはアルゴリズム的にも社会的にも増幅され続ける。意外性枠のような仕組みは緩和策にはなるが、構造的な独占を完全には防げないという前提で運用する必要がある。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念7 — 立ち上げ時のtwo-sidedネットワーク効果が前作より難しい</span>
+        <p>前作(作品発表プラットフォーム)の鶏卵問題より、こちらは一段階複雑——Idea投稿者だけが集まっても「叶わぬ願いの墓場」に見え、Creatorだけが集まっても「ちょっと不便なdevlogサイト」にしかならない。両輪が同時に、しかも一定の熱量で動いて初めて価値が体感できる。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念8 — マネタイズは前作よりコスト構造が重い</span>
+        <p>投稿ごとにAIによる種別推定・タグ生成・要約・埋め込みベクトル化が走る前提の設計は、テキストのみのSNSよりAI推論コストが恒常的に重い。PMF前の収益不透明な時期にこのコスト構造を抱える判断は慎重にすべき。</p>
+      </div>
+
+      <p style="margin-top: 1.5rem; max-width: 66ch; color: var(--ink-soft);">
+        総括すると、「Project中心のタイムライン」「投稿コストの徹底的な引き下げ」という設計思想自体は正しい方向を向いている。
+        ただし「Idea×Creatorマッチング」を核エンジンとして最初から前面に出すのは危険で、これは前作からの単純な機能拡張ではなく
+        <strong>賭けの置き所を変える判断</strong>が必要な提案だと捉えるべき。まずは証明済みの「セルフ循環(Build-in-Public)」を磨き切り、
+        他人のIdeaを拾う体験は稀に起きる美談としてフェーズ2以降に回すのが、最も手堅い勝ち筋。
+      </p>
+
+      <div class="item-head" style="margin-top: 2.5rem;"><h2>追記 — 実運用データによる再評価(2026-08-21時点)</h2></div>
+      <p style="max-width: 66ch; color: var(--ink-soft);">
+        以下はローンチ前の理論的懸念(上記8項目)とは別に、実際に本番稼働させた上で観測できた事実ベースの追記。
+        推測ではなく実データに基づく点が上記と異なる。
+      </p>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念9 — 懸念1は既に現実になっている(実測: 訪問の大半はボット、サインアップは0)</span>
+        <p>CloudflareのZone Analytics(生トラフィック集計)は「本日146訪問」と表示していたが、JSビーコン型のWeb Analytics(ボットがJS実行しない限り記録されない)に切り替えて計測し直すと、同時期で実訪問はその1/3以下だった。さらに、投稿・コメントをゲストでも3件まで試せるように摩擦を下げた当日でも、実際の投稿・フォローは0件のまま。懸念1で予見した「ゼロオーディエンスの虚しさ」は理論ではなく、現在進行形の実測値として確認された。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念10 — 「投稿コストを下げる」施策には、想定していなかった副作用があった</span>
+        <p>未ログインでも投稿・コメントできるようにする過程で、「ゲストとして投稿した後にログインすると、ゲスト時代のUser行とログイン後のUser行が別人扱いになり、それまでの投稿を編集できなくなる」という設計上の不整合が見つかった(修正済み)。投稿コストを下げる施策は、認証を後回しにした軽量なセッション設計(Cookieベースのゲストユーザー)の上に積み上げているため、こうした「摩擦を下げるほど、認証との継ぎ目のバグが表面化する」構造的なトレードオフを常に伴う。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念11 — フィードの「賑わい」は実コンテンツの水増しで作られている</span>
+        <p>ホームフィードの無限スクロールは、実際の投稿数が少ないため2周目以降は同じ作品をシャッフルして複製表示する仕組みになっている(実運用ではプロダクトのページングAPIに置き換える前提の暫定実装)。実際にユーザーから「同じ作品が2回出てくるのは不具合か」という指摘を受けており、コンテンツ密度が低い状態でXライクな無限スクロールUIを模倣すること自体が、懸念4(フィードの散らかり)とは別の角度で「薄いコンテンツ量の露呈」という新たな懸念を生んでいる。</p>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">懸念12 — AI応援コメントは、懸念5の「スパムの温床」ではなく「やらせ感」のリスクとして現実化している</span>
+        <p>制作タイムライン更新のたびにAIが応援コメントを自動投稿する機能は、実装はスパム対策(下書き不要・定型文プールからのランダム選択のみ、外部LLM呼び出しなし)としては安全だが、実際に運用してみると「コツコツ進んでますね」のような同じ文面が何度も並び、これが人間ではなく固定botだと初見で気づきにくい。懸念5が懸念していた「低品質なAI生成物によるスパム」とは違う形で、「実際のユーザーからの反応に見えてしまう」という誠実性の懸念が新たに出てきている。</p>
+      </div>
+
+      <p style="margin-top: 1.5rem; max-width: 66ch; color: var(--ink-soft);">
+        追記の総括: ローンチ前の懸念のうち、特に懸念1(投稿する理由がない)は推測ではなく実測で裏付けられてしまった。
+        現状はまだ開発者本人以外のオーガニックな利用がほぼ無く、<strong>「セルフ循環を磨き切る」フェーズにすら本格的に入れていない</strong>
+        (磨く対象になるはずの外部ユーザーの利用が存在しないため)。今後の優先順位は、機能の追加よりも
+        X等での発信を通じた最初の訪問者獲得と、その少数の訪問者が実際に何をして離脱するかの定性観察に置くべき。
+      </p>
+    </section>
+  </main>
+</div>
+
+<footer>
+  Platform Redesign Memo v2 — 作品ではなく創作活動を投稿する場所。前作 <a href="plan.html">docs/plan.html</a> を踏まえた再設計と批判的評価。
+</footer>
+</body>
+</html>

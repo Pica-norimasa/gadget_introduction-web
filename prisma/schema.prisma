@@ -1,0 +1,453 @@
+// AWS RDS(MySQL)を想定したスキーマ(enumを使わずString+アプリ側のunion型で
+// 表現しているのは、元々SQLiteで開発していた名残)。
+//
+// MySQLではStringは既定でVARCHAR(191)にマップされる(utf8mb4でのインデックス
+// キー長制限に合わせた昔からのPrisma既定値)。UIのmaxLengthが191を超える
+// 自由記述系フィールド(投稿本文・コメント・通報詳細・引用リポストのコメント・
+// catchText)、および長さの見積もりが難しいOAuthトークン(Account.*)には
+// @db.Textを付けている。
+//
+// Follow/Reactionは「誰が」を表すuserIdを必須にしているが、今のアプリにはまだ
+// ログイン機構が無い(follow-store.tsはブラウザ内だけで完結する匿名の状態)。
+// このテーブル自体は用意しておくが、実際に繋ぎ込むには認証機能が別途必要。
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  // プロフィールURL(/u/[name])やフォロー等の内部参照に使う一意なハンドル。
+  // Xでいう@handleに相当し、表示は基本的にdisplayNameを優先する。
+  name      String   @unique
+  // Xの「表示名」に相当するフリーテキスト(重複可、未設定ならnameを表示に使う)。
+  displayName String?
+  // Xのプロフィール文のようなフリーテキストの自己紹介。未設定はnull。
+  bio       String?
+  createdAt DateTime @default(now())
+  // 退会(deleteAccount)済みかどうか。投稿・コメント本文は他人のスレッドの
+  // 文脈を壊さないよう残すが、name/email等の個人を特定する情報は消して
+  // ここに削除日時を入れる(Xの凍結/削除済みアカウント表示と同じ考え方)。
+  deletedAt DateTime?
+
+  // 軽量セッション(proxy.tsがCookieで発行するopaqueなID)との紐付け。
+  // ログインしていない匿名ゲスト向け。GitHubログイン済みのUserや
+  // mock-data.ts由来のシードUserはセッションを持たないためnull許容。
+  sessionId String?  @unique
+
+  // Auth.js(GitHubログイン)向け。匿名ゲストのUserはnullのまま。
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  // コメント通知メール(email非nullのユーザーのみ対象)の送信可否。
+  // 既定でtrueにし、/settingsからオプトアウトできるようにする。
+  emailNotificationsEnabled Boolean @default(true)
+  // 連携済みのGitHub/Xのユーザー名(プロフィールへの外部リンク表示用)。
+  // auth.tsのsignInコールバックでログインのたびに更新する(未連携ならnull)。
+  githubUsername String?
+  xUsername      String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // 表示用の起点フォロワー数。実フォローはFollow行として積み上がる想定だが、
+  // 認証が無くFollow行がまだ実際には作られないため、Project.commentsSeed等と
+  // 同じ考え方でこの起点カウントを用意している(表示は起点 + 実Follow数の合算)。
+  followersSeed  Int        @default(0)
+
+  projects       Project[]
+  posts          Post[]
+  reactions      Reaction[]
+  comments       Comment[]
+  reposts        Repost[]
+  bookmarks      Bookmark[]
+  analyticsEvents AnalyticsEvent[]
+  following      Follow[]   @relation("Follower")
+  followedBy     Follow[]   @relation("Following")
+
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
+
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsReceived Report[] @relation("ReportsReceived")
+
+  muting    Mute[] @relation("Muter")
+  mutedBy   Mute[] @relation("Muted")
+  blocking  Block[] @relation("Blocker")
+  blockedBy Block[] @relation("Blocked")
+}
+
+// 以下3モデルは@auth/prisma-adapterが要求する標準スキーマ(GitHubログインの
+// トークン保管用)。SessionはJWTセッション戦略を使うため実際には使わない
+// (adapterのcreateSession等が呼ばれない)が、将来DBセッション方式や
+// メールログインに切り替える可能性もあるため標準構成のまま用意しておく。
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  // 同じメールアドレス(identifier)への送信頻度をレート制限するために使う
+  // (session-actions.tsのsendVerification)。
+  createdAt  DateTime @default(now())
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id          String   @id
+  title       String
+  catchText   String   @db.Text
+  category    String
+  stage       String
+  // ステージが前進した(アイデア→プロトタイプ→ベータ→公開中)最新の日時。
+  // ホームの「昇格おめでとう」ポップアップ(直近の前進のみ対象)の判定に使う。
+  // project-actions.tsのupdateProjectで新旧ステージを比較し、前進時のみ更新する。
+  stageChangedAt DateTime?
+  tool        String?
+  platforms   Json // Platform[]をそのまま格納(例: ["Web","iOS"])
+  hue         Int
+  glyph       String?
+  // アップロードされた実写真/スクリーンショット。設定されていればglyph/hue
+  // ベースのプレースホルダーより優先して表示する。
+  coverImageUrl String?
+  githubUrl   String?
+  youtubeUrl  String?
+  appStoreUrl String?
+  googlePlayUrl String?
+  hasMotion   Boolean  @default(false)
+  views       Int      @default(0)
+  trendScore  Int      @default(0)
+  createdAt   DateTime @default(now())
+  // AI(Draftly AI)による自動応援コメントのON/OFF。作者がプロダクト詳細
+  // ページのトグルで切り替える(ai-comment.ts参照)。
+  aiCommentsEnabled Boolean @default(true)
+
+  // 表示用の起点カウント。実際のリアクションはReaction行として積み上がる想定だが、
+  // 種類ごとに数百件のダミー行を作る必要が出るため、シード時点ではこの起点カウント
+  // (+ 実際のReaction行数)を合算して表示する設計にしている。
+  commentsSeed            Int @default(0)
+  reactionLikeSeed        Int @default(0)
+  reactionUsefulSeed      Int @default(0)
+  reactionIdeaSeed        Int @default(0)
+  reactionWantToTrySeed   Int @default(0)
+
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  posts       Post[]     @relation("ProjectPosts")
+  reactions   Reaction[]
+  comments    Comment[]
+  reposts     Repost[]
+  bookmarks   Bookmark[]
+  notifications Notification[] @relation("NotificationTarget")
+  reports     Report[]
+
+  // このProjectにインスパイアされて作られたPost(単独投稿、または新規Project
+  // の1本目のPost)の一覧。逆方向は下のPost.inspiredByProject。
+  inspiredPosts Post[] @relation("PostInspiration")
+  // このProjectを起点にした「インスパイアされました」通知(sourceProjectId
+  // 側)。逆方向はNotification.sourceProject。表示には使わずFKの都合で
+  // 必要な back-relation。
+  inspirationNotifications Notification[] @relation("NotificationSource")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  // idea | making | screenshot | demo | prototype | release | update | question
+  type      String
+  body      String   @db.Text
+  // ローカル開発では/public/uploadsへの相対パス。本番はS3のURLに置き換える想定。
+  imageUrl  String?
+  youtubeUrl String?
+  createdAt DateTime @default(now())
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+
+  // 投稿時にProjectと紐付けるのを必須にしない(plan-v2.htmlの方針)。
+  // 紐付けない投稿は「孤立したPost」としてそのまま公開される。
+  projectId String?
+  project   Project? @relation("ProjectPosts", fields: [projectId], references: [id])
+
+  // 「他人のProjectにインスパイアされて投稿/新規Project作成した」の
+  // 紐付け(任意)。単独投稿でも、新規Project作成時の1本目のPostでも
+  // 使う(createPost()が両方の唯一の作成経路のため、Post側にだけ
+  // 持たせればProject側の起点にも複製不要で辿れる)。
+  inspiredByProjectId String?
+  inspiredByProject   Project? @relation("PostInspiration", fields: [inspiredByProjectId], references: [id])
+
+  comments      Comment[]
+  reactions     Reaction[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+  reports       Report[]
+
+  @@index([projectId])
+  @@index([authorId])
+  @@index([inspiredByProjectId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  // like | useful | idea | wantToTry (Project向け) | like (Post向け、こちらは常にlike固定)
+  type      String
+  createdAt DateTime @default(now())
+
+  // projectIdとpostIdはどちらか一方だけが埋まる(Commentと同じポリモーフィック
+  // パターン。単独投稿への「いいね」を可能にするため)。Post向けはtypeが
+  // 常に"like"の1種類のみ(Xのハートアイコンと同じ単純な二値トグル)。
+  // Project向けも元は"interesting"(😲面白い)だったが、ハート系の
+  // 汎用リアクションと意味が重複していたため"like"(❤️いいね)に統合した
+  // (履歴データはマイグレーションでtype変換済み)。
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId, type])
+  @@unique([postId, userId, type])
+  @@index([postId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String   @db.Text
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  // projectIdとpostIdはどちらか一方だけが埋まる(単独投稿へのコメントを
+  // 可能にするため、Projectだけでなく孤立したPostにもコメントできる
+  // ようにした)。
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  // コメントへの返信(Xと同じ1階層のみのフラットなスレッド)。「返信への
+  // さらなる返信」はUI側でボタンを出さないことで防いでいる(データ上は
+  // 深く辿ろうと思えば辿れるが、想定していない)。
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id])
+  reports   Report[]
+
+  @@index([projectId])
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model Repost {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // 自分の作品を自分でリポストすること自体は禁止しない(Xで言う「セルフ
+  // リツイート」に近い扱い。通知だけは自分宛てには作らない)。
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  // 引用リポスト用のコメント。無ければ通常のリポスト。1ユーザーにつき
+  // 1Projectあたり1行(下の@@unique)なので、後から引用コメントを
+  // 付け足す/変更するのもこの行のUPDATEで表現する。
+  comment   String? @db.Text
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // Reaction/Commentと同じポリモーフィックパターン(projectId/postIdは
+  // どちらか一方だけが埋まる)。リアクションと違い他人への通知は作らない、
+  // あくまで自分だけの非公開の「あとで見る」保存。
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  @@unique([projectId, userId])
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+// SNS共有・外部リンクなどのクリック計測用(app/lib/analytics-actions.ts)。
+// 計測のためだけに匿名訪問者のゲストUser行を新規作成したくないので、
+// userIdは意図的にnullable(既存ユーザーなら紐付け、未ログインならnullのまま)。
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  // "share_line" | "share_x" | "share_copy_link" |
+  // "external_link_github" | "external_link_appstore" | "external_link_googleplay"
+  type      String
+  // クリックが発生したページのpathname
+  path      String
+  // クリック先URL等(あれば)
+  target    String?
+  createdAt DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([type, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  // reaction | comment | follow | repost | inspired | reply
+  type      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  // 通知の受け手(コンテンツの持ち主、フォローされた側)
+  recipientId String
+  recipient   User   @relation("NotificationRecipient", fields: [recipientId], references: [id])
+
+  // 通知を発生させた人(リアクション/コメント/フォローした側)
+  actorId String
+  actor   User   @relation("NotificationActor", fields: [actorId], references: [id])
+
+  // reaction/comment/repost/inspired通知の遷移先(=閲覧者が見るべきもの)。
+  // follow通知はnull。単独投稿へのcomment通知やinspired通知(単独投稿の
+  // 場合)はprojectIdの代わりに下のpostIdを使う(projectId/postIdは
+  // どちらか一方だけが埋まる)。inspired通知は常に新しく作られた側
+  // (Post/Project)を指す。
+  projectId String?
+  project   Project? @relation("NotificationTarget", fields: [projectId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  // reaction通知のときだけ、押されたリアクション種別を保持(表示用)
+  reactionType String?
+
+  // inspired通知専用: インスパイア元のProject(文言の「あなたの『X』に」の
+  // X部分に使う)。遷移先の上のprojectId/postIdとは別物。
+  sourceProjectId String?
+  sourceProject   Project? @relation("NotificationSource", fields: [sourceProjectId], references: [id])
+
+  @@index([recipientId, createdAt])
+}
+
+model Follow {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  followerId  String
+  follower    User @relation("Follower", fields: [followerId], references: [id])
+  followingId String
+  following   User @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Mute {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // 一方通行。ミュートした側のフィード/検索/コメント欄からミュート対象の
+  // コンテンツを取り除くだけで、相手には何も伝わらないし相手からは
+  // 今まで通り見える・絡める(Xのミュートと同じ非対称な扱い)。
+  muterId String
+  muter   User   @relation("Muter", fields: [muterId], references: [id])
+  mutedId String
+  muted   User   @relation("Muted", fields: [mutedId], references: [id])
+
+  @@unique([muterId, mutedId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // ミュートと同じコンテンツ非表示に加えて、ブロック開始時点の相互フォロー
+  // を解消する(block-actions.tsのtoggleBlock)。認証が無いプロトタイプ
+  // なので「ブロックされた側の書き込みそのものを拒否する」ような強制力は
+  // 今回は持たせていない(表示上取り除くところまでが今回のスコープ)。
+  blockerId String
+  blocker   User   @relation("Blocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User   @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  // project | comment | user | post。対象に応じて下のprojectId/commentId/
+  // postId/reportedUserIdのどれか1つだけが埋まる。閲覧は/admin/reports
+  // (ADMIN_KEY必須)。
+  targetType String
+  // spam | inappropriate | impersonation | other
+  reason     String
+  detail     String? @db.Text
+
+  reporterId String
+  reporter   User   @relation("ReportsFiled", fields: [reporterId], references: [id])
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  reportedUserId String?
+  reportedUser   User?   @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+
+  // 対応済みにした日時。null=未対応。誰が対応したかまでは記録しない
+  // (ADMIN_KEYは個人を識別しない共有の合言葉のため、Notification.readAt
+  // と同じ「いつ」だけを持つ単純な方式)。
+  resolvedAt DateTime?
+
+  @@index([targetType])
+}
+
+// 管理画面ログイン(ADMIN_KEY照合)の総当たり対策用。失敗した試行だけを
+// 記録し、直近の件数がしきい値を超えたら一定時間ロックする
+// (admin-actions.tsのadminLogin、isRateLimitedと同じ考え方)。
+// 個人を識別しない共有の合言葉なのでIP等は持たず、件数だけ見る。
+model AdminLoginAttempt {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+}

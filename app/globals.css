@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #17140f;
+  --bg-raised: #211c15;
+  --bg-sunken: #0f0d09;
+  --ink: #f3eee3;
+  --ink-soft: #b7ac9a;
+  --ink-faint: #857b6c;
+  --line: #332920;
+
+  --accent: #ff7a4d;
+  --accent-ink: #1a1108;
+  --accent-soft: #3a2013;
+
+  --teal: #4fc0a8;
+  --teal-soft: #163530;
+
+  --violet: #a797f0;
+  --violet-soft: #241e3e;
+
+  --amber: #e3a93d;
+  --amber-soft: #362508;
+
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-raised: var(--bg-raised);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+
+  --font-display: "Hiragino Maru Gothic ProN", "Yu Gothic Medium", "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-body: "Hiragino Kaku Gothic ProN", "Yu Gothic Medium", "Noto Sans JP", "Hiragino Sans", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  /* モバイルで、意図しない子要素のはみ出し(横幅計算のズレ等)により
+     ページ全体が横スクロールしてしまう不具合対策。各所の横スクロール
+     帯(HorizontalScroller等)は自身のoverflow-x-autoで独立して機能する
+     ため、ここで親をhiddenにしても影響しない。 */
+  overflow-x: hidden;
+}
+
+/* base層に置くことで、Tailwindのユーティリティクラス(utilities層)側の
+   text-*指定がこれらより確実に優先されるようにする。レイヤー無しの生CSSだと
+   Tailwind v4のカスケードレイヤー順により、詳細度に関わらずutilitiesより
+   常に勝ってしまい、例えば<a>にtext-whiteを付けても効かなくなる。 */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a {
+    color: inherit;
+  }
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+/* 動画/GIFを添付した投稿の疑似モーションプレビュー(実ファイルの代わり) */
+@keyframes motion-drift {
+  0%, 100% { background-position: 0% 20%; }
+  50% { background-position: 100% 80%; }
+}
+@keyframes motion-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8%) scale(1.08); }
+}
+
+/* ヘッダー直下のUpdatesTicker(最新の創作活動を1件ずつ切り替えて見せる)。
+   常時流れっぱなしだと鬱陶しいとの指摘を受け、右からシュッと1件入って
+   きて少し静止する方式に変更した。 */
+@keyframes ticker-item-in {
+  from { transform: translateX(28px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
