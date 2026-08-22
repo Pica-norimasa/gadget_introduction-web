@@ -198,7 +198,7 @@ export function NotificationBell({
         onClick={toggle}
         className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]"
       >
-        🔔
+        <span aria-hidden className="text-[13px] font-bold">!</span>
         {localUnread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-[var(--accent-ink)]">
             {localUnread > 9 ? "9+" : localUnread}

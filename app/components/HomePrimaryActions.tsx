@@ -18,8 +18,8 @@ export function HomePrimaryActions() {
         }}
         className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--accent)] bg-[var(--accent)] px-4 py-3 text-left text-[var(--accent-ink)] transition-transform hover:-translate-y-0.5"
       >
-        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/10 text-lg">
-          🔎
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/10 text-[13px] font-bold">
+          探
         </span>
         <span className="min-w-0">
           <span className="block text-[13px] font-bold">作品を探す</span>
@@ -35,8 +35,8 @@ export function HomePrimaryActions() {
         }}
         className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
       >
-        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--teal-soft)] text-lg">
-          ✏️
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--teal-soft)] text-[13px] font-bold text-[var(--teal)]">
+          投
         </span>
         <span className="min-w-0">
           <span className="block text-[13px] font-bold">投稿する</span>
@@ -48,8 +48,8 @@ export function HomePrimaryActions() {
         href="/guide/build"
         className="flex min-h-16 items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3 text-left text-[var(--ink)] transition-colors hover:border-[var(--accent)]"
       >
-        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--violet-soft)] text-lg">
-          🔧
+        <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--violet-soft)] text-[13px] font-bold text-[var(--violet)]">
+          学
         </span>
         <span className="min-w-0">
           <span className="block text-[13px] font-bold">作り方を見る</span>

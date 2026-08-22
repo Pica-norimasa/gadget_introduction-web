@@ -44,8 +44,8 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
               title="ログイン"
               className="grid h-9 w-9 shrink-0 place-items-center whitespace-nowrap rounded-full border border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--ink-faint)] sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-[13px]"
             >
-              <span aria-hidden className="sm:hidden">
-                🔑
+              <span aria-hidden className="text-[12px] font-bold sm:hidden">
+                入
               </span>
               <span className="hidden sm:inline">ログイン</span>
             </Link>

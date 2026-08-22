@@ -229,38 +229,44 @@ export function WorkDetail({
           <LinkifiedText text={work.catch} />
         </p>
 
-        <div className="mb-7 flex flex-wrap items-center gap-2.5">
-          {blockedByAuthor ? (
-            <span className="text-[12px] text-[var(--ink-faint)]">
-              この作品の作者にブロックされているため、反応できません
-            </span>
-          ) : (
-            <>
-              <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
-              <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
-            </>
-          )}
-          <Link
-            href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
-            className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
-          >
-            🌱 これにインスパイアされて投稿する
-          </Link>
-          <BookmarkButton
-            target={{ type: "project", id: work.id }}
-            bookmarked={work.bookmarked ?? false}
-            size="md"
-            className="ml-auto"
-          />
-        </div>
+        <div className="mb-7 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[13px] font-semibold text-[var(--ink)]">この作品でできること</p>
+              <p className="mt-0.5 text-[12px] text-[var(--ink-faint)]">
+                反応する、広める、あとで見る、インスパイアされて投稿する
+              </p>
+            </div>
+            <BookmarkButton
+              target={{ type: "project", id: work.id }}
+              bookmarked={work.bookmarked ?? false}
+              size="md"
+            />
+          </div>
 
-        {/* 共有ボタンは元々一番下(タイムライン/コメント/インスパイアされた
-            投稿という3つの際限なく伸びるセクションの後)にあったが、
-            プロジェクトが育つほど埋もれて押されにくくなるという指摘を
-            受けて、伸びる前のここ(タイムラインの直上)に移動した。 */}
-        <div className="mb-7 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-6">
-          <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">この作品を共有</p>
-          <ShareButtons title={work.title} />
+          <div className="flex flex-wrap items-center gap-2.5">
+            {blockedByAuthor ? (
+              <span className="text-[12px] text-[var(--ink-faint)]">
+                この作品の作者にブロックされているため、反応できません
+              </span>
+            ) : (
+              <>
+                <ReactionBar workId={work.id} reactions={work.reactions} myReactions={myReactions} />
+                <RepostButton projectId={work.id} count={work.reposts} size="md" allowQuote />
+              </>
+            )}
+            <Link
+              href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
+              className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
+            >
+              これにインスパイアされて投稿
+            </Link>
+          </div>
+
+          <div className="mt-4 border-t border-[var(--line)] pt-4">
+            <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">共有する</p>
+            <ShareButtons title={work.title} />
+          </div>
         </div>
 
         {/* 制作タイムライン・コメント・「この作品からインスパイアされた投稿」を

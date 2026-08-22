@@ -15,6 +15,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "recommend", label: "あなたへ" },
 ];
 
+const TAB_DESCRIPTIONS: Record<Tab, string> = {
+  new: "最近投稿・更新された作品から見ていきます。",
+  trend: "反応や閲覧が伸びている作品を優先します。",
+  recommend: "フォローやリアクションに近い作品を並べます。",
+};
+
 const BATCH_SIZE = 6;
 
 // 「あなたへ」タブの簡易パーソナライズ。本物のレコメンドAIの代わりに、
@@ -150,6 +156,7 @@ export function FeedSection({
           </button>
         ))}
       </div>
+      <p className="mb-4 text-[12px] leading-relaxed text-[var(--ink-faint)]">{TAB_DESCRIPTIONS[tab]}</p>
 
       <div className="mb-4 flex flex-wrap items-center gap-1.5">
         <span className="mr-1 text-[12px] text-[var(--ink-faint)]">対応環境</span>
@@ -188,9 +195,24 @@ export function FeedSection({
       </div>
 
       {shown.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--ink-faint)]">
-          この条件に合う作品はまだありません
-        </p>
+        <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-raised)] p-8 text-center">
+          <p className="text-sm font-medium text-[var(--ink-soft)]">この条件に合う作品はまだありません</p>
+          <p className="mt-2 text-[12px] leading-relaxed text-[var(--ink-faint)]">
+            対応環境の条件を外すか、質問投稿で「こんな作品ありませんか?」と聞いてみてください。
+          </p>
+          {platformFilter.size > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setPlatformFilter(new Set());
+                setLoadedCount(BATCH_SIZE);
+              }}
+              className="mt-4 rounded-full border border-[var(--line)] px-3 py-1.5 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
+            >
+              条件をクリアして見る
+            </button>
+          )}
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
