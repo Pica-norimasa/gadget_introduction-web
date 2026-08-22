@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { isAdminAuthed } from "@/app/lib/admin-auth";
 import { getDailyVisitStats } from "@/app/lib/cloudflare-analytics";
-import { getDailyFunnelStats } from "@/app/lib/product-funnel";
+import { getActivationStats, getDailyFunnelStats, getRetentionStats } from "@/app/lib/product-funnel";
 import { AdminLoginForm } from "@/app/components/AdminLoginForm";
 import { AdminLogoutButton } from "@/app/components/AdminLogoutButton";
 import { AdminNav } from "@/app/components/AdminNav";
@@ -37,7 +37,11 @@ export default async function AdminAnalyticsPage() {
   } catch (e) {
     loadError = e instanceof Error ? e.message : "取得に失敗しました";
   }
-  const funnel = await getDailyFunnelStats(30);
+  const [funnel, activation, retention] = await Promise.all([
+    getDailyFunnelStats(30),
+    getActivationStats(),
+    getRetentionStats(),
+  ]);
 
   const funnelByDate = new Map(funnel.map((f) => [f.date, f]));
   const merged: MergedRow[] = visits.map((v) => {
@@ -80,7 +84,7 @@ export default async function AdminAnalyticsPage() {
           </div>
         ) : (
           <>
-            <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
               <SummaryCard label="本日の訪問者(集計中)" value={today?.uniques ?? 0} />
               <SummaryCard label="過去7日間の訪問者" value={last7Uniques} />
               <SummaryCard label="過去7日間のサインアップ" value={last7Signups} />
@@ -88,10 +92,21 @@ export default async function AdminAnalyticsPage() {
                 label="訪問→サインアップ転換率"
                 value={last7ConversionRate === null ? "—" : `${last7ConversionRate.toFixed(1)}%`}
               />
+              <SummaryCard
+                label="初回投稿率"
+                value={activation.rate === null ? "—" : `${activation.rate.toFixed(1)}%`}
+                sub={`${activation.activatedSignups}/${activation.totalSignups}人`}
+              />
+              <SummaryCard
+                label="7日後再訪率"
+                value={retention.rate === null ? "—" : `${retention.rate.toFixed(1)}%`}
+                sub={`${retention.retainedSignups}/${retention.eligibleSignups}人`}
+              />
             </div>
 
             <p className="mb-6 text-[12px] text-[var(--ink-faint)]">
               ※ 訪問者数はCloudflare Web Analytics(JSビーコン型の実測値、ボット・クローラーはJSを実行しないため基本的にカウントされない)による日別集計。サインアップはGitHub/Xで実際にログインしたユーザーのみを数え、匿名ゲストやシードデータは含みません。
+              初回投稿率はサインアップ済みユーザーのうち1件でも投稿した割合(全期間累積)、7日後再訪率はサインアップから7日以上経ったユーザーのうち7日後以降にも投稿・コメント・リアクション・フォローのいずれかをした割合(ログイン自体は記録していないため活動の有無で代用)。
             </p>
 
             <div className="overflow-x-auto rounded-xl border border-[var(--line)]">
@@ -133,13 +148,14 @@ export default async function AdminAnalyticsPage() {
   );
 }
 
-function SummaryCard({ label, value }: { label: string; value: number | string }) {
+function SummaryCard({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
       <p className="mb-1 text-[12px] text-[var(--ink-faint)]">{label}</p>
       <p className="font-[family-name:var(--font-display)] text-2xl font-bold tabular-nums text-[var(--ink)]">
         {typeof value === "number" ? value.toLocaleString("ja-JP") : value}
       </p>
+      {sub && <p className="mt-0.5 text-[11px] tabular-nums text-[var(--ink-faint)]">{sub}</p>}
     </div>
   );
 }

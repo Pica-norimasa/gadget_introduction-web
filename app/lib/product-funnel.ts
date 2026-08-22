@@ -64,3 +64,49 @@ export async function getDailyFunnelStats(days: number): Promise<DailyFunnelStat
   }
   return result;
 }
+
+export type ActivationStats = { totalSignups: number; activatedSignups: number; rate: number | null };
+
+// 「初回投稿率」= サインアップ済み(email非null)ユーザーのうち、1件でも
+// Postを投稿したことがある割合。CEOレンズで見た活性化(Activation)の
+// 代理指標。日別コホートにすると母数が小さすぎてノイズだらけになるため、
+// 全期間の累積で見る。
+export async function getActivationStats(): Promise<ActivationStats> {
+  const rows = await prisma.$queryRaw<{ total: bigint; activated: bigint }[]>`
+    SELECT
+      COUNT(*) as total,
+      SUM(CASE WHEN EXISTS (SELECT 1 FROM Post WHERE Post.authorId = User.id) THEN 1 ELSE 0 END) as activated
+    FROM User
+    WHERE email IS NOT NULL
+  `;
+  const total = Number(rows[0]?.total ?? 0);
+  const activated = Number(rows[0]?.activated ?? 0);
+  return { totalSignups: total, activatedSignups: activated, rate: total > 0 ? (activated / total) * 100 : null };
+}
+
+export type RetentionStats = { eligibleSignups: number; retainedSignups: number; rate: number | null };
+
+// 「7日後再訪率」= サインアップから7日以上経過したユーザーのうち、
+// サインアップの7日後以降にも何らかの活動(投稿・コメント・リアクション・
+// フォロー)をした割合。ログイン自体を記録するテーブルが無いため、
+// 「戻ってきて何かした」ことの代理指標として使う。
+export async function getRetentionStats(): Promise<RetentionStats> {
+  const rows = await prisma.$queryRaw<{ eligible: bigint; retained: bigint }[]>`
+    SELECT
+      COUNT(*) as eligible,
+      SUM(CASE WHEN EXISTS (
+        SELECT 1 FROM Post WHERE Post.authorId = User.id AND Post.createdAt >= DATE_ADD(User.createdAt, INTERVAL 7 DAY)
+        UNION ALL
+        SELECT 1 FROM Comment WHERE Comment.authorId = User.id AND Comment.createdAt >= DATE_ADD(User.createdAt, INTERVAL 7 DAY)
+        UNION ALL
+        SELECT 1 FROM Reaction WHERE Reaction.userId = User.id AND Reaction.createdAt >= DATE_ADD(User.createdAt, INTERVAL 7 DAY)
+        UNION ALL
+        SELECT 1 FROM Follow WHERE Follow.followerId = User.id AND Follow.createdAt >= DATE_ADD(User.createdAt, INTERVAL 7 DAY)
+      ) THEN 1 ELSE 0 END) as retained
+    FROM User
+    WHERE email IS NOT NULL AND createdAt <= DATE_SUB(NOW(), INTERVAL 7 DAY)
+  `;
+  const eligible = Number(rows[0]?.eligible ?? 0);
+  const retained = Number(rows[0]?.retained ?? 0);
+  return { eligibleSignups: eligible, retainedSignups: retained, rate: eligible > 0 ? (retained / eligible) * 100 : null };
+}
