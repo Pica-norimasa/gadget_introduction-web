@@ -9,11 +9,15 @@
 // 頼らずこのストアを導入した。
 
 import { useSyncExternalStore } from "react";
+import type { PostType } from "@/app/lib/mock-data";
 
 export type InspiredBy = { id: string; title: string };
+export type ComposerPostTypeRequest = { postType: PostType | null; version: number };
 
 let open = false;
 let inspiredBy: InspiredBy | null = null;
+let postTypeRequest: ComposerPostTypeRequest = { postType: null, version: 0 };
+const emptyPostTypeRequest: ComposerPostTypeRequest = { postType: null, version: 0 };
 const listeners = new Set<() => void>();
 
 function emitChange() {
@@ -23,6 +27,12 @@ function emitChange() {
 export function openComposer() {
   if (open) return;
   open = true;
+  emitChange();
+}
+
+export function openComposerWithPostType(postType: PostType) {
+  open = true;
+  postTypeRequest = { postType, version: postTypeRequest.version + 1 };
   emitChange();
 }
 
@@ -69,4 +79,16 @@ function getInspiredByServerSnapshot() {
 
 export function useInspiredBy(): InspiredBy | null {
   return useSyncExternalStore(subscribe, getInspiredBySnapshot, getInspiredByServerSnapshot);
+}
+
+function getPostTypeRequestSnapshot() {
+  return postTypeRequest;
+}
+
+function getPostTypeRequestServerSnapshot() {
+  return emptyPostTypeRequest;
+}
+
+export function useComposerPostTypeRequest(): ComposerPostTypeRequest {
+  return useSyncExternalStore(subscribe, getPostTypeRequestSnapshot, getPostTypeRequestServerSnapshot);
 }

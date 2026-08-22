@@ -5,7 +5,7 @@ import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "r
 import { POST_TYPE_META, type PostType, type Work } from "@/app/lib/mock-data";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
-import { clearInspiredBy, useInspiredBy } from "@/app/lib/composer-store";
+import { clearInspiredBy, useComposerPostTypeRequest, useInspiredBy } from "@/app/lib/composer-store";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
@@ -112,6 +112,7 @@ export function PostForm(props: PostFormProps) {
   // variantにかかわらず同じ順序で呼び、timelineでは値だけを使わない。
   const storedInspiredBy = useInspiredBy();
   const inspiredBy = variant === "compose" ? storedInspiredBy : null;
+  const postTypeRequest = useComposerPostTypeRequest();
 
   // 行数固定だと複数行書きたい時に窮屈なので、内容に合わせて高さを伸ばす。
   function autoGrow(el: HTMLTextAreaElement) {
@@ -172,6 +173,20 @@ export function PostForm(props: PostFormProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- variant/propsは呼び出し中に変わらない前提
   }, [state.success, state.projectId, defaultProjectTarget]);
+
+  useEffect(() => {
+    if (variant !== "compose" || !postTypeRequest.postType) return;
+    const requestedPostType = postTypeRequest.postType;
+    const frame = requestAnimationFrame(() => {
+      setSelectedType(requestedPostType);
+      if (requestedPostType !== "question" && !projectTarget) {
+        setProjectTarget(defaultProjectTarget);
+      }
+      textareaRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- リクエストversion単位で反映する
+  }, [postTypeRequest.version]);
 
   const trimmed = body.trim();
   const guessedType = selectedType || inferPostType(body);
