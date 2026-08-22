@@ -198,6 +198,20 @@ export function PostForm(props: PostFormProps) {
       : null;
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
   const createdHref = state.projectId ? `/work/${state.projectId}` : state.postId ? `/post/${state.postId}` : null;
+  const successTitle =
+    variant === "timeline"
+      ? "制作タイムラインに追加しました"
+      : state.projectId
+        ? "作品ページに投稿しました"
+        : "つぶやきタイムラインに投稿しました";
+  const successDescription =
+    variant === "timeline"
+      ? "この作品のタイムラインに新しい投稿が表示されます。"
+      : state.projectId
+        ? "作品カードへ移動します。続きの進捗は同じ作品に積み重ねられます。"
+        : "つぶやきタイムラインへ移動します。投稿の詳細ページからコメントも確認できます。";
+  const successLinkLabel =
+    variant === "timeline" || state.projectId ? "作品ページを確認する" : "つぶやきを確認する";
 
   // timelineだけ、ゲスト投稿の上限に達した場合ログイン導線に差し替える
   // (createPost自体は上限を検証済みだが、UIとして残り件数が見えないと
@@ -384,13 +398,14 @@ export function PostForm(props: PostFormProps) {
       {state.error && <p className="mt-2 text-[12px] text-[var(--accent)]">{state.error}</p>}
       {state.success && (
         <div className="mt-3 rounded-xl border border-[var(--teal)] bg-[var(--teal-soft)] px-3 py-2">
-          <p className="text-[13px] font-medium text-[var(--teal)]">投稿しました</p>
+          <p className="text-[13px] font-medium text-[var(--teal)]">{successTitle}</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-[var(--teal)] opacity-90">{successDescription}</p>
           {createdHref && (
             <Link
               href={createdHref}
               className="mt-2 inline-flex rounded-full bg-[var(--teal)] px-3 py-1.5 text-[12px] font-medium text-[var(--teal-soft)]"
             >
-              投稿を確認する
+              {successLinkLabel}
             </Link>
           )}
         </div>
