@@ -173,10 +173,10 @@ export function WorkCard({
 
       <div className="flex flex-1 flex-col gap-3 pt-4">
         <div>
-          <h3 className="font-[family-name:var(--font-display)] text-[18px] font-bold leading-snug text-[var(--ink)] decoration-[var(--ink-faint)] decoration-1 underline-offset-4 transition-[text-decoration-color] group-hover:underline">
+          <h3 className="truncate font-[family-name:var(--font-display)] text-[16px] font-bold leading-snug text-[var(--ink)] decoration-[var(--ink-faint)] decoration-1 underline-offset-4 transition-[text-decoration-color] group-hover:underline sm:text-[17px]">
             {work.title}
           </h3>
-          <ExpandableText text={work.catch} className="mt-1.5" />
+          <ExpandableText text={work.catch} className="mt-1.5" compact />
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">

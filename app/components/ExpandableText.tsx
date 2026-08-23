@@ -5,10 +5,26 @@ import { HashtagSegment } from "./LinkifiedText";
 
 const PREVIEW_LENGTH = 60;
 
-export function ExpandableText({ text, className = "" }: { text: string; className?: string }) {
+export function ExpandableText({
+  text,
+  className = "",
+  compact = false,
+}: {
+  text: string;
+  className?: string;
+  compact?: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const isLong = text.length > PREVIEW_LENGTH;
   const shown = expanded || !isLong ? text : text.slice(0, PREVIEW_LENGTH).trimEnd() + "…";
+
+  if (compact) {
+    return (
+      <p className={`line-clamp-2 text-[12.5px] leading-6 text-[var(--ink-soft)] ${className}`}>
+        <HashtagSegment text={text} linkClassName="relative z-20 text-[var(--accent)] hover:underline" />
+      </p>
+    );
+  }
 
   return (
     <p className={`text-[13.5px] leading-relaxed text-[var(--ink-soft)] ${className}`}>
