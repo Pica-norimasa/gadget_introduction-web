@@ -27,14 +27,14 @@ export function WorkMediaTabs({
     <div>
       <HorizontalScroller
         restrictToHorizontal
-        className="mb-2 flex items-center gap-1 overflow-x-auto border-b border-[var(--line)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mb-4 flex items-center gap-1.5 overflow-x-auto border-b border-[var(--line)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setActive(t.id)}
-            className={`relative shrink-0 whitespace-nowrap px-3 py-1.5 text-[13px] font-medium transition-colors ${
+            className={`relative shrink-0 whitespace-nowrap px-3.5 py-2 text-[13px] font-medium transition-colors ${
               activeTab?.id === t.id
                 ? "text-[var(--ink)]"
                 : "text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"

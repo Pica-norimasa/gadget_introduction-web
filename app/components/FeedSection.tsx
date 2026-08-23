@@ -7,15 +7,17 @@ import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { useFollowedAuthors } from "@/app/lib/follow-store";
 import { WorkCard } from "./WorkCard";
 
-type Tab = "trend" | "new" | "recommend";
+type Tab = "discovery" | "trend" | "new" | "recommend";
 
 const TABS: { id: Tab; label: string }[] = [
+  { id: "discovery", label: "おすすめ" },
   { id: "new", label: "新着" },
   { id: "trend", label: "急上昇" },
   { id: "recommend", label: "あなたへ" },
 ];
 
 const TAB_DESCRIPTIONS: Record<Tab, string> = {
+  discovery: "まだ知られていない作品や、掘り出し物を優先して並べます。",
   new: "最近投稿・更新された作品から見ていきます。",
   trend: "反応や閲覧が伸びている作品を優先します。",
   recommend: "フォローやリアクションに近い作品を並べます。",
@@ -60,6 +62,7 @@ export function FeedSection({
   currentUserId,
   reposts,
   inspirations,
+  discoveryWorks,
 }: {
   works: Work[];
   posts: Post[];
@@ -67,8 +70,9 @@ export function FeedSection({
   currentUserId: string | null;
   reposts: RepostView[];
   inspirations: InspirationSignalView[];
+  discoveryWorks: Work[];
 }) {
-  const [tab, setTab] = useState<Tab>("new");
+  const [tab, setTab] = useState<Tab>("discovery");
   const [platformFilter, setPlatformFilter] = useState<Set<Platform>>(new Set());
   const [loadedCount, setLoadedCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -85,7 +89,9 @@ export function FeedSection({
   }
 
   const sorted = useMemo(() => {
-    const copy = [...works];
+    const source = tab === "discovery" ? discoveryWorks : works;
+    const copy = [...source];
+    if (tab === "discovery") return copy;
     if (tab === "trend") return copy.sort((a, b) => b.trendScore - a.trendScore);
     if (tab === "new") return copy.sort((a, b) => a.daysAgo - b.daysAgo);
 
@@ -105,7 +111,7 @@ export function FeedSection({
         personalizedScore(b, followedAuthors, affinity, repostedByFollowed, inspiredByFollowed) -
         personalizedScore(a, followedAuthors, affinity, repostedByFollowed, inspiredByFollowed),
     );
-  }, [tab, works, myReactions, followedAuthors, reposts, inspirations]);
+  }, [tab, works, discoveryWorks, myReactions, followedAuthors, reposts, inspirations]);
 
   const visible = useMemo(() => {
     if (platformFilter.size === 0) return sorted;
@@ -138,7 +144,7 @@ export function FeedSection({
   const shown = visible.slice(0, loadedCount);
 
   return (
-    <section id="feed" className="scroll-mt-24">
+    <section>
       <div className="mb-3 flex items-center gap-1 border-b border-[var(--line)]">
         {TABS.map((t) => (
           <button

@@ -20,9 +20,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { PostComposerToggle } from "@/app/components/PostComposerToggle";
 import { StoriesStrip } from "@/app/components/StoriesStrip";
 import { ImmersiveEntry } from "@/app/components/ImmersiveEntry";
-import { HeroRail } from "@/app/components/HeroRail";
-import { MurmurStrip } from "@/app/components/MurmurStrip";
-import { FeedSection } from "@/app/components/FeedSection";
+import { HomeContentTabs } from "@/app/components/HomeContentTabs";
 import { Sidebar } from "@/app/components/Sidebar";
 import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
@@ -63,7 +61,7 @@ export default async function Home() {
   // 「今日の掘り出し物」は素の人気順(rankingWorks)と別の並びにするため、
   // フォロワーの少ない作者を優先するgetDiscoveryPicks()を使う
   // (queries.tsのcomputeDiscoveryScore参照)。
-  const heroWorks = getDiscoveryPicks(works, 6);
+  const discoveryWorks = getDiscoveryPicks(works, 6);
   const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
   const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
 
@@ -97,22 +95,17 @@ export default async function Home() {
 
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} currentUserId={currentUser?.id ?? null} />
         <StoriesStrip posts={posts} works={works} />
-        <MurmurStrip posts={standalonePosts} likedPostIds={likedPostIds} />
-        <HeroRail
-          works={heroWorks}
-          posts={posts}
-          myReactions={myReactions}
-          currentUserId={currentUser?.id ?? null}
-        />
-
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
-          <FeedSection
+          <HomeContentTabs
             works={works}
             posts={posts}
             myReactions={myReactions}
             currentUserId={currentUser?.id ?? null}
             reposts={reposts}
             inspirations={inspirations}
+            discoveryWorks={discoveryWorks}
+            standalonePosts={standalonePosts}
+            likedPostIds={Array.from(likedPostIds)}
           />
           <div className="hidden lg:block">
             <Sidebar

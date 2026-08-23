@@ -99,8 +99,8 @@ export function WorkDetail({
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[760px] flex-1 px-4 py-8 sm:px-6">
-        <div className="mb-5 flex items-center justify-between">
+      <main className="mx-auto w-full max-w-[760px] flex-1 px-4 py-8 sm:px-6 sm:py-10">
+        <div className="mb-7 flex items-center justify-between">
           <Link
             href={`/#work-${work.id}`}
             className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -136,23 +136,23 @@ export function WorkDetail({
           </div>
         )}
 
-        <div className="mb-5 flex items-center gap-2.5">
+        <div className="mb-6 flex items-center gap-3">
           <TrackedLink
             href={`/u/${encodeURIComponent(work.authorHandle ?? work.author)}`}
             trackType="profile_click"
             trackTarget={work.authorHandle ?? work.author}
-            className="flex min-w-0 flex-1 items-center gap-2.5"
+            className="flex min-w-0 flex-1 items-center gap-3"
           >
-            <AuthorAvatar name={work.author} image={work.authorImage} size={36} />
+            <AuthorAvatar name={work.author} image={work.authorImage} size={40} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-semibold text-[var(--ink)] hover:underline">
+              <p className="truncate text-[16px] font-semibold text-[var(--ink)] hover:underline">
                 {work.author}
                 {work.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
                 {work.authorSocialHandle && (
                   <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
                 )}
               </p>
-              <p className="text-[12px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
+              <p className="mt-0.5 text-[12.5px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
             </div>
           </TrackedLink>
           {work.authorId !== currentUserId && (
@@ -160,7 +160,7 @@ export function WorkDetail({
           )}
         </div>
 
-        <div className="relative mb-5">
+        <div className="relative mb-6">
           {mediaTabs.length === 0 ? (
             work.glyph && work.hasMotion ? (
               <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
@@ -204,7 +204,7 @@ export function WorkDetail({
           </span>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center gap-2.5">
+        <div className="mb-7 flex flex-wrap items-center gap-2.5">
           <StageBadge stage={work.stage} />
           {work.tool ? (
             <TrackedLink href={`/tool/${work.tool}`} trackType="tool_badge_click" trackTarget={work.tool}>
@@ -216,7 +216,7 @@ export function WorkDetail({
           <PlatformBadges platforms={work.platforms} />
         </div>
 
-        <h1 className="mb-4 font-[family-name:var(--font-display)] text-2xl font-bold leading-snug text-[var(--ink)]">
+        <h1 className="mb-4 font-[family-name:var(--font-display)] text-[27px] font-bold leading-[1.25] text-[var(--ink)] sm:text-3xl">
           {work.title}
         </h1>
         {work.inspiredByProjectId && work.inspiredByProjectTitle && (
@@ -227,15 +227,15 @@ export function WorkDetail({
             🌱 {work.inspiredByProjectTitle} からインスパイア
           </Link>
         )}
-        <p className="mb-6 whitespace-pre-line text-[15px] leading-relaxed text-[var(--ink-soft)]">
+        <p className="mb-8 whitespace-pre-line text-[15.5px] leading-8 text-[var(--ink-soft)]">
           <LinkifiedText text={work.catch} />
         </p>
 
-        <div className="mb-7 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="mb-9 rounded-3xl border border-[var(--line)] bg-[var(--bg-raised)] p-5 sm:p-6">
+          <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[13px] font-semibold text-[var(--ink)]">この作品でできること</p>
-              <p className="mt-0.5 text-[12px] text-[var(--ink-faint)]">
+              <p className="text-[15px] font-semibold text-[var(--ink)]">この作品でできること</p>
+              <p className="mt-1.5 text-[13px] leading-6 text-[var(--ink-faint)]">
                 反応する、広める、あとで見る、インスパイアされて投稿する
               </p>
             </div>
@@ -246,7 +246,7 @@ export function WorkDetail({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-3">
             {blockedByAuthor ? (
               <span className="text-[12px] text-[var(--ink-faint)]">
                 この作品の作者にブロックされているため、反応できません
@@ -265,7 +265,7 @@ export function WorkDetail({
             </Link>
           </div>
 
-          <div className="mt-4 border-t border-[var(--line)] pt-4">
+          <div className="mt-5 border-t border-[var(--line)] pt-5">
             <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">共有する</p>
             <ShareButtons title={work.title} />
           </div>

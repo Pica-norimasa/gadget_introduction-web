@@ -163,13 +163,11 @@ export function PostForm(props: PostFormProps) {
         window.location.hash = `work-${projectId}`;
       });
     } else {
-      // つぶやき(プロジェクト無し)の投稿はカード単体へのアンカーが無いので、
-      // 一覧セクション(MurmurStrip)自体へジャンプする。location.hashだと
-      // 連続投稿時に同じハッシュへの再代入になり動かないため、
-      // scrollIntoViewで直接スクロールする。
-      requestAnimationFrame(() => {
-        document.getElementById("murmurs")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      // つぶやき(プロジェクト無し)の投稿はホーム上位タブの
+      // 「つぶやきタイムライン」に切り替えて、作成された投稿位置まで
+      // スクロールする。タブ状態はHomeContentTabs側にあるため、疎結合な
+      // カスタムイベントで依頼する。
+      window.dispatchEvent(new CustomEvent("draftly:show-murmurs", { detail: { postId: state.postId } }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- variant/propsは呼び出し中に変わらない前提
   }, [state.success, state.projectId, defaultProjectTarget]);
