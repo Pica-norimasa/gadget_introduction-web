@@ -1,6 +1,20 @@
 import { promises as dns } from "node:dns";
 import { isIP } from "node:net";
 import { NextRequest, NextResponse } from "next/server";
+import { SITE_URL } from "@/app/lib/email";
+
+// 自分自身(本番ドメイン)へのプレビュー取得も塞ぐ。draftly-web.devは
+// プライベートIPではなく普通の公開ドメインなので、上のIPベースの判定
+// だけでは通ってしまう。SITE_URL(=AUTH_URL環境変数)から動的に判定して
+// いるため、将来ドメインを取り直しても(AUTH_URLを更新しさえすれば)
+// ここを書き換える必要は無い。加えてApp Runnerの素のドメイン
+// (*.awsapprunner.com、カスタムドメインとは別に常に生きている)も
+// 接尾辞マッチで塞ぐ。
+const OWN_HOSTNAME = new URL(SITE_URL).hostname.toLowerCase();
+function isOwnHostname(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return h === OWN_HOSTNAME || h.endsWith(".awsapprunner.com") || h === "awsapprunner.com";
+}
 
 // 任意のURLをサーバー側から取得する機能はSSRF(社内ネットワークや
 // AWSのメタデータエンドポイント169.254.169.254等へアクセスさせる攻撃)の
@@ -54,6 +68,9 @@ async function safeFetch(initialUrl: string): Promise<Response> {
     const parsed = new URL(currentUrl);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       throw new Error("invalid protocol");
+    }
+    if (isOwnHostname(parsed.hostname)) {
+      throw new Error("blocked host");
     }
     await assertHostIsSafe(parsed.hostname);
 
