@@ -15,3 +15,9 @@ export function latestPostFor(projectId: string, posts: Post[]): Post | null {
   if (entries.length === 0) return null;
   return entries.reduce((latest, p) => (p.hoursAgo < latest.hoursAgo ? p : latest));
 }
+
+export function latestYouTubePostFor(projectId: string, posts: Post[]): Post | null {
+  const entries = posts.filter((p) => p.projectId === projectId && p.youtubeUrl);
+  if (entries.length === 0) return null;
+  return entries.reduce((latest, p) => (p.hoursAgo < latest.hoursAgo ? p : latest));
+}

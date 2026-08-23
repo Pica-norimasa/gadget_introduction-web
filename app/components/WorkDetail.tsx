@@ -81,6 +81,8 @@ export function WorkDetail({
   // この作品だけ見て離脱せず、Draftly内を回遊してもらうための導線。
   relatedWorks: Work[];
 }) {
+  const latestYouTubePost = [...timeline].reverse().find((post) => post.youtubeUrl);
+  const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
   // 表紙画像・GitHub・YouTubeのうち設定されているものだけをタブとして
   // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
   // ならタブを出さずそのまま表示する(0個ならglyph/motionのプレース
@@ -88,8 +90,8 @@ export function WorkDetail({
   const mediaTabs: { id: string; label: string; content: ReactNode }[] = [
     ...(work.coverImageUrl ? [{ id: "image", label: "画像", content: <CoverImage src={work.coverImageUrl} size="lg" /> }] : []),
     ...(work.githubUrl ? [{ id: "github", label: "リポジトリ", content: <GitHubCard githubUrl={work.githubUrl} size="lg" /> }] : []),
-    ...(work.youtubeUrl
-      ? [{ id: "youtube", label: "動画", content: <YouTubeCard youtubeUrl={work.youtubeUrl} aspect="aspect-[4/3]" /> }]
+    ...(mediaYouTubeUrl
+      ? [{ id: "youtube", label: "動画", content: <YouTubeCard youtubeUrl={mediaYouTubeUrl} aspect="aspect-[4/3]" /> }]
       : []),
   ];
 
@@ -163,7 +165,7 @@ export function WorkDetail({
             work.glyph && work.hasMotion ? (
               <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
             ) : (
-              <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size="lg" />
+              <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size="lg" />
             )
           ) : mediaTabs.length === 1 ? (
             mediaTabs[0].content

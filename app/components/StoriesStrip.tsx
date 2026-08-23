@@ -148,7 +148,7 @@ export function StoriesStrip({ posts, works }: { posts: Post[]; works: Work[] })
       );
     }
 
-    return <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size="lg" />;
+    return <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size="lg" />;
   }
 
   return (

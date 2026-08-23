@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
-import { latestPostFor } from "@/app/lib/post-helpers";
+import { latestPostFor, latestYouTubePostFor } from "@/app/lib/post-helpers";
 import { PLATFORM_META } from "@/app/lib/platform-meta";
 import { toolLabel } from "@/app/lib/tool-meta";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { FollowButton } from "./FollowButton";
 import { ReactionBar } from "./ReactionBar";
+import { TextVisualCard } from "./TextVisualCard";
 import { VerifiedBadge } from "./VerifiedBadge";
+import { YouTubeCard } from "./YouTubeCard";
 
 const BATCH_SIZE = 5;
 const MAX_ITEMS = 60;
@@ -36,6 +38,8 @@ function Slide({
   currentUserId: string | null;
 }) {
   const latestPost = latestPostFor(work.id, posts);
+  const latestYouTubePost = latestYouTubePostFor(work.id, posts);
+  const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
 
   return (
     <section className="relative h-full w-full snap-start overflow-hidden">
@@ -46,17 +50,18 @@ function Slide({
         {work.coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
           <img src={work.coverImageUrl} alt="" className="h-full w-full object-cover" />
+        ) : mediaYouTubeUrl ? (
+          <div className="w-[min(82vw,420px)]">
+            <YouTubeCard youtubeUrl={mediaYouTubeUrl} aspect="aspect-[4/3]" />
+          </div>
         ) : work.glyph ? (
           <span className="text-[120px] leading-none" aria-hidden>
             {work.glyph}
           </span>
         ) : (
-          // キャッチコピーは下の情報パネルにも出るので、ここで同じ文言を
-          // 大きく重ねて表示すると二重に見えてしまう(視覚アセット無しの
-          // 作品で発生していた不具合)。装飾の引用符だけに留める。
-          <span className="text-[160px] leading-none text-white/10" aria-hidden>
-            ❝
-          </span>
+          <div className="w-[min(82vw,380px)]">
+            <TextVisualCard hue={work.hue} title={work.title} body={work.catch} label={work.stage} size="lg" />
+          </div>
         )}
       </div>
 

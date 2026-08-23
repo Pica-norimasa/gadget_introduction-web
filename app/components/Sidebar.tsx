@@ -24,7 +24,7 @@ function RankingRow({ rank, work }: { rank: number; work: Work }) {
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} compact />
         ) : (
-          <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+          <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} compact />
         )}
       </Link>
       <div className="min-w-0 flex-1">
@@ -121,7 +121,7 @@ function MyProjectRow({ work, posts }: { work: Work; posts: Post[] }) {
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} compact />
         ) : (
-          <WorkThumb hue={work.hue} glyph={work.glyph} compact />
+          <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} compact />
         )}
       </div>
       <div className="min-w-0 flex-1">

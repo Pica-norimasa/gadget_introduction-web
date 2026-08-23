@@ -57,8 +57,16 @@ export function YouTubeCard({
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- 外部YouTubeサムネイル、next/imageのドメイン設定なしで済ませる */}
       <img src={youtubeThumbnailUrl(videoId)} alt="" className="h-full w-full object-cover" />
+      <span className="absolute left-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+        YouTube
+      </span>
       <span className="absolute inset-0 flex items-center justify-center bg-black/15">
-        <span className="grid h-11 w-11 place-items-center rounded-full bg-black/65 text-[18px] text-white">▶</span>
+        <span className="grid h-12 w-12 place-items-center rounded-full bg-black/70 text-[19px] text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)]">
+          ▶
+        </span>
+      </span>
+      <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+        タップして再生
       </span>
     </>
   );

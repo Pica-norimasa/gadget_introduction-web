@@ -1,5 +1,5 @@
 import { type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
-import { latestPostFor } from "@/app/lib/post-helpers";
+import { latestPostFor, latestYouTubePostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
 import { AuthorAvatar } from "./AuthorAvatar";
@@ -43,6 +43,8 @@ export function WorkCard({
   showAnchor?: boolean;
 }) {
   const latestPost = latestPostFor(work.id, posts);
+  const latestYouTubePost = latestYouTubePostFor(work.id, posts);
+  const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
 
   return (
     <article
@@ -91,10 +93,10 @@ export function WorkCard({
       <div className="relative">
         {work.coverImageUrl ? (
           <CoverImage src={work.coverImageUrl} size={size} />
-        ) : work.youtubeUrl ? (
+        ) : mediaYouTubeUrl ? (
           <div className="relative z-20">
             <YouTubeCard
-              youtubeUrl={work.youtubeUrl}
+              youtubeUrl={mediaYouTubeUrl}
               aspect={size === "lg" ? "aspect-[4/3]" : "aspect-square"}
             />
           </div>
@@ -105,7 +107,7 @@ export function WorkCard({
         ) : work.glyph && work.hasMotion ? (
           <MotionThumb hue={work.hue} glyph={work.glyph} size={size} />
         ) : (
-          <WorkThumb hue={work.hue} glyph={work.glyph} catchText={work.catch} size={size} />
+          <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size={size} />
         )}
         {(work.appStoreUrl || work.googlePlayUrl) && (
           <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
