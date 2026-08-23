@@ -344,8 +344,8 @@ export function PostForm(props: PostFormProps) {
         }`}
       />
       {variant === "compose" && selectedType === "question" && (
-        <p className="mt-3 text-[11.5px] leading-5 text-[var(--ink-faint)] sm:text-[12px]">
-          つぶやきは作品に紐づけず、つぶやきタイムラインに投稿されます
+        <p className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/20 px-3 py-2 text-[11px] leading-5 text-[var(--ink-muted)] sm:text-[11.5px]">
+          ひとこと投稿として、みんなのつぶやきタイムラインに表示されます
         </p>
       )}
       {showProjectTarget && (
