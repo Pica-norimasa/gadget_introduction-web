@@ -3,8 +3,10 @@
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
+import { extractFirstUrl } from "@/app/lib/url-extract";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { LinkifiedText } from "./LinkifiedText";
+import { LinkPreviewCard } from "./LinkPreviewCard";
 import { YouTubeCard } from "./YouTubeCard";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
@@ -84,6 +86,10 @@ export function PostEditor({
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  // 画像/YouTubeが既に付いている投稿では縦に長くなりすぎるため、
+  // どちらも無い場合だけ本文中の最初のURLをXのリンクカードのように表示する。
+  const previewUrl = !imageUrl && !youtubeUrl && body ? extractFirstUrl(body) : null;
+
   if (!isOwner || !editing) {
     return (
       <div className="flex flex-col gap-2">
@@ -108,6 +114,7 @@ export function PostEditor({
           <img src={imageUrl} alt="" className={imageClassName} />
         )}
         {youtubeUrl && <YouTubeCard youtubeUrl={youtubeUrl} className={youtubeClassName} />}
+        {previewUrl && <LinkPreviewCard url={previewUrl} />}
       </div>
     );
   }

@@ -18,6 +18,7 @@ const CLICK_EVENT_LABELS: Record<string, string> = {
   external_link_github: "外部リンク(GitHub)",
   external_link_appstore: "外部リンク(App Store)",
   external_link_googleplay: "外部リンク(Google Play)",
+  external_link_preview: "リンクプレビューカードクリック",
   work_card_click: "作品カードクリック",
   profile_click: "作者プロフィールクリック",
   tool_badge_click: "ツールバッジクリック",

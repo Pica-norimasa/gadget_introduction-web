@@ -10,7 +10,7 @@ type HomeTab = "products" | "murmurs";
 
 const TABS: { id: HomeTab; label: string; description: string }[] = [
   { id: "products", label: "作品一覧", description: "作品・サービス・アプリを探す" },
-  { id: "murmurs", label: "つぶやきタイムライン", description: "作品に紐づかない気軽な投稿を見る" },
+  { id: "murmurs", label: "つぶやきタイムライン", description: "作品じゃなくてもいい、気軽な投稿を見る" },
 ];
 
 export function HomeContentTabs({

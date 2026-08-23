@@ -27,11 +27,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Draftly | アイデアを、育てながら見せる場所",
   description:
-    "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+    "つくり手が作ったサービス・アプリ・ゲーム・アイディアを見つけて、作りかけの進捗も気軽に残せる場所。",
   openGraph: {
     title: "Draftly | アイデアを、育てながら見せる場所",
     description:
-      "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+      "つくり手が作ったサービス・アプリ・ゲーム・アイディアを見つけて、作りかけの進捗も気軽に残せる場所。",
     type: "website",
     siteName: "Draftly",
   },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Draftly | アイデアを、育てながら見せる場所",
     description:
-      "個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せる場所。",
+      "つくり手が作ったサービス・アプリ・ゲーム・アイディアを見つけて、作りかけの進捗も気軽に残せる場所。",
   },
 };
 

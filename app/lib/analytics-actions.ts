@@ -10,6 +10,7 @@ export type ClickEventType =
   | "external_link_github"
   | "external_link_appstore"
   | "external_link_googleplay"
+  | "external_link_preview"
   | "work_card_click"
   | "profile_click"
   | "tool_badge_click"

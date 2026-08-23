@@ -59,7 +59,7 @@ export default function Image() {
             育てながら見せる場所
           </div>
           <div style={{ display: "flex", fontSize: 30, lineHeight: 1.45, color: "rgba(247,240,228,0.78)", maxWidth: 900 }}>
-            個人開発者が作ったサービス・アプリ・ゲームを見つけて、作りかけの進捗やアイデアも気軽に残せます。
+            つくり手が作ったサービス・アプリ・ゲーム・アイディアを見つけて、作りかけの進捗も気軽に残せます。
           </div>
         </div>
         <div style={{ display: "flex", gap: 12, fontSize: 24, color: "rgba(247,240,228,0.64)" }}>

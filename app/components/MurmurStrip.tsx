@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
+import { extractFirstUrl } from "@/app/lib/url-extract";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LikeButton } from "./LikeButton";
+import { LinkPreviewCard } from "./LinkPreviewCard";
 import { MurmurBody } from "./MurmurBody";
 import { OpenComposerButton } from "./OpenComposerButton";
 import { PostRepostButton } from "./PostRepostButton";
@@ -34,7 +36,7 @@ export function MurmurStrip({
             </p>
           )}
           <p className={`${embedded ? "" : "mt-1"} text-[12px] text-[var(--ink-faint)]`}>
-            作品に紐づかない、気軽な投稿が新しい順に流れます。
+            作品じゃなくてもいい、気軽な投稿が新しい順に流れます。
           </p>
         </div>
         <div className="flex items-center gap-2 text-[11px] text-[var(--ink-faint)]">
@@ -51,7 +53,13 @@ export function MurmurStrip({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {posts.slice(0, 6).map((post) => (
+          {posts.slice(0, 6).map((post) => {
+            // 既に画像/YouTubeが付いている投稿では、本文中のURLまで
+            // カード化すると縦に長くなりすぎるため、どちらも無い場合だけ
+            // Xのリンクカードのように表示する。
+            const previewUrl =
+              !post.imageUrl && !post.youtubeUrl && post.body ? extractFirstUrl(post.body) : null;
+            return (
             <div
               id={`murmur-${post.id}`}
               key={post.id}
@@ -85,6 +93,11 @@ export function MurmurStrip({
                 )}
                 {post.youtubeUrl && <YouTubeCard youtubeUrl={post.youtubeUrl} linked={false} />}
               </Link>
+              {/* リンクカード(<a>)は<Link>の中に置くとネストしたaタグに
+                  なってしまう(ボタンの続きを読むとは違い、target="_blank"の
+                  別ページ遷移なのでpreventDefaultでは解決できない)ため、
+                  兄弟要素として</Link>の外に出す。 */}
+              {previewUrl && <LinkPreviewCard url={previewUrl} />}
               <div className="mt-1 flex items-center gap-3">
                 <LikeButton postId={post.id} liked={likedPostIdSet.has(post.id)} count={post.likesCount} />
                 <PostRepostButton postId={post.id} count={post.repostsCount} />
@@ -93,7 +106,8 @@ export function MurmurStrip({
                 </Link>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

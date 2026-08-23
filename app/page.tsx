@@ -79,7 +79,7 @@ export default async function Home() {
         <div className="mx-auto max-w-[1180px] px-4 pt-7 sm:px-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--accent)] sm:text-[11px]">Discover</p>
           <h1 className="mt-1.5 font-[family-name:var(--font-display)] text-[19px] font-bold leading-[1.45] text-[var(--ink)] sm:text-2xl sm:leading-snug">
-            個人開発者が作った面白いサービス・アプリ・ゲームを発見しよう
+            つくり手たちの面白いサービス・アプリ・ゲーム・アイディアを発見しよう
           </h1>
           <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[var(--ink-soft)] sm:text-sm sm:leading-6">
             見るだけでも、作りかけを残すだけでも大丈夫。気になる作品を探すところから始められます。
