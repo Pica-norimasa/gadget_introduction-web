@@ -96,8 +96,60 @@ export function WorkDetail({
   // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
   // ならタブを出さずそのまま表示する(0個ならglyph/motionのプレース
   // ホルダーにフォールバック、これは呼び出し側のJSXで扱う)。
+  // 閲覧数/App Store等のバッジはカバー画像・プレースホルダー用の飾りで、
+  // GitHub/YouTubeカードは自前のUIで埋まっているため重ねると衝突する
+  // (GITHUB表示や⭐スター数と被る)。そのため画像系のcontentだけに
+  // バッジを閉じ込め、タブ切り替え時に自動でオン/オフされるようにする。
+  const mediaOverlayBadges = (
+    <>
+      {(work.appStoreUrl || work.googlePlayUrl) && (
+        <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
+          {work.appStoreUrl && (
+            <TrackedExternalLink
+              href={work.appStoreUrl}
+              type="external_link_appstore"
+              title="App Store"
+              ariaLabel="App Store"
+              className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+            >
+              <AppleMark className="h-4 w-4" />
+            </TrackedExternalLink>
+          )}
+          {work.googlePlayUrl && (
+            <TrackedExternalLink
+              href={work.googlePlayUrl}
+              type="external_link_googleplay"
+              title="Google Play"
+              ariaLabel="Google Play"
+              className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+            >
+              <AndroidMark className="h-4 w-4" />
+            </TrackedExternalLink>
+          )}
+        </div>
+      )}
+      {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く(WorkCard.tsxと同じ配置) */}
+      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
+        👁️{formatCount(work.views)} 💬{work.comments}
+      </span>
+    </>
+  );
+
   const mediaTabs: { id: string; label: string; content: ReactNode }[] = [
-    ...(work.coverImageUrl ? [{ id: "image", label: "画像", content: <CoverImage src={work.coverImageUrl} size="lg" /> }] : []),
+    ...(work.coverImageUrl
+      ? [
+          {
+            id: "image",
+            label: "画像",
+            content: (
+              <div className="relative">
+                <CoverImage src={work.coverImageUrl} size="lg" />
+                {mediaOverlayBadges}
+              </div>
+            ),
+          },
+        ]
+      : []),
     ...(work.githubUrl ? [{ id: "github", label: "リポジトリ", content: <GitHubCard githubUrl={work.githubUrl} size="lg" /> }] : []),
     ...(mediaYouTubeUrl
       ? [{ id: "youtube", label: "動画", content: <YouTubeCard youtubeUrl={mediaYouTubeUrl} aspect="aspect-[4/3]" /> }]
@@ -169,48 +221,21 @@ export function WorkDetail({
           )}
         </div>
 
-        <div id="work-media" className="relative mb-6 scroll-mt-24">
+        <div id="work-media" className="mb-6 scroll-mt-24">
           {mediaTabs.length === 0 ? (
-            work.glyph && work.hasMotion ? (
-              <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
-            ) : (
-              <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size="lg" />
-            )
+            <div className="relative">
+              {work.glyph && work.hasMotion ? (
+                <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
+              ) : (
+                <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size="lg" />
+              )}
+              {mediaOverlayBadges}
+            </div>
           ) : mediaTabs.length === 1 ? (
             mediaTabs[0].content
           ) : (
             <WorkMediaTabs tabs={mediaTabs} />
           )}
-          {(work.appStoreUrl || work.googlePlayUrl) && (
-            <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
-              {work.appStoreUrl && (
-                <TrackedExternalLink
-                  href={work.appStoreUrl}
-                  type="external_link_appstore"
-                  title="App Store"
-                  ariaLabel="App Store"
-                  className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
-                >
-                  <AppleMark className="h-4 w-4" />
-                </TrackedExternalLink>
-              )}
-              {work.googlePlayUrl && (
-                <TrackedExternalLink
-                  href={work.googlePlayUrl}
-                  type="external_link_googleplay"
-                  title="Google Play"
-                  ariaLabel="Google Play"
-                  className="grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
-                >
-                  <AndroidMark className="h-4 w-4" />
-                </TrackedExternalLink>
-              )}
-            </div>
-          )}
-          {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く(WorkCard.tsxと同じ配置) */}
-          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
-            👁️{formatCount(work.views)} 💬{work.comments}
-          </span>
         </div>
 
         <div className="mb-7 flex flex-wrap items-center gap-2.5">
@@ -334,7 +359,11 @@ export function WorkDetail({
               label: "制作タイムライン",
               content: (
                 <div className="mb-6">
-                  <ProjectTimelineList timeline={timeline} isOwner={work.authorId === currentUserId} />
+                  <ProjectTimelineList
+                    timeline={timeline}
+                    isOwner={work.authorId === currentUserId}
+                    githubUrl={work.githubUrl}
+                  />
                   {work.authorId === currentUserId && (
                     <div className="mt-4">
                       <PostForm variant="timeline" projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />

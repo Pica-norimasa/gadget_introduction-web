@@ -71,9 +71,10 @@ export async function GET(request: NextRequest) {
 
   const data = await res.json();
 
-  // READMEと貢献者数は「あれば見せる」付加情報なので、取得失敗しても
-  // リポジトリ本体の情報は問題なく返す(Promise.allSettledで独立させる)。
-  const [readmeResult, contributorsResult] = await Promise.allSettled([
+  // README・貢献者数・最新コミットは「あれば見せる」付加情報なので、
+  // 取得失敗してもリポジトリ本体の情報は問題なく返す
+  // (Promise.allSettledで独立させる)。
+  const [readmeResult, contributorsResult, commitsResult] = await Promise.allSettled([
     fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
       headers: githubHeaders("application/vnd.github.raw+json"),
       next: { revalidate: 3600 },
@@ -81,6 +82,12 @@ export async function GET(request: NextRequest) {
     fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=1&anon=true`, {
       headers: githubHeaders("application/vnd.github+json"),
       next: { revalidate: 3600 },
+    }),
+    // 制作タイムライン末尾に「最新コミット」として出すための1件取得
+    // (デフォルトブランチの最新1件でよいのでper_page=1)。
+    fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`, {
+      headers: githubHeaders("application/vnd.github+json"),
+      next: { revalidate: 900 },
     }),
   ]);
 
@@ -101,6 +108,31 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  let latestCommit: {
+    message: string;
+    sha: string;
+    htmlUrl: string;
+    date: string | null;
+    authorName: string | null;
+    authorLogin: string | null;
+    authorAvatar: string | null;
+  } | null = null;
+  if (commitsResult.status === "fulfilled" && commitsResult.value.ok) {
+    const commits = await commitsResult.value.json();
+    const commit = Array.isArray(commits) ? commits[0] : null;
+    if (commit) {
+      latestCommit = {
+        message: (commit.commit?.message as string ?? "").split("\n")[0],
+        sha: (commit.sha as string).slice(0, 7),
+        htmlUrl: commit.html_url as string,
+        date: (commit.commit?.author?.date as string | undefined) ?? (commit.commit?.committer?.date as string | undefined) ?? null,
+        authorName: (commit.commit?.author?.name as string | undefined) ?? null,
+        authorLogin: (commit.author?.login as string | undefined) ?? null,
+        authorAvatar: (commit.author?.avatar_url as string | undefined) ?? null,
+      };
+    }
+  }
+
   return NextResponse.json({
     fullName: data.full_name as string,
     // GitHub側のdescriptionが未設定のリポジトリは意外と多いので、その
@@ -111,5 +143,6 @@ export async function GET(request: NextRequest) {
     ownerAvatar: (data.owner?.avatar_url as string | undefined) ?? null,
     htmlUrl: data.html_url as string,
     contributorsCount,
+    latestCommit,
   });
 }

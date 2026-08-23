@@ -5,7 +5,17 @@ import { trackClick } from "@/app/lib/analytics-actions";
 import { languageColor } from "@/app/lib/language-colors";
 import { GitHubMark } from "./BrandIcons";
 
-type RepoData = {
+export type LatestCommit = {
+  message: string;
+  sha: string;
+  htmlUrl: string;
+  date: string | null;
+  authorName: string | null;
+  authorLogin: string | null;
+  authorAvatar: string | null;
+};
+
+export type RepoData = {
   fullName: string;
   description: string | null;
   stars: number;
@@ -13,6 +23,7 @@ type RepoData = {
   ownerAvatar: string | null;
   htmlUrl: string;
   contributorsCount: number | null;
+  latestCommit: LatestCommit | null;
 };
 
 type State = { status: "loading" } | { status: "error" } | { status: "ready"; data: RepoData };
