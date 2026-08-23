@@ -79,6 +79,19 @@ function NotificationMessage({ n, onNavigate }: { n: NotificationView; onNavigat
     );
   }
 
+  // 単独投稿への紹介(リポスト)。作品タイトルが無いので、作品向けの
+  // 「『タイトル』を紹介しました」ではなく投稿向けの文言にする。
+  if (n.type === "repost" && n.postId) {
+    return (
+      <>
+        {actor}
+        <Link href={`/post/${n.postId}`} onClick={onNavigate} className="hover:underline">
+          があなたの投稿を紹介しました
+        </Link>
+      </>
+    );
+  }
+
   // コメントへの返信。「comment」と同じくpostId/projectIdのどちらかで
   // ルーティングする(返信は作品向け/単独投稿向けコメントのどちらにも
   // 付けられるため)。作品向けの場合は、コメントタブを開いた状態で

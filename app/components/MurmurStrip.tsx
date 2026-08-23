@@ -4,6 +4,7 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LikeButton } from "./LikeButton";
 import { OpenComposerButton } from "./OpenComposerButton";
+import { PostRepostButton } from "./PostRepostButton";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -87,6 +88,7 @@ export function MurmurStrip({
               </Link>
               <div className="mt-1 flex items-center gap-3">
                 <LikeButton postId={post.id} liked={likedPostIdSet.has(post.id)} count={post.likesCount} />
+                <PostRepostButton postId={post.id} count={post.repostsCount} />
                 <Link href={`/post/${post.id}`} className="font-mono text-[11px] text-[var(--ink-faint)] hover:underline">
                   💬{post.commentsCount}
                 </Link>

@@ -6,6 +6,7 @@ import {
   getBlockedUserIds,
   getFollowedAuthors,
   getMutedUserIds,
+  getRepostedPostIds,
   getRepostedProjectIds,
 } from "@/app/lib/queries";
 import { AuthHydrator } from "@/app/components/AuthHydrator";
@@ -51,9 +52,10 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [followedAuthors, repostedProjectIds, mutedUserIds, blockedUserIds, session] = await Promise.all([
+  const [followedAuthors, repostedProjectIds, repostedPostIds, mutedUserIds, blockedUserIds, session] = await Promise.all([
     getFollowedAuthors(),
     getRepostedProjectIds(),
+    getRepostedPostIds(),
     getMutedUserIds(),
     getBlockedUserIds(),
     auth(),
@@ -64,7 +66,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <AuthHydrator isLoggedIn={!!session?.user} />
         <FollowHydrator initial={followedAuthors} />
-        <RepostHydrator initial={repostedProjectIds} />
+        <RepostHydrator initial={repostedProjectIds} initialPosts={repostedPostIds} />
         <MuteHydrator initial={mutedUserIds} />
         <BlockHydrator initial={blockedUserIds} />
         <WelcomeModal />

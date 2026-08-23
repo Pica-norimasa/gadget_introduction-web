@@ -19,6 +19,7 @@ import { CommentThread } from "@/app/components/CommentThread";
 import { LikeButton } from "@/app/components/LikeButton";
 import { MoreActionsMenu } from "@/app/components/MoreActionsMenu";
 import { PostEditor } from "@/app/components/PostEditor";
+import { PostRepostButton } from "@/app/components/PostRepostButton";
 import { PostXShareButton } from "@/app/components/PostXShareButton";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { VerifiedBadge } from "@/app/components/VerifiedBadge";
@@ -148,7 +149,10 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               この投稿の作者にブロックされているため、反応できません
             </span>
           ) : (
-            <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+            <>
+              <LikeButton postId={post.id} liked={liked} count={post.likesCount} size="md" />
+              <PostRepostButton postId={post.id} count={post.repostsCount} size="md" />
+            </>
           )}
           {post.authorId === currentUser?.id && currentUser?.xUsername && (
             <PostXShareButton text={post.body} />

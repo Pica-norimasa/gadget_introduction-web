@@ -387,7 +387,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   const [works, repostRows] = await Promise.all([
     getWorksWhere({ authorId: user.id }),
     prisma.repost.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, projectId: { not: null } },
       orderBy: { createdAt: "desc" },
       select: { projectId: true },
     }),
@@ -396,7 +396,7 @@ export async function getUserProfile(name: string): Promise<UserProfile | null> 
   // リポスト日時順を保ちたいので、getWorksWhere()が返すProject.createdAt順
   // の結果を、repostRowsの並びに合わせて組み直す(Xの自分のタイムラインで
   // リツイートが自分のリポスト日時順に並ぶのと同じ考え方)。
-  const repostedIds = repostRows.map((r) => r.projectId);
+  const repostedIds = repostRows.map((r) => r.projectId).filter((id): id is string => !!id);
   const repostedWorksById =
     repostedIds.length > 0
       ? new Map((await getWorksWhere({ id: { in: repostedIds } })).map((w) => [w.id, w]))
@@ -474,7 +474,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
     orderBy: { createdAt: "desc" },
     include: {
       author: { select: AUTHOR_SELECT },
-      _count: { select: { comments: true, reactions: true } },
+      _count: { select: { comments: true, reactions: true, reposts: true } },
     },
   });
   if (rows.length === 0) return [];
@@ -504,6 +504,7 @@ export async function getInspiredByProject(projectId: string): Promise<InspiredI
           hoursAgo: hoursAgoOf(r.createdAt),
           commentsCount: r._count.comments,
           likesCount: r._count.reactions,
+          repostsCount: r._count.reposts,
         },
       });
     }
@@ -721,6 +722,7 @@ export type StandalonePostView = {
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
+  repostsCount: number;
   // コメントを「つぶやきとしてもシェア」した投稿(shareCommentAsPost)や
   // 「これにインスパイアされて投稿する」経由の投稿で埋まる。ホーム画面の
   // 普通のつぶやきと見分けが付かないという指摘を受け、対象作品への
@@ -749,7 +751,7 @@ async function loadStandalonePosts(
     ...(limit ? { take: limit } : {}),
     include: {
       author: { select: AUTHOR_SELECT },
-      _count: { select: { comments: true, reactions: true } },
+      _count: { select: { comments: true, reactions: true, reposts: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
   });
@@ -766,6 +768,7 @@ async function loadStandalonePosts(
     hoursAgo: hoursAgoOf(r.createdAt),
     commentsCount: r._count.comments,
     likesCount: r._count.reactions,
+    repostsCount: r._count.reposts,
     inspiredByProjectId: r.inspiredByProject?.id,
     inspiredByProjectTitle: r.inspiredByProject?.title,
   }));
@@ -843,19 +846,27 @@ export type RepostView = {
 export async function getRecentReposts(limit = 20): Promise<RepostView[]> {
   const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
   const rows = await prisma.repost.findMany({
-    where: excludeAuthorIds.length > 0 ? { userId: { notIn: excludeAuthorIds } } : undefined,
+    where: {
+      projectId: { not: null },
+      ...(excludeAuthorIds.length > 0 ? { userId: { notIn: excludeAuthorIds } } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: limit,
     include: { user: { select: { name: true } }, project: { select: { id: true, title: true } } },
   });
-  return rows.map((r) => ({
-    id: r.id,
-    userName: r.user.name,
-    projectId: r.project.id,
-    projectTitle: r.project.title,
-    comment: r.comment,
-    hoursAgo: hoursAgoOf(r.createdAt),
-  }));
+  return rows.flatMap((r) => {
+    if (!r.project) return [];
+    return [
+      {
+        id: r.id,
+        userName: r.user.name,
+        projectId: r.project.id,
+        projectTitle: r.project.title,
+        comment: r.comment,
+        hoursAgo: hoursAgoOf(r.createdAt),
+      },
+    ];
+  });
 }
 
 export type InspirationSignalView = {
@@ -1050,6 +1061,7 @@ export type PostDetailView = {
   hoursAgo: number;
   commentsCount: number;
   likesCount: number;
+  repostsCount: number;
   inspiredByProjectId?: string;
   inspiredByProjectTitle?: string;
   // JSON-LD(構造化データ)のdatePublished用。Work型のcreatedAtIsoと同じ用途。
@@ -1064,7 +1076,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
       author: {
         select: { id: true, ...AUTHOR_SELECT },
       },
-      _count: { select: { comments: true, reactions: true } },
+      _count: { select: { comments: true, reactions: true, reposts: true } },
       inspiredByProject: { select: { id: true, title: true } },
     },
   });
@@ -1084,6 +1096,7 @@ export async function getPostById(id: string): Promise<PostDetailView | null> {
     hoursAgo: hoursAgoOf(post.createdAt),
     commentsCount: post._count.comments,
     likesCount: post._count.reactions,
+    repostsCount: post._count.reposts,
     createdAtIso: post.createdAt.toISOString(),
     inspiredByProjectId: post.inspiredByProject?.id,
     inspiredByProjectTitle: post.inspiredByProject?.title,
@@ -1321,10 +1334,23 @@ export async function getRepostedProjectIds(): Promise<string[]> {
   if (!user) return [];
 
   const reposts = await prisma.repost.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, projectId: { not: null } },
     select: { projectId: true },
   });
-  return reposts.map((r) => r.projectId);
+  return reposts.map((r) => r.projectId).filter((id): id is string => !!id);
+}
+
+// 自分がリポスト済みのPostId一覧。つぶやきタイムライン/投稿詳細の
+// リポストボタン初期状態に使う。
+export async function getRepostedPostIds(): Promise<string[]> {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const reposts = await prisma.repost.findMany({
+    where: { userId: user.id, postId: { not: null } },
+    select: { postId: true },
+  });
+  return reposts.map((r) => r.postId).filter((id): id is string => !!id);
 }
 
 // 自分がミュート中のUserId一覧。app/layout.tsxがアプリ全体のミュート

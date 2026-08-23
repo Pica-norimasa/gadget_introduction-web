@@ -14,6 +14,15 @@ async function notifyRepost(projectId: string, actorId: string) {
   }
 }
 
+async function notifyPostRepost(postId: string, actorId: string) {
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+  if (post && post.authorId !== actorId) {
+    await prisma.notification.create({
+      data: { type: "repost", recipientId: post.authorId, actorId, postId },
+    });
+  }
+}
+
 // トグル: 既にリポスト(引用リポストも含む)していれば取り消し、
 // していなければコメント無しのRepost行を作る。FollowButton/ReactionBar
 // と同じ、認証無しの軽量セッションUser名義。
@@ -37,6 +46,31 @@ export async function toggleRepost(projectId: string) {
 
   revalidatePath("/");
   revalidatePath(`/work/${projectId}`);
+}
+
+// つぶやき(Post)向けのリポスト。Project向けと同じRepostテーブルを使い、
+// postIdだけを埋める。引用リポストはまだ作品詳細だけに限定し、
+// つぶやきはXの通常リポストに近いシンプルなON/OFFにする。
+export async function togglePostRepost(postId: string) {
+  const user = await getOrCreateCurrentUser();
+
+  const existing = await prisma.repost.findUnique({
+    where: { userId_postId: { userId: user.id, postId } },
+  });
+
+  if (existing) {
+    await prisma.repost.delete({ where: { id: existing.id } });
+  } else {
+    const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+    if (!post) return;
+    if (await isBlockedBy(post.authorId, user.id)) return;
+
+    await prisma.repost.create({ data: { userId: user.id, postId } });
+    await notifyPostRepost(postId, user.id);
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/post/${postId}`);
 }
 
 export type QuoteRepostState = { error?: string; success?: boolean };

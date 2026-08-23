@@ -7,23 +7,27 @@
 // RepostHydrator経由で流し込む。
 
 import { useSyncExternalStore } from "react";
-import { toggleRepost as toggleRepostAction } from "@/app/lib/repost-actions";
+import { togglePostRepost as togglePostRepostAction, toggleRepost as toggleRepostAction } from "@/app/lib/repost-actions";
 
 type Listener = () => void;
 
 let reposted = new Set<string>();
+let repostedPosts = new Set<string>();
+let snapshot = { projects: reposted as ReadonlySet<string>, posts: repostedPosts as ReadonlySet<string> };
 let hydrated = false;
 const listeners = new Set<Listener>();
 
 function emitChange() {
+  snapshot = { projects: reposted, posts: repostedPosts };
   listeners.forEach((listener) => listener());
 }
 
 // app/components/RepostHydrator.tsxからマウント時に一度だけ呼ばれる。
-export function hydrateReposted(projectIds: string[]) {
+export function hydrateReposted(projectIds: string[], postIds: string[] = []) {
   if (hydrated) return;
   hydrated = true;
   reposted = new Set(projectIds);
+  repostedPosts = new Set(postIds);
   emitChange();
 }
 
@@ -35,6 +39,16 @@ export function toggleRepost(projectId: string) {
   emitChange();
 
   void toggleRepostAction(projectId);
+}
+
+export function togglePostRepost(postId: string) {
+  const next = new Set(repostedPosts);
+  if (next.has(postId)) next.delete(postId);
+  else next.add(postId);
+  repostedPosts = next;
+  emitChange();
+
+  void togglePostRepostAction(postId);
 }
 
 // 引用リポスト成功後に呼ぶ(quoteRepost自体はServer Action + useActionState
@@ -54,18 +68,29 @@ function subscribe(listener: Listener) {
 }
 
 function getSnapshot() {
-  return reposted;
+  return snapshot;
 }
 
-const EMPTY_SET: ReadonlySet<string> = new Set();
-function getServerSnapshot(): ReadonlySet<string> {
-  return EMPTY_SET;
+const EMPTY_SNAPSHOT: { projects: ReadonlySet<string>; posts: ReadonlySet<string> } = {
+  projects: new Set(),
+  posts: new Set(),
+};
+function getServerSnapshot(): { projects: ReadonlySet<string>; posts: ReadonlySet<string> } {
+  return EMPTY_SNAPSHOT;
 }
 
 export function useRepostedProjects(): ReadonlySet<string> {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot).projects;
+}
+
+export function useRepostedPosts(): ReadonlySet<string> {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot).posts;
 }
 
 export function useHasReposted(projectId: string): boolean {
   return useRepostedProjects().has(projectId);
+}
+
+export function useHasRepostedPost(postId: string): boolean {
+  return useRepostedPosts().has(postId);
 }

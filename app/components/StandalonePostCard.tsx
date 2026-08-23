@@ -3,6 +3,7 @@ import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LinkifiedText } from "./LinkifiedText";
+import { PostRepostButton } from "./PostRepostButton";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -24,6 +25,9 @@ export function StandalonePostCard({
     | "authorImage"
     | "body"
     | "hoursAgo"
+    | "likesCount"
+    | "commentsCount"
+    | "repostsCount"
     | "youtubeUrl"
     | "inspiredByProjectId"
     | "inspiredByProjectTitle"
@@ -54,6 +58,12 @@ export function StandalonePostCard({
             🌱 {post.inspiredByProjectTitle}
           </span>
         )}
+        <div className="relative z-20 mt-2 flex items-center gap-3">
+          <PostRepostButton postId={post.id} count={post.repostsCount} />
+          <Link href={`/post/${post.id}`} className="font-mono text-[11px] text-[var(--ink-faint)] hover:underline">
+            💬{post.commentsCount}
+          </Link>
+        </div>
       </div>
     </div>
   );
