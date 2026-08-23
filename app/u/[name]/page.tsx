@@ -274,7 +274,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           postedLabel={`作品(${profile.works.length})`}
           repostedLabel={`紹介(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
-          followingLabel={`フォロー(${followingList.length})`}
+          followingLabel={`フォローユーザー(${followingList.length})`}
           bookmarkedLabel={`ブックマーク(${bookmarkedWorks.length})`}
           showBlockedTab={isOwnProfile}
           showBookmarksTab={isOwnProfile}

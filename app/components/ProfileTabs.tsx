@@ -47,8 +47,8 @@ export function ProfileTabs({
     { id: "murmurs", label: murmursLabel },
     { id: "posted", label: postedLabel },
     { id: "reposted", label: repostedLabel },
-    { id: "following", label: followingLabel },
     ...(showBookmarksTab ? [{ id: "bookmarked" as const, label: bookmarkedLabel }] : []),
+    { id: "following", label: followingLabel },
     ...(showBlockedTab ? [{ id: "blocked" as const, label: "ブロックユーザー" }] : []),
   ];
 
