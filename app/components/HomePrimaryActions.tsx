@@ -16,13 +16,13 @@ export function HomePrimaryActions() {
           event.preventDefault();
           window.dispatchEvent(new CustomEvent("draftly:show-products"));
         }}
-        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--accent)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
+        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[#7aa7ff]/70 sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
       >
-        <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--accent-soft)] text-[12px] font-bold text-[var(--accent)] sm:h-9 sm:w-9 sm:text-[13px]">
+        <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#1f2b42] text-[12px] font-bold text-[#8fb7ff] sm:h-9 sm:w-9 sm:text-[13px]">
           探
         </span>
         <span className="min-w-0">
-          <span className="mb-0.5 hidden text-[11px] font-medium text-[var(--accent)] sm:block">見るだけなら</span>
+          <span className="mb-0.5 hidden text-[11px] font-medium text-[#8fb7ff] sm:block">見るだけなら</span>
           <span className="block text-[12.5px] font-bold leading-snug sm:text-[13px]">作品を探す</span>
           <span className="hidden text-[11px] text-[var(--ink-faint)] sm:block">新着・急上昇から眺める</span>
         </span>

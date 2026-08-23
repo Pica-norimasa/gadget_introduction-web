@@ -107,7 +107,13 @@ export function HomeContentTabs({
                 }`}
               >
                 <span className="block text-[13.5px] font-bold">{t.label}</span>
-                <span className="mt-1 hidden text-[11px] leading-snug sm:block">{t.description}</span>
+                <span
+                  className={`mt-1 hidden text-[11px] leading-snug sm:block ${
+                    active ? "text-[var(--ink-faint)]" : "text-[var(--ink-muted)]"
+                  }`}
+                >
+                  {t.description}
+                </span>
               </button>
             );
           })}

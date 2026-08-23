@@ -48,7 +48,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -72,7 +72,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
                 <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
                   作品({works.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="flex flex-col gap-4">
                   {works.map((w) => (
                     <WorkCard
                       key={w.id}
@@ -80,6 +80,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
                       posts={posts}
                       myReactions={myReactions}
                       currentUserId={currentUser?.id ?? null}
+                      variant="horizontal"
                       showAnchor={false}
                     />
                   ))}
@@ -92,7 +93,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
                 <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
                   つぶやき({standalonePosts.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="flex flex-col gap-3">
                   {standalonePosts.map((p) => (
                     <StandalonePostCard key={p.id} post={p} />
                   ))}
