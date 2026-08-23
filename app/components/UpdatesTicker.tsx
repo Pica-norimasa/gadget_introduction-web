@@ -28,11 +28,11 @@ export function UpdatesTicker({ activity }: { activity: TickerActivity[] }) {
 
   return (
     <div
-      className="overflow-hidden border-b border-[var(--line)] bg-[var(--bg-raised)]"
+      className="overflow-hidden border-b border-[var(--line)] bg-[var(--bg-raised)]/75"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="mx-auto max-w-[1180px] px-4 py-2 sm:px-6">
+      <div className="mx-auto max-w-[1180px] px-4 py-2.5 sm:px-6 sm:py-2">
         <TickerItem key={`${item.id}-${index}`} item={item} />
       </div>
     </div>
@@ -71,9 +71,9 @@ function TickerItem({ item }: { item: TickerActivity }) {
           横幅に余裕があるので、そのまま全文を表示する。 */}
       <Link
         href={href}
-        className="block truncate text-[12.5px] hover:underline sm:overflow-visible sm:text-clip sm:whitespace-nowrap"
+        className="block truncate text-[11.5px] leading-5 text-[var(--ink-faint)] hover:underline sm:overflow-visible sm:text-clip sm:whitespace-nowrap sm:text-[12.5px]"
       >
-        <span className="font-medium text-[var(--ink)]">{item.authorName}</span>
+        <span className="font-medium text-[var(--ink-soft)]">{item.authorName}</span>
         <span className={item.kind === "stage-up" ? `font-medium ${meta.color}` : meta.color}>
           {labelFor(item)}
         </span>

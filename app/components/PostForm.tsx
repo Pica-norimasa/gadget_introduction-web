@@ -234,7 +234,7 @@ export function PostForm(props: PostFormProps) {
       ref={formRef}
       action={formAction}
       encType="multipart/form-data"
-      className={`rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] ${variant === "compose" ? "p-4" : "p-3"}`}
+      className={`rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] ${variant === "compose" ? "p-4 sm:p-4" : "p-3"}`}
     >
       {variant === "timeline" && <input type="hidden" name="projectTarget" value={props.projectId} />}
       {variant === "compose" && selectedType && <input type="hidden" name="postType" value={selectedType} />}
@@ -260,9 +260,9 @@ export function PostForm(props: PostFormProps) {
         </p>
       )}
       {variant === "compose" ? (
-        <div className="mb-3">
-          <p className="mb-1.5 text-[12px] font-medium text-[var(--ink-soft)]">何を投稿しますか?</p>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0">
+        <div className="mb-4">
+          <p className="mb-2 text-[11.5px] font-medium text-[var(--ink-faint)] sm:text-[12px]">何を投稿しますか?</p>
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0">
             {promptOptions.map((option) => {
               const active = selectedType === option.type;
               return (
@@ -275,13 +275,13 @@ export function PostForm(props: PostFormProps) {
                     if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
-                  className={`min-h-11 shrink-0 rounded-full border px-3 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
+                  className={`min-h-10 shrink-0 rounded-full border px-3.5 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
                     active
                       ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-                      : "border-[var(--line)] bg-[var(--bg-sunken)]/35 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
+                      : "border-[var(--line)] bg-[var(--bg-sunken)]/25 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
                   }`}
                 >
-                  <span className="block text-[12px] font-bold">
+                  <span className="block text-[11.5px] font-bold sm:text-[12px]">
                     {POST_TYPE_META[option.type].icon} {option.title}
                   </span>
                   <span className="hidden text-[11px] opacity-75 sm:block">{option.hint}</span>
@@ -323,17 +323,17 @@ export function PostForm(props: PostFormProps) {
         }
         rows={2}
         maxLength={280}
-        className={`w-full resize-none overflow-hidden border-none bg-transparent text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none ${
-          variant === "compose" ? "text-[15px]" : "text-[14px]"
+        className={`w-full resize-none overflow-hidden border-none bg-transparent leading-7 text-[var(--ink-soft)] placeholder:text-[var(--ink-faint)] focus:outline-none ${
+          variant === "compose" ? "text-[14px] sm:text-[15px]" : "text-[14px]"
         }`}
       />
       {variant === "compose" && selectedType === "question" && (
-        <p className="mt-2 text-[12px] text-[var(--ink-faint)]">
+        <p className="mt-3 text-[11.5px] leading-5 text-[var(--ink-faint)] sm:text-[12px]">
           つぶやきは作品に紐づけず、つぶやきタイムラインに投稿されます
         </p>
       )}
       {showProjectTarget && (
-        <div className="mt-3 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/25 px-3 py-2">
+        <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/20 px-3 py-3">
           <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
             <span className="text-[11px] text-[var(--ink-faint)]">作品</span>
             <select
@@ -371,8 +371,8 @@ export function PostForm(props: PostFormProps) {
       {/* 送信ボタンはフォーム右下に固定感を出す。添付ボタン・判定ラベル・
           文字数が折り返しても、投稿ボタンだけ変な位置に流れないよう
           左右のグループに分ける。 */}
-      <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5">
+        <div className="flex min-h-8 min-w-0 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] sm:flex-wrap sm:gap-2 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
           <ImagePickerButton
             fileInputRef={fileInputRef}
             preview={imagePreview}
@@ -381,15 +381,17 @@ export function PostForm(props: PostFormProps) {
           />
           <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
         </div>
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+        <div className="flex min-h-8 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
           <span
-            className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
-              trimmed ? "opacity-100" : "opacity-0"
+            className={`items-center gap-1 rounded-full border border-[var(--line)] px-2.5 py-1 font-mono text-[11px] text-[var(--ink-soft)] transition-opacity ${
+              trimmed ? "hidden sm:inline-flex" : "hidden"
             }`}
           >
             {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}として投稿
           </span>
-          <span className="font-mono text-[11px] text-[var(--ink-faint)]">{body.length}/280</span>
+          <span className="inline-flex h-8 items-center font-mono text-[11px] text-[var(--ink-faint)]">
+            {body.length}/280
+          </span>
           <button
             type="submit"
             disabled={(!trimmed && !imagePreview) || pending}

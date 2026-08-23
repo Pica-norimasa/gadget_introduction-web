@@ -55,8 +55,8 @@ export function TextVisualCard({
         style={{ background: `hsl(${hue + 86} 85% 55%)` }}
       />
       <div
-        className={`relative flex w-full flex-col justify-between rounded-lg border border-white/30 bg-white/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[1px] ${
-          isLarge ? "h-full pb-10" : "h-[calc(100%-2.75rem)] pb-3"
+        className={`relative flex w-full flex-col rounded-lg border border-white/30 bg-white/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[1px] ${
+          isLarge ? "h-full justify-between pb-10" : "h-[62%] justify-start gap-4"
         }`}
       >
         <div className="flex items-center justify-between gap-2">
@@ -72,7 +72,7 @@ export function TextVisualCard({
           {title && (
             <p
               className={`mb-2 font-[family-name:var(--font-display)] font-bold leading-tight ${
-                isLarge ? "line-clamp-2 text-[18px]" : "line-clamp-2 text-[14px] sm:text-[15px]"
+                isLarge ? "line-clamp-2 text-[18px]" : "line-clamp-2 text-[12.5px] sm:text-[14px]"
               }`}
               style={{ color: `hsl(${hue} 48% 12%)` }}
             >
@@ -81,7 +81,7 @@ export function TextVisualCard({
           )}
           <p
             className={`font-[family-name:var(--font-display)] font-bold leading-snug ${
-              isLarge ? "line-clamp-3 text-[16px]" : "line-clamp-2 text-[12.5px] sm:text-[13.5px]"
+              isLarge ? "line-clamp-3 text-[16px]" : "line-clamp-2 text-[11.5px] sm:text-[12.5px]"
             }`}
             style={{ color: `hsl(${hue} 44% 18%)` }}
           >
