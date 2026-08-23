@@ -1166,7 +1166,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
   const rows = await prisma.notification.findMany({
     where: { recipientId: user.id },
     include: {
-      actor: { select: { name: true } },
+      actor: { select: { name: true, displayName: true } },
       project: { select: { id: true, title: true } },
       post: { select: { id: true } },
       sourceProject: { select: { id: true, title: true } },
@@ -1191,7 +1191,7 @@ export async function getNotificationData(): Promise<{ notifications: Notificati
   const notifications: NotificationView[] = order.slice(0, 20).map((key) => {
     const group = groups.get(key)!;
     const latest = group[0];
-    const actorNames = [...new Set(group.map((r) => r.actor.name))];
+    const actorNames = [...new Set(group.map((r) => displayNameOf(r.actor)))];
     return {
       id: latest.id,
       type: latest.type as NotificationType,
