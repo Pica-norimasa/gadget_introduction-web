@@ -8,7 +8,7 @@ import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
-import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import { isRateLimited } from "@/app/lib/rate-limit";
 import type { PostType, Stage } from "@/app/lib/mock-data";
@@ -74,7 +74,7 @@ export async function createPost(
     try {
       imageUrl = await saveUploadedImage(imageFile);
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+      return { error: uploadImageErrorMessage(e) };
     }
   }
 
@@ -235,7 +235,7 @@ export async function updatePost(
     try {
       imageUrl = await saveUploadedImage(imageFile);
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+      return { error: uploadImageErrorMessage(e) };
     }
   } else if (removeImage) {
     imageUrl = null;

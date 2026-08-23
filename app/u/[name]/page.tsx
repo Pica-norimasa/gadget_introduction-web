@@ -282,7 +282,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             profile.works.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {profile.works.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -301,7 +301,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             profile.repostedWorks.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ紹介した作品はありません</p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {profile.repostedWorks.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -322,7 +322,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             bookmarkedWorks.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだブックマークした作品はありません</p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {bookmarkedWorks.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -341,7 +341,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             murmurs.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだつぶやきはありません</p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {murmurs.map((post) => (
                   <StandalonePostCard key={post.id} post={post} />
                 ))}

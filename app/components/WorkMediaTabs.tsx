@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { HorizontalScroller } from "./HorizontalScroller";
 
 // 作品詳細ページのヒーロー枠用。ProfileTabs.tsxと同じ「中身は呼び出し元が
@@ -11,17 +11,35 @@ import { HorizontalScroller } from "./HorizontalScroller";
 export function WorkMediaTabs({
   tabs,
   initialTabId,
+  switchEventName,
 }: {
   tabs: { id: string; label: string; content: ReactNode }[];
   // 通知(NotificationBell.tsx)から「コメントタブを直接開いた状態で作品
   // 詳細に飛びたい」といった要望向け。該当するidが無ければ従来通り先頭に
   // フォールバックする。
   initialTabId?: string;
+  // 作品詳細上部のCTAなど、離れた場所からタブを切り替えたい時だけ使う。
+  // メディアタブ(画像/GitHub/YouTube)には渡さず、下部セクションのタブ
+  // だけで有効にする。
+  switchEventName?: string;
 }) {
   const [active, setActive] = useState(
     initialTabId && tabs.some((t) => t.id === initialTabId) ? initialTabId : tabs[0]?.id,
   );
   const activeTab = tabs.find((t) => t.id === active) ?? tabs[0];
+
+  useEffect(() => {
+    if (!switchEventName) return;
+
+    function handleSwitch(event: Event) {
+      const nextTabId = (event as CustomEvent<{ tabId?: string }>).detail?.tabId;
+      if (!nextTabId || !tabs.some((t) => t.id === nextTabId)) return;
+      setActive(nextTabId);
+    }
+
+    window.addEventListener(switchEventName, handleSwitch);
+    return () => window.removeEventListener(switchEventName, handleSwitch);
+  }, [switchEventName, tabs]);
 
   return (
     <div>

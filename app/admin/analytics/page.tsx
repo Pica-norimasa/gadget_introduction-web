@@ -30,6 +30,12 @@ function sum(values: number[]) {
   return values.reduce((total, v) => total + v, 0);
 }
 
+function formatSignedPercent(value: number | null) {
+  if (value === null) return "—";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(0)}%`;
+}
+
 type MergedRow = {
   date: string;
   uniques: number;
@@ -88,12 +94,24 @@ export default async function AdminAnalyticsPage() {
 
   const today = merged.at(-1);
   const last7 = merged.slice(-7);
+  const prev7 = merged.slice(-14, -7);
   const last30 = merged;
   const last7Uniques = sum(last7.map((m) => m.uniques));
+  const prev7Uniques = sum(prev7.map((m) => m.uniques));
   const last7PageViews = sum(last7.map((m) => m.pageViews));
   const last7Signups = sum(last7.map((m) => m.signups));
   const last7ConversionRate = last7Uniques > 0 ? (last7Signups / last7Uniques) * 100 : null;
   const avgPagesPerVisit = last7Uniques > 0 ? last7PageViews / last7Uniques : null;
+  const visitorChangeRate =
+    prev7Uniques > 0 ? ((last7Uniques - prev7Uniques) / prev7Uniques) * 100 : last7Uniques > 0 ? 100 : null;
+  const topLandingPath = contentTopPaths[0];
+  const topReferrer = referrers[0];
+  const topClickEvent = clickEvents[0];
+  const insightTone =
+    last7Uniques < 100 ? "まだ母数が小さいので、率よりも流入ページ・クリックの増減を見た方が安全です。" :
+    last7ConversionRate !== null && last7ConversionRate < 1
+      ? "訪問は取れていますが、ログイン/投稿への転換が弱めです。投稿欄や初回導線の改善が効きそうです。"
+      : "訪問から行動までの流れは悪くありません。次は流入元を増やす施策を試しやすい状態です。";
 
   return (
     <div className="min-h-screen bg-[var(--bg)] px-4 py-8 sm:px-6">
@@ -139,6 +157,29 @@ export default async function AdminAnalyticsPage() {
                 label="1訪問あたりの閲覧ページ数"
                 value={avgPagesPerVisit === null ? "—" : avgPagesPerVisit.toFixed(1)}
                 sub="過去7日間"
+              />
+            </div>
+
+            <div className="mb-6 grid gap-3 lg:grid-cols-3">
+              <InsightCard
+                title="今週の見え方"
+                body={`訪問者は過去7日で${last7Uniques.toLocaleString("ja-JP")}人。前の7日比は${formatSignedPercent(visitorChangeRate)}です。${insightTone}`}
+              />
+              <InsightCard
+                title="まず見る場所"
+                body={
+                  topLandingPath
+                    ? `入口は「${topLandingPath.path}」が最多です。ここから作品カード・プロフィール・投稿へ進めているかをクリックイベントと合わせて見るのが良さそうです。`
+                    : "流入ページのデータがまだ少ないため、まずはトップページと作品詳細への流入が記録されるかを見ます。"
+                }
+              />
+              <InsightCard
+                title="次の確認"
+                body={
+                  topClickEvent
+                    ? `クリックは「${CLICK_EVENT_LABELS[topClickEvent.type] ?? topClickEvent.type}」が最多です。流入元は${topReferrer ? `「${topReferrer.bucket}」` : "まだ不明"}が目立っています。`
+                    : "クリックイベントがまだ少ないため、作品カード・検索・共有ボタンのどこが押されるかを数日見ます。"
+                }
               />
             </div>
 
@@ -295,6 +336,15 @@ function SummaryCard({ label, value, sub }: { label: string; value: number | str
         {typeof value === "number" ? value.toLocaleString("ja-JP") : value}
       </p>
       {sub && <p className="mt-0.5 text-[11px] tabular-nums text-[var(--ink-faint)]">{sub}</p>}
+    </div>
+  );
+}
+
+function InsightCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+      <p className="mb-2 text-[12px] font-semibold text-[var(--accent)]">{title}</p>
+      <p className="text-[12.5px] leading-6 text-[var(--ink-soft)]">{body}</p>
     </div>
   );
 }

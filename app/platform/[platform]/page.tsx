@@ -75,7 +75,7 @@ export default async function PlatformPage({ params }: { params: Promise<{ platf
             まだ{label}対応の作品はありません
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {works.map((w) => (
               <WorkCard
                 key={w.id}

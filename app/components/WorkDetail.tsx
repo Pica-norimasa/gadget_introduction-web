@@ -31,6 +31,7 @@ import { PostForm } from "./PostForm";
 import { ToolBadge } from "./ToolBadge";
 import { WorkCard } from "./WorkCard";
 import { WorkMediaTabs } from "./WorkMediaTabs";
+import { WorkSectionJumpButton } from "./WorkSectionJumpButton";
 import { WorkThumb } from "./WorkThumb";
 import { YouTubeCard } from "./YouTubeCard";
 
@@ -83,6 +84,14 @@ export function WorkDetail({
 }) {
   const latestYouTubePost = [...timeline].reverse().find((post) => post.youtubeUrl);
   const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
+  const commentCount = comments.reduce((sum, c) => sum + 1 + c.replies.length, 0);
+  const primaryExternalLink = work.appStoreUrl
+    ? { href: work.appStoreUrl, label: "App Storeで見る", type: "external_link_appstore" as const }
+    : work.googlePlayUrl
+      ? { href: work.googlePlayUrl, label: "Google Playで見る", type: "external_link_googleplay" as const }
+      : work.githubUrl
+        ? { href: work.githubUrl, label: "GitHubを見る", type: "external_link_github" as const }
+        : null;
   // 表紙画像・GitHub・YouTubeのうち設定されているものだけをタブとして
   // 並べる。2つ以上あるときだけWorkMediaTabsでタブ切り替えにし、1つだけ
   // ならタブを出さずそのまま表示する(0個ならglyph/motionのプレース
@@ -160,7 +169,7 @@ export function WorkDetail({
           )}
         </div>
 
-        <div className="relative mb-6">
+        <div id="work-media" className="relative mb-6 scroll-mt-24">
           {mediaTabs.length === 0 ? (
             work.glyph && work.hasMotion ? (
               <MotionThumb hue={work.hue} glyph={work.glyph} size="lg" />
@@ -231,22 +240,55 @@ export function WorkDetail({
           <LinkifiedText text={work.catch} />
         </p>
 
-        <div className="mb-9 rounded-3xl border border-[var(--line)] bg-[var(--bg-raised)] p-5 sm:p-6">
-          <div className="mb-4 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[15px] font-semibold text-[var(--ink)]">この作品でできること</p>
-              <p className="mt-1.5 text-[13px] leading-6 text-[var(--ink-faint)]">
-                反応する、広める、あとで見る、インスパイアされて投稿する
-              </p>
-            </div>
-            <BookmarkButton
-              target={{ type: "project", id: work.id }}
-              bookmarked={work.bookmarked ?? false}
-              size="md"
-            />
+        <div className="mb-9 rounded-3xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 sm:p-5">
+          <div className="mb-4">
+            <p className="text-[14px] font-semibold text-[var(--ink)]">この作品にできること</p>
+            <p className="mt-1 text-[12.5px] leading-6 text-[var(--ink-faint)]">
+              見る、反応する、コメントする、紹介する。気になった行動からどうぞ。
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {primaryExternalLink ? (
+              <TrackedExternalLink
+                href={primaryExternalLink.href}
+                type={primaryExternalLink.type}
+                className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
+              >
+                <span>
+                  <span className="block font-semibold text-[var(--ink)]">作品を見る</span>
+                  <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">{primaryExternalLink.label}</span>
+                </span>
+                <span aria-hidden>↗</span>
+              </TrackedExternalLink>
+            ) : (
+              <WorkSectionJumpButton
+                tabId="timeline"
+                className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
+              >
+                <span>
+                  <span className="block font-semibold text-[var(--ink)]">制作を見る</span>
+                  <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">タイムラインを読む</span>
+                </span>
+                <span aria-hidden>↓</span>
+              </WorkSectionJumpButton>
+            )}
+
+            <WorkSectionJumpButton
+              tabId="comments"
+              className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
+            >
+              <span>
+                <span className="block font-semibold text-[var(--ink)]">コメントする</span>
+                <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">{commentCount}件のコメント</span>
+              </span>
+              <span aria-hidden>💬</span>
+            </WorkSectionJumpButton>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/25 p-3">
+            <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">反応・保存・紹介</p>
+            <div className="flex flex-wrap items-center gap-3">
             {blockedByAuthor ? (
               <span className="text-[12px] text-[var(--ink-faint)]">
                 この作品の作者にブロックされているため、反応できません
@@ -257,12 +299,18 @@ export function WorkDetail({
                 <RepostButton projectId={work.id} size="md" allowQuote />
               </>
             )}
+            <BookmarkButton
+              target={{ type: "project", id: work.id }}
+              bookmarked={work.bookmarked ?? false}
+              size="md"
+            />
             <Link
               href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
               className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
             >
               これにインスパイアされて投稿
             </Link>
+            </div>
           </div>
 
           <div className="mt-5 border-t border-[var(--line)] pt-5">
@@ -276,8 +324,10 @@ export function WorkDetail({
             書き込み・閲覧しづらくなる(共有ボタンの位置を移動したのと同じ
             経緯)ため、タブで別ペインに切り出した(WorkMediaTabs.tsxを
             画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
+        <div id="work-sections" className="scroll-mt-24">
         <WorkMediaTabs
           initialTabId={initialTab}
+          switchEventName="draftly:work-section-tab"
           tabs={[
             {
               id: "timeline",
@@ -301,7 +351,7 @@ export function WorkDetail({
             },
             {
               id: "comments",
-              label: `コメント(${comments.reduce((sum, c) => sum + 1 + c.replies.length, 0)})`,
+              label: `コメント(${commentCount})`,
               content: (
                 <div className="mb-6">
                   <CommentList
@@ -378,6 +428,7 @@ export function WorkDetail({
               : []),
           ]}
         />
+        </div>
       </main>
     </div>
   );

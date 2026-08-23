@@ -90,7 +90,7 @@ export function HomeContentTabs({
 
   return (
     <section id="feed" className="scroll-mt-24">
-      <div className="mb-6 rounded-3xl border border-[var(--line)] bg-[var(--bg-raised)]/55 p-2">
+      <div className="mb-5 rounded-3xl border border-[var(--line)] bg-[var(--bg-raised)]/55 p-1.5 sm:mb-6 sm:p-2">
         <div className="grid grid-cols-2 gap-1.5">
           {TABS.map((t) => {
             const active = tab === t.id;
@@ -100,13 +100,13 @@ export function HomeContentTabs({
                 type="button"
                 onClick={() => setTab(t.id)}
                 aria-pressed={active}
-                className={`rounded-2xl px-3 py-3 text-left transition-colors ${
+                className={`rounded-2xl px-3 py-2.5 text-left transition-colors sm:py-3 ${
                   active
                     ? "bg-[var(--bg)] text-[var(--ink)] shadow-[0_1px_2px_var(--shadow)]"
                     : "text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)]/45 hover:text-[var(--ink-soft)]"
                 }`}
               >
-                <span className="block text-[13.5px] font-bold">{t.label}</span>
+                <span className="block text-[13px] font-bold sm:text-[13.5px]">{t.label}</span>
                 <span
                   className={`mt-1 block text-[10.5px] leading-snug sm:text-[11px] ${
                     active ? "text-[var(--ink-faint)]" : "text-[var(--ink-muted)]"

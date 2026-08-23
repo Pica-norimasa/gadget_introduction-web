@@ -59,6 +59,23 @@ export async function saveUploadedImage(file: File): Promise<string> {
   return s3Client ? saveToS3(file, filename) : saveToLocalDisk(file, filename);
 }
 
+export function uploadImageErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) return "画像のアップロードに失敗しました";
+
+  // ファイル形式・サイズなど、ユーザーがその場で直せる検証エラーだけは
+  // 具体的に返す。S3/証明書/ネットワーク由来の内部エラーは、そのまま
+  // 表示すると不親切かつ実装詳細が漏れるため丸める。
+  if (
+    error.message === "対応していない画像形式です(jpg/png/gif/webpのみ)" ||
+    error.message === "画像は5MB以内にしてください"
+  ) {
+    return error.message;
+  }
+
+  console.error("画像アップロードに失敗しました", error);
+  return "画像のアップロードに失敗しました。少し時間をおいて再度お試しください";
+}
+
 // フォームに画像が選ばれていない場合、ブラウザは空のFileを送ってくることがある。
 export function extractImageFile(formData: FormData, field: string): File | null {
   const value = formData.get(field);

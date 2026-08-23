@@ -221,7 +221,7 @@ export function FeedSection({
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {shown.map((w) => (
               <WorkCard
                 key={w.id}

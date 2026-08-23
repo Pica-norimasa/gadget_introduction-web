@@ -167,7 +167,7 @@ export default async function SearchPage({
                 <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
                   作品({works.length})
                 </h2>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:gap-4">
                   {works.map((w) => (
                     <WorkCard
                       key={w.id}

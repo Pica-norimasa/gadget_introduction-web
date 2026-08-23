@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { getCurrentUser } from "@/app/lib/session";
-import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import { sendStageUpNotificationEmail, SITE_URL } from "@/app/lib/email";
 import { prisma } from "@/app/lib/prisma";
@@ -147,7 +147,7 @@ export async function updateProject(
     try {
       coverImageUrl = await saveUploadedImage(coverImageFile);
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+      return { error: uploadImageErrorMessage(e) };
     }
   } else if (removeCoverImage) {
     coverImageUrl = null;

@@ -48,6 +48,7 @@ export function WorkCard({
   const latestYouTubePost = latestYouTubePostFor(work.id, posts);
   const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
   const horizontal = variant === "horizontal";
+  const mediaSize = horizontal ? "lg" : size;
 
   const authorHeader = (
     <div className={horizontal ? "mb-3 flex items-center gap-2" : "mb-3 flex items-center gap-2"}>
@@ -82,22 +83,22 @@ export function WorkCard({
   const media = (
     <div className="relative">
       {work.coverImageUrl ? (
-        <CoverImage src={work.coverImageUrl} size={size} />
+        <CoverImage src={work.coverImageUrl} size={mediaSize} />
       ) : mediaYouTubeUrl ? (
         <div className="relative z-20">
           <YouTubeCard
             youtubeUrl={mediaYouTubeUrl}
-            aspect={size === "lg" ? "aspect-[4/3]" : "aspect-square"}
+            aspect={mediaSize === "lg" ? "aspect-[4/3]" : "aspect-square"}
           />
         </div>
       ) : !work.glyph && work.githubUrl ? (
         <div className="relative z-20">
-          <GitHubCard githubUrl={work.githubUrl} size={size} />
+          <GitHubCard githubUrl={work.githubUrl} size={mediaSize} />
         </div>
       ) : work.glyph && work.hasMotion ? (
-        <MotionThumb hue={work.hue} glyph={work.glyph} size={size} />
+        <MotionThumb hue={work.hue} glyph={work.glyph} size={mediaSize} />
       ) : (
-        <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size={size} />
+        <WorkThumb hue={work.hue} glyph={work.glyph} title={work.title} catchText={work.catch} size={mediaSize} />
       )}
       {(work.appStoreUrl || work.googlePlayUrl) && (
         <div className="absolute left-2 top-2 z-20 flex items-center gap-2">
@@ -163,9 +164,9 @@ export function WorkCard({
   );
 
   const body = (
-    <div className={horizontal ? "flex min-w-0 flex-1 flex-col gap-3" : "flex flex-1 flex-col gap-3 pt-4"}>
+    <div className={horizontal ? "flex min-w-0 flex-1 flex-col gap-2.5 sm:gap-3" : "flex flex-1 flex-col gap-3 pt-4"}>
       <div>
-        <h3 className="truncate font-[family-name:var(--font-display)] text-[15px] font-bold leading-snug text-[var(--ink)] decoration-[var(--ink-faint)] decoration-1 underline-offset-4 transition-[text-decoration-color] group-hover:underline sm:text-[16px]">
+        <h3 className="truncate font-[family-name:var(--font-display)] text-[14.5px] font-bold leading-snug text-[var(--ink)] decoration-[var(--ink-faint)] decoration-1 underline-offset-4 transition-[text-decoration-color] group-hover:underline sm:text-[16px]">
           {work.title}
         </h3>
         <ExpandableText text={work.catch} className="mt-1.5" compact />
@@ -203,7 +204,7 @@ export function WorkCard({
   return (
     <article
       id={showAnchor ? `work-${work.id}` : undefined}
-      className={`group relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4 shadow-[0_1px_2px_var(--shadow)] transition-colors hover:border-[var(--accent)] scroll-mt-24 ${
+      className={`group relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-3.5 shadow-[0_1px_2px_var(--shadow)] transition-colors hover:border-[var(--accent)] scroll-mt-24 sm:p-4 ${
         horizontal ? "" : "flex flex-col"
       }`}
     >
@@ -219,7 +220,7 @@ export function WorkCard({
       />
 
       {horizontal ? (
-        <div className="grid gap-4 sm:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)]">
+        <div className="grid gap-3.5 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
           <div className="min-w-0">{media}</div>
           <div className="min-w-0">
             {authorHeader}

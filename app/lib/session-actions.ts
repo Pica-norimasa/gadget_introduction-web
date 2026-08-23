@@ -6,7 +6,7 @@ import { after } from "next/server";
 import { randomUUID } from "node:crypto";
 import { auth, signOut } from "@/auth";
 import { getOrCreateCurrentUser } from "@/app/lib/session";
-import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { sendVerificationEmail, SITE_URL } from "@/app/lib/email";
 import { anonymizeUser } from "@/app/lib/user-admin";
 import { isRateLimited } from "@/app/lib/rate-limit";
@@ -140,7 +140,7 @@ export async function updateAvatar(
   try {
     imageUrl = await saveUploadedImage(imageFile);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+    return { error: uploadImageErrorMessage(e) };
   }
 
   const user = await getOrCreateCurrentUser();

@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { auth } from "@/auth";
 import { GUEST_COMMENT_LIMIT } from "@/app/lib/guest-limits";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
-import { extractImageFile, saveUploadedImage } from "@/app/lib/upload";
+import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { isBlockedBy } from "@/app/lib/queries";
 import { isRateLimited } from "@/app/lib/rate-limit";
 import { sendCommentNotificationEmail, SITE_URL } from "@/app/lib/email";
@@ -143,7 +143,7 @@ export async function createComment(
     try {
       imageUrl = await saveUploadedImage(imageFile);
     } catch (e) {
-      return { error: e instanceof Error ? e.message : "画像のアップロードに失敗しました" };
+      return { error: uploadImageErrorMessage(e) };
     }
   }
 

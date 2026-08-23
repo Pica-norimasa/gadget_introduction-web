@@ -20,7 +20,7 @@ export function ExpandableText({
 
   if (compact) {
     return (
-      <p className={`line-clamp-2 text-[12.5px] leading-6 text-[var(--ink-soft)] ${className}`}>
+      <p className={`line-clamp-2 text-[12px] leading-[1.85] text-[var(--ink-soft)] sm:text-[12.5px] ${className}`}>
         <HashtagSegment text={text} linkClassName="relative z-20 text-[var(--accent)] hover:underline" />
       </p>
     );

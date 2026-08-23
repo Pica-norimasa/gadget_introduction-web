@@ -56,7 +56,7 @@ function RankedList({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 sm:gap-4">
       {works.map((work, index) => (
         <div key={work.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-2 px-1">

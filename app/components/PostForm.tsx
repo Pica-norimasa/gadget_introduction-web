@@ -102,6 +102,10 @@ export function PostForm(props: PostFormProps) {
   const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  // 画像/YouTubeは全投稿で常に必要な項目ではないため、普段は畳んで
+  // composerの情報量を減らす。スクショ投稿だけは添付が主目的なので
+  // 選択時に開く。
+  const [attachmentOpen, setAttachmentOpen] = useState(false);
   // 送信成功のたびに増やし、YouTubeUrlInputのkeyに使う。ボタン⇄入力欄の
   // 開閉状態(その部品のuseState)を投稿後に強制的に初期化するため。
   const [resetCount, setResetCount] = useState(0);
@@ -147,6 +151,7 @@ export function PostForm(props: PostFormProps) {
     clearImage();
     setYoutubeUrl("");
     setResetCount((c) => c + 1);
+    setAttachmentOpen(false);
 
     // 投稿後の遷移はcomposeだけの関心事(timelineは既にその作品の詳細
     // ページにいるので、再検証後のタイムラインに新しい投稿がそのまま
@@ -177,6 +182,7 @@ export function PostForm(props: PostFormProps) {
     const requestedPostType = postTypeRequest.postType;
     const frame = requestAnimationFrame(() => {
       setSelectedType(requestedPostType);
+      setAttachmentOpen(false);
       if (requestedPostType !== "question" && !projectTarget) {
         setProjectTarget(defaultProjectTarget);
       }
@@ -190,6 +196,13 @@ export function PostForm(props: PostFormProps) {
   const guessedType = selectedType || inferPostType(body);
   const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
   const showProjectTarget = variant === "compose" && selectedType !== "question";
+  const showAttachments = attachmentOpen || Boolean(imagePreview) || Boolean(youtubeUrl) || selectedType === "screenshot";
+  const attachmentHint =
+    selectedType === "screenshot"
+      ? "スクショ投稿は画像を添えると伝わりやすいです"
+      : selectedType === "question"
+        ? "必要なら画像やYouTubeも添付できます"
+        : "画像やYouTubeは必要なときだけ追加できます";
   const selectedProjectName =
     variant === "compose" && projectTarget && projectTarget !== "new"
       ? props.myProjects.find((project) => project.id === projectTarget)?.title
@@ -270,6 +283,7 @@ export function PostForm(props: PostFormProps) {
                   aria-pressed={active}
                   onClick={() => {
                     setSelectedType(option.type);
+                    setAttachmentOpen(false);
                     if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
@@ -294,7 +308,11 @@ export function PostForm(props: PostFormProps) {
           <select
             name="postType"
             value={selectedType}
-            onChange={(event) => setSelectedType(event.target.value as PostType)}
+            onChange={(event) => {
+              const nextType = event.target.value as PostType;
+              setSelectedType(nextType);
+              setAttachmentOpen(nextType === "screenshot");
+            }}
             className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
           >
             {promptOptions.map((option) => (
@@ -369,15 +387,30 @@ export function PostForm(props: PostFormProps) {
       {/* 送信ボタンはフォーム右下に固定感を出す。添付ボタン・判定ラベル・
           文字数が折り返しても、投稿ボタンだけ変な位置に流れないよう
           左右のグループに分ける。 */}
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5">
-        <div className="flex min-h-8 min-w-0 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] sm:flex-wrap sm:gap-2 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
-          <ImagePickerButton
-            fileInputRef={fileInputRef}
-            preview={imagePreview}
-            onChange={handleImageChange}
-            onClear={clearImage}
-          />
-          <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2.5">
+        <div className="min-w-0">
+          {showAttachments ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] leading-5 text-[var(--ink-faint)]">{attachmentHint}</p>
+              <div className="flex min-h-8 min-w-0 items-center gap-1.5 overflow-x-auto [scrollbar-width:none] sm:flex-wrap sm:gap-2 sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+                <ImagePickerButton
+                  fileInputRef={fileInputRef}
+                  preview={imagePreview}
+                  onChange={handleImageChange}
+                  onClear={clearImage}
+                />
+                <YouTubeUrlInput key={resetCount} value={youtubeUrl} onChange={setYoutubeUrl} />
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAttachmentOpen(true)}
+              className="inline-flex h-8 items-center rounded-full border border-[var(--line)] px-3 text-[11px] text-[var(--ink-faint)] transition-colors hover:border-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+            >
+              ＋ 画像・YouTubeを追加
+            </button>
+          )}
         </div>
         <div className="flex min-h-8 shrink-0 items-center justify-end gap-1.5 sm:gap-2">
           <span
@@ -392,7 +425,7 @@ export function PostForm(props: PostFormProps) {
           </span>
           <button
             type="submit"
-            disabled={(!trimmed && !imagePreview) || pending}
+            disabled={(!trimmed && !imagePreview && !youtubeUrl) || pending}
             className="h-8 rounded-full bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-ink)] transition-opacity disabled:opacity-40"
           >
             {pending ? "投稿中…" : "投稿する"}

@@ -72,7 +72,7 @@ export default async function ToolPage({ params }: { params: Promise<{ tool: str
             まだ{label}で作られた作品はありません
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {works.map((w) => (
               <WorkCard
                 key={w.id}
