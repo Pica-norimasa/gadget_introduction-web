@@ -106,13 +106,13 @@ CodeBuildが `SUCCEEDED` になったら、App Runnerを再デプロイします
 ```bash
 aws apprunner start-deployment \
   --region ap-northeast-1 \
-  --service-arn arn:aws:apprunner:ap-northeast-1:342940030749:service/gadget-introduction-web/e40b386d1a32419db09789de707612e5
+  --service-arn arn:aws:apprunner:ap-northeast-1:<AWS_ACCOUNT_ID>:service/gadget-introduction-web/<SERVICE_ID>
 ```
 
 デプロイ後は次を確認します。
 
 ```bash
-curl https://3hsybuysg2.ap-northeast-1.awsapprunner.com/api/health
+curl https://<APP_RUNNER_DOMAIN>.ap-northeast-1.awsapprunner.com/api/health
 ```
 
 期待値は `{"status":"ok"}` です。CodeBuildの実行にはビルド時間に応じた費用が発生するため、細かい修正ごとではなく、いくつか変更をまとめてから実行してください。
