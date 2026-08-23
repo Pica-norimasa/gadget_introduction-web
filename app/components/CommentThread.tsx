@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CommentThread as CommentThreadType, CommentView } from "@/app/lib/queries";
 import { AI_BOT_NAME } from "@/app/lib/ai-bot-name";
 import { formatRelativeHours } from "@/app/lib/format";
@@ -137,6 +137,16 @@ export function CommentThread({
   // bot(応援コメント)には返信しても反応が返らないため、返信する導線
   // 自体を出さない(ai-comment.ts参照)。
   const isBot = thread.authorHandle === AI_BOT_NAME;
+  const repliesScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // CommentList.tsx(コメント全体)・ProjectTimelineList.tsxと同じく、
+    // 返信が多いスレッドが親コメント一覧全体を占領してしまわないよう
+    // 返信欄自体も一定の高さでスクロール領域にする。マウント時は最新の
+    // 返信が見えるよう一番下までスクロールしておく。
+    const el = repliesScrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [thread.replies.length]);
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -153,16 +163,18 @@ export function CommentThread({
       )}
 
       {thread.replies.length > 0 && (
-        <div className="ml-9 flex flex-col gap-2 border-l-2 border-[var(--line)] pl-3">
-          {thread.replies.map((reply) => (
-            <CommentRow
-              key={reply.id}
-              comment={reply}
-              currentUserId={currentUserId}
-              target={target}
-              contentAuthorId={contentAuthorId}
-            />
-          ))}
+        <div ref={repliesScrollRef} className="ml-9 max-h-[280px] overflow-y-auto border-l-2 border-[var(--line)] pl-3">
+          <div className="flex flex-col gap-2">
+            {thread.replies.map((reply) => (
+              <CommentRow
+                key={reply.id}
+                comment={reply}
+                currentUserId={currentUserId}
+                target={target}
+                contentAuthorId={contentAuthorId}
+              />
+            ))}
+          </div>
         </div>
       )}
 

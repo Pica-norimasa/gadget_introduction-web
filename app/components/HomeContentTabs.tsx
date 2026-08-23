@@ -13,6 +13,15 @@ const TABS: { id: HomeTab; label: string; description: string }[] = [
   { id: "murmurs", label: "つぶやきタイムライン", description: "作品じゃなくてもいい、気軽な投稿を見る" },
 ];
 
+// タブごとに色を変えて見分けやすくする。つぶやき側はMurmurStrip.tsxの
+// 見出し(「つぶやきタイムライン」の目印テキスト)が既にaccent(オレンジ)
+// を使っているため、タブがアクティブなときも同じ色で揃える。作品一覧側は
+// それと被らないteal(ToolBadge等で使っている色)にする。
+const TAB_ACCENT: Record<HomeTab, { text: string; bg: string }> = {
+  products: { text: "var(--teal)", bg: "var(--teal-soft)" },
+  murmurs: { text: "var(--accent)", bg: "var(--accent-soft)" },
+};
+
 export function HomeContentTabs({
   works,
   posts,
@@ -107,15 +116,17 @@ export function HomeContentTabs({
         <div className="grid grid-cols-2 gap-1.5">
           {TABS.map((t) => {
             const active = tab === t.id;
+            const accent = TAB_ACCENT[t.id];
             return (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => setTab(t.id)}
                 aria-pressed={active}
+                style={active ? { background: accent.bg, color: accent.text } : undefined}
                 className={`rounded-2xl px-3 py-2.5 text-left transition-colors sm:py-3 ${
                   active
-                    ? "bg-[var(--bg)] text-[var(--ink)] shadow-[0_1px_2px_var(--shadow)]"
+                    ? "shadow-[0_1px_2px_var(--shadow)]"
                     : "text-[var(--ink-faint)] hover:bg-[var(--bg-sunken)]/45 hover:text-[var(--ink-soft)]"
                 }`}
               >

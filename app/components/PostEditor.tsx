@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { autoGrow } from "@/app/lib/autogrow";
 import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
 import { extractFirstUrl, stripFirstOccurrence } from "@/app/lib/url-extract";
@@ -151,12 +152,18 @@ export function PostEditor({
         </div>
       )}
       <textarea
+        ref={(el) => {
+          // defaultValueで既に長い本文が入っていることがあるため、
+          // マウント直後(=編集モードに入った瞬間)にも一度実行する。
+          if (el) autoGrow(el);
+        }}
         name="body"
         defaultValue={body}
         maxLength={280}
         rows={3}
         autoFocus
-        className="w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-2.5 text-[14px] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)]"
+        onChange={(e) => autoGrow(e.target)}
+        className="w-full resize-none overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-2.5 text-[14px] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)]"
       />
       <div className="flex flex-wrap items-center gap-2">
         <ImagePickerButton

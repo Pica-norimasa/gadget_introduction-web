@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { autoGrow } from "@/app/lib/autogrow";
 import { createComment, type CreateCommentState } from "@/app/lib/comment-actions";
 import { GUEST_COMMENT_LIMIT } from "@/app/lib/guest-limits";
 import { ImagePickerButton } from "./ImagePickerButton";
@@ -33,6 +34,7 @@ export function CommentForm({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -56,6 +58,7 @@ export function CommentForm({
       setBody("");
       formRef.current?.reset();
       clearImage();
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
       onDone?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onDoneは呼び出し元で毎回新しい関数になり得るため依存に含めない
@@ -91,14 +94,18 @@ export function CommentForm({
         </p>
       )}
       <textarea
+        ref={textareaRef}
         name="body"
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => {
+          setBody(e.target.value);
+          autoGrow(e.target);
+        }}
         placeholder={parentId ? "返信を書く…" : "コメントを書く…"}
         rows={2}
         maxLength={500}
         autoFocus={!!parentId}
-        className="w-full resize-none rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+        className="w-full resize-none overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3 text-[14px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
       />
       <ImagePickerButton
         fileInputRef={fileInputRef}

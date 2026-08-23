@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META, type PostType, type Work } from "@/app/lib/mock-data";
+import { autoGrow } from "@/app/lib/autogrow";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { clearInspiredBy, useComposerPostTypeRequest, useInspiredBy } from "@/app/lib/composer-store";
@@ -117,12 +118,6 @@ export function PostForm(props: PostFormProps) {
   const storedInspiredBy = useInspiredBy();
   const inspiredBy = variant === "compose" ? storedInspiredBy : null;
   const postTypeRequest = useComposerPostTypeRequest();
-
-  // 行数固定だと複数行書きたい時に窮屈なので、内容に合わせて高さを伸ばす。
-  function autoGrow(el: HTMLTextAreaElement) {
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
