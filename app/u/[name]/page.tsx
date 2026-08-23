@@ -242,7 +242,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             </div>
           </div>
 
-          <details className="group rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-3">
+          <details className="group rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-3 lg:hidden">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-medium text-[var(--ink-soft)] [&::-webkit-details-marker]:hidden">
               <span>
                 このプロフィールを共有
@@ -258,6 +258,14 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
               <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
             </div>
           </details>
+
+          <div className="hidden rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 p-4 lg:block">
+            <p className="text-[13px] font-semibold text-[var(--ink)]">このプロフィールを共有</p>
+            <p className="mt-1 text-[12px] text-[var(--ink-faint)]">LINE・X・リンクコピー</p>
+            <div className="mt-4">
+              <ShareButtons title={`${profile.displayName}のDraftlyプロフィール`} />
+            </div>
+          </div>
         </div>
 
         {isOwnProfile && <AuthorStats works={profile.works} />}

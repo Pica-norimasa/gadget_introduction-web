@@ -14,7 +14,7 @@ export function HomePrimaryActions() {
         href="#feed"
         onClick={(event) => {
           event.preventDefault();
-          scrollTo("feed");
+          window.dispatchEvent(new CustomEvent("draftly:show-products"));
         }}
         className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--accent)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
       >

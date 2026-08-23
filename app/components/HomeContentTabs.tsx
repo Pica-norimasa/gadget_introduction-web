@@ -38,14 +38,25 @@ export function HomeContentTabs({
   const [pendingMurmurPostId, setPendingMurmurPostId] = useState<string | null>(null);
 
   useEffect(() => {
+    function handleShowProducts() {
+      setTab("products");
+      requestAnimationFrame(() => {
+        document.getElementById("feed")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+
     function handleShowMurmurs(event: Event) {
       const detail = (event as CustomEvent<{ postId?: string }>).detail;
       setTab("murmurs");
       setPendingMurmurPostId(detail?.postId ?? null);
     }
 
+    window.addEventListener("draftly:show-products", handleShowProducts);
     window.addEventListener("draftly:show-murmurs", handleShowMurmurs);
-    return () => window.removeEventListener("draftly:show-murmurs", handleShowMurmurs);
+    return () => {
+      window.removeEventListener("draftly:show-products", handleShowProducts);
+      window.removeEventListener("draftly:show-murmurs", handleShowMurmurs);
+    };
   }, []);
 
   useEffect(() => {
