@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title, description },
 };
 
-function RankedGrid({
+function RankedList({
   works,
   posts,
   myReactions,
@@ -56,7 +56,7 @@ function RankedGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="flex flex-col gap-4">
       {works.map((work, index) => (
         <div key={work.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-2 px-1">
@@ -68,6 +68,7 @@ function RankedGrid({
             posts={posts}
             myReactions={myReactions}
             currentUserId={currentUserId}
+            variant="horizontal"
             showAnchor={false}
           />
         </div>
@@ -89,7 +90,7 @@ export default async function RankingPage() {
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -117,7 +118,7 @@ export default async function RankingPage() {
                   <p className="mb-4 text-[12px] leading-relaxed text-[var(--ink-faint)]">
                     閲覧・コメント・リアクションなど、反応が伸びている作品を優先して表示します。
                   </p>
-                  <RankedGrid
+                  <RankedList
                     works={rankedWorks}
                     posts={posts}
                     myReactions={myReactions}
@@ -135,7 +136,7 @@ export default async function RankingPage() {
                   <p className="mb-4 text-[12px] leading-relaxed text-[var(--ink-faint)]">
                     最近公開・更新された作品から順に表示します。新しい個人開発を探す入口です。
                   </p>
-                  <RankedGrid
+                  <RankedList
                     works={newWorks}
                     posts={posts}
                     myReactions={myReactions}

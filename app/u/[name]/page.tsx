@@ -118,7 +118,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
       />
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">
         <Link
           href="/"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
@@ -275,14 +275,14 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           repostedLabel={`紹介(${profile.repostedWorks.length})`}
           murmursLabel={`つぶやき(${murmurs.length})`}
           followingLabel={`フォロー(${followingList.length})`}
-          bookmarkedLabel={`保存(${bookmarkedWorks.length})`}
+          bookmarkedLabel={`ブックマーク(${bookmarkedWorks.length})`}
           showBlockedTab={isOwnProfile}
           showBookmarksTab={isOwnProfile}
           postedContent={
             profile.works.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ投稿された作品はありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4">
                 {profile.works.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -290,6 +290,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
                     posts={posts}
                     myReactions={myReactions}
                     currentUserId={currentUser?.id ?? null}
+                    variant="horizontal"
                     showAnchor={false}
                   />
                 ))}
@@ -300,7 +301,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             profile.repostedWorks.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだ紹介した作品はありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4">
                 {profile.repostedWorks.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -308,6 +309,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
                     posts={posts}
                     myReactions={myReactions}
                     currentUserId={currentUser?.id ?? null}
+                    variant="horizontal"
                     showAnchor={false}
                   />
                 ))}
@@ -320,7 +322,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             bookmarkedWorks.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだブックマークした作品はありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4">
                 {bookmarkedWorks.map((work) => (
                   <WorkCard
                     key={work.id}
@@ -328,6 +330,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
                     posts={posts}
                     myReactions={myReactions}
                     currentUserId={currentUser?.id ?? null}
+                    variant="horizontal"
                     showAnchor={false}
                   />
                 ))}
@@ -338,7 +341,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
             murmurs.length === 0 ? (
               <p className="text-[13px] text-[var(--ink-faint)]">まだつぶやきはありません</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4">
                 {murmurs.map((post) => (
                   <StandalonePostCard key={post.id} post={post} />
                 ))}

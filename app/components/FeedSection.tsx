@@ -221,7 +221,7 @@ export function FeedSection({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="flex flex-col gap-4">
             {shown.map((w) => (
               <WorkCard
                 key={w.id}
@@ -229,6 +229,7 @@ export function FeedSection({
                 posts={posts}
                 myReactions={myReactions}
                 currentUserId={currentUserId}
+                variant="horizontal"
               />
             ))}
           </div>
