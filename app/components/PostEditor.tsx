@@ -1,11 +1,23 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { LinkifiedText } from "./LinkifiedText";
 import { YouTubeCard } from "./YouTubeCard";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
+
+const EDITABLE_POST_TYPES: PostType[] = [
+  "idea",
+  "making",
+  "screenshot",
+  "demo",
+  "prototype",
+  "update",
+  "release",
+  "question",
+];
 
 const initialState: UpdatePostState = {};
 
@@ -22,6 +34,7 @@ export function PostEditor({
   body,
   imageUrl,
   youtubeUrl,
+  type,
   isOwner,
   bodyClassName = "text-[15px] leading-relaxed text-[var(--ink)]",
   imageClassName = "mt-2 max-h-80 max-w-full rounded-xl border border-[var(--line)] object-contain",
@@ -31,6 +44,7 @@ export function PostEditor({
   body: string;
   imageUrl?: string;
   youtubeUrl?: string;
+  type?: PostType;
   isOwner: boolean;
   bodyClassName?: string;
   imageClassName?: string;
@@ -41,6 +55,7 @@ export function PostEditor({
   const [imagePreview, setImagePreview] = useState<string | null>(imageUrl ?? null);
   const [imageRemoved, setImageRemoved] = useState(false);
   const [youtubeValue, setYoutubeValue] = useState(youtubeUrl ?? "");
+  const [selectedType, setSelectedType] = useState<PostType | undefined>(type);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -101,6 +116,23 @@ export function PostEditor({
     <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="postId" value={postId} />
       {imageRemoved && <input type="hidden" name="removeImage" value="1" />}
+      {type && (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-[var(--ink-faint)]">種類</span>
+          <select
+            name="type"
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value as PostType)}
+            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+          >
+            {EDITABLE_POST_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {POST_TYPE_META[t].icon} {POST_TYPE_META[t].label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <textarea
         name="body"
         defaultValue={body}

@@ -48,6 +48,7 @@ export function ProjectTimelineList({
               body={post.body}
               imageUrl={post.imageUrl}
               youtubeUrl={post.youtubeUrl}
+              type={post.type}
               isOwner={isOwner}
               bodyClassName="text-[14px] leading-relaxed text-[var(--ink)]"
             />

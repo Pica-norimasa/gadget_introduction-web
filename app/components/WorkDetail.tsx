@@ -213,7 +213,9 @@ export function WorkDetail({
                   <span className="ml-1 font-normal text-[var(--ink-faint)]">@{work.authorSocialHandle}</span>
                 )}
               </p>
-              <p className="mt-0.5 text-[12.5px] text-[var(--ink-faint)]">{formatPostedAgo(work.daysAgo)}に投稿</p>
+              <p className="mt-0.5 text-[12.5px] text-[var(--ink-faint)]">
+                最終更新: {formatPostedAgo(work.lastActivityDaysAgo ?? work.daysAgo)}
+              </p>
             </div>
           </TrackedLink>
           {work.authorId !== currentUserId && (

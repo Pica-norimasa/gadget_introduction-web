@@ -214,6 +214,8 @@ export async function updatePost(
   const youtubeUrlRaw = String(formData.get("youtubeUrl") ?? "").trim();
   const removeImage = formData.get("removeImage") === "1";
   const imageFile = extractImageFile(formData, "image");
+  const typeRaw = formData.get("type");
+  const type = typeof typeRaw === "string" && isPostType(typeRaw) ? typeRaw : null;
 
   if (!postId) return { error: "投稿が見つかりません" };
   if (body.length > 280) return { error: "280文字以内で入力してください" };
@@ -246,7 +248,10 @@ export async function updatePost(
     return { error: "本文・画像・YouTubeリンクのいずれかが必要です" };
   }
 
-  await prisma.post.update({ where: { id: postId }, data: { body, imageUrl, youtubeUrl } });
+  await prisma.post.update({
+    where: { id: postId },
+    data: { body, imageUrl, youtubeUrl, ...(type ? { type } : {}) },
+  });
 
   if (post.projectId) revalidatePath(`/work/${post.projectId}`);
   revalidatePath(`/post/${postId}`);

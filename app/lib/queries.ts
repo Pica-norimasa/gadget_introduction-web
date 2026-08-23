@@ -209,6 +209,24 @@ async function getLastActivityByProject(): Promise<Map<string, Date>> {
   return new Map(rows.map((r) => [r.projectId, r.lastAt]));
 }
 
+// getLastActivityByProject()の単一Project版。作品詳細ページ(getWorkById)は
+// 1件しか要らないので、全Project分を集計するクエリを使い回さずWHEREで絞る。
+async function getLastActivityForProject(projectId: string): Promise<Date | undefined> {
+  const rows = await prisma.$queryRaw<{ lastAt: Date | null }[]>`
+    SELECT MAX(createdAt) AS lastAt FROM (
+      SELECT createdAt FROM Post WHERE projectId = ${projectId}
+      UNION ALL
+      SELECT createdAt FROM Comment WHERE projectId = ${projectId}
+      UNION ALL
+      SELECT c.createdAt AS createdAt
+      FROM Comment c
+      INNER JOIN Post p ON c.postId = p.id
+      WHERE p.projectId = ${projectId}
+    ) AS activity
+  `;
+  return rows[0]?.lastAt ?? undefined;
+}
+
 async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> {
   const [projects, reactionRows, lastActivityByProject, bookmarkedProjectIds] = await Promise.all([
     prisma.project.findMany({
@@ -430,7 +448,7 @@ async function isBookmarkedByMe(projectId: string): Promise<boolean> {
 }
 
 export async function getWorkById(id: string): Promise<Work | null> {
-  const [project, reactionRows, originPost, bookmarked] = await Promise.all([
+  const [project, reactionRows, originPost, bookmarked, lastActivityAt] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
       include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
@@ -446,13 +464,14 @@ export async function getWorkById(id: string): Promise<Work | null> {
       select: { inspiredByProject: { select: { id: true, title: true } } },
     }),
     isBookmarkedByMe(id),
+    getLastActivityForProject(id),
   ]);
   if (!project) return null;
 
   const realCounts: Partial<Record<ReactionKey, number>> = {};
   for (const row of reactionRows) realCounts[row.type as ReactionKey] = row._count._all;
 
-  const work = toWork(project, realCounts, undefined, bookmarked ? new Set([id]) : undefined);
+  const work = toWork(project, realCounts, lastActivityAt, bookmarked ? new Set([id]) : undefined);
   if (originPost?.inspiredByProject) {
     work.inspiredByProjectId = originPost.inspiredByProject.id;
     work.inspiredByProjectTitle = originPost.inspiredByProject.title;

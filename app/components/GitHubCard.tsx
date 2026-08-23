@@ -86,7 +86,7 @@ export function GitHubCard({ githubUrl, size = "md" }: { githubUrl: string; size
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => void trackClick("external_link_github", window.location.pathname, data.htmlUrl)}
-      className={`flex flex-col justify-between gap-2 rounded-xl border border-white/10 p-4 text-left ${shape}`}
+      className={`flex flex-col gap-3 rounded-xl border border-white/10 p-4 text-left ${shape}`}
       style={{ background: "#161b22" }}
     >
       <div className="flex items-center gap-1.5 text-[#8b949e]">
@@ -112,7 +112,17 @@ export function GitHubCard({ githubUrl, size = "md" }: { githubUrl: string; size
         </p>
       )}
 
-      <div className="flex items-center gap-3 text-[11px] text-[#8b949e]">
+      {/* description等が短いリポジトリだとカードがすかすかに見えるため、
+          既に取得済みのlatestCommitを流用して実のある情報で埋める
+          (新規APIコールは増やさない)。 */}
+      {data.latestCommit && (
+        <div className="rounded-lg bg-white/[0.04] px-2.5 py-2">
+          <p className="mb-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[#6e7681]">最新コミット</p>
+          <p className="line-clamp-2 text-[12px] leading-snug text-[#c9d1d9]">{data.latestCommit.message}</p>
+        </div>
+      )}
+
+      <div className="mt-auto flex items-center gap-3 text-[11px] text-[#8b949e]">
         {data.language && (
           <span className="inline-flex items-center gap-1">
             <span className="h-2 w-2 rounded-full" style={{ background: languageColor(data.language) }} />
