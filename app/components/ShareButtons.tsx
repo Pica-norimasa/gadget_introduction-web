@@ -2,8 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { trackClick } from "@/app/lib/analytics-actions";
+import type { Stage } from "@/app/lib/mock-data";
+import { STAGE_EMOJI } from "@/app/lib/stage-progress";
+import { withShareTracking } from "@/app/lib/share-tracking";
 
-export function ShareButtons({ title }: { title: string }) {
+export function ShareButtons({
+  title,
+  stage,
+  daysAgo,
+  latestUpdate,
+}: {
+  title: string;
+  // 未指定(プロフィール等、作品に紐づかない文脈での共有)なら従来通りの
+  // 一言だけの文言にフォールバックする。
+  stage?: Stage;
+  daysAgo?: number;
+  latestUpdate?: string;
+}) {
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -15,12 +30,23 @@ export function ShareButtons({ title }: { title: string }) {
     setUrl(window.location.href);
   }, []);
 
-  const xText = `Draftlyで見つけた作品「${title}」\n作りかけや進捗も見られます`;
+  // stage/daysAgoが渡された(=作品詳細ページからの共有)場合だけ、進捗の
+  // 「今どのくらい進んでいるか」が一目で伝わる開発記録っぽい文言にする。
+  const xText =
+    stage && daysAgo !== undefined
+      ? [
+          `${STAGE_EMOJI[stage]} ${title} Day ${daysAgo + 1}`,
+          latestUpdate ? latestUpdate.slice(0, 60) : null,
+          "開発過程はこちら👇",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : `Draftlyで見つけた作品「${title}」\n作りかけや進捗も見られます`;
   const lineHref = url
     ? `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`
     : undefined;
   const xHref = url
-    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(xText)}`
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(withShareTracking(url))}&text=${encodeURIComponent(xText)}`
     : undefined;
 
   async function copyLink() {

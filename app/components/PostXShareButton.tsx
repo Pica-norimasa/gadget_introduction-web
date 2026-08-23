@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { withShareTracking } from "@/app/lib/share-tracking";
 
 // ShareButtons.tsxと同じ「Xの投稿画面を開くだけ」のintentリンク方式。
 // Draftly側からAPI経由で自動投稿するわけではなく、本文とURLを差し込んだ
@@ -15,7 +16,9 @@ export function PostXShareButton({ text }: { text: string }) {
 
   const preview = text.length > 90 ? `${text.slice(0, 90)}…` : text;
   const xText = preview ? `Draftlyにつぶやきを投稿しました\n\n${preview}` : "Draftlyにつぶやきを投稿しました";
-  const xHref = url ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(xText)}` : undefined;
+  const xHref = url
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(withShareTracking(url))}&text=${encodeURIComponent(xText)}`
+    : undefined;
 
   return (
     <a

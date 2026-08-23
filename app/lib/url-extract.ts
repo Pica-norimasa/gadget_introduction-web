@@ -17,3 +17,12 @@ export function extractFirstUrl(text: string): string | null {
   const trailingMatch = raw.match(TRAILING_PUNCTUATION);
   return trailingMatch ? raw.slice(0, -trailingMatch[0].length) : raw;
 }
+
+// リンクカードの取得に成功したときだけ、本文側の生URL表記を消して二重
+// 表示を避ける(Xも同様にカードが出るとURL文字列は最小限になる)。最初の
+// 1件だけを消し、URLが単独行だった場合に残る空行もついでに畳む。
+export function stripFirstOccurrence(text: string, target: string): string {
+  const index = text.indexOf(target);
+  if (index === -1) return text;
+  return (text.slice(0, index) + text.slice(index + target.length)).replace(/\n{3,}/g, "\n\n").trim();
+}

@@ -2,6 +2,18 @@
 
 実装は後回しにするが、忘れないように残しておくメモ。
 
+## X経由の流入をユーザー登録まで紐付けるアトリビューション
+
+Xシェア機能(`ShareButtons.tsx`・`PostXShareButton.tsx`・`MilestoneShareCard.tsx`)のリンクには`app/lib/share-tracking.ts`の`withShareTracking()`で`utm_source=x&utm_medium=social&utm_campaign=...`を既に付与済み。「Xからの流入数」自体は`app/lib/cloudflare-analytics.ts`の`classifyReferer()`(x.com/t.co/twitter.comを"X"として集計)で`/admin/analytics`から既に見える。
+
+無いのは「その流入が誰の新規登録につながったか」というユーザー単位の紐付け。実装するなら:
+
+1. 着地時にURLの`utm_source`等をcookie(短期、例: 30日)に保存する処理を`proxy.ts`か新規の軽いclient処理に追加。
+2. `auth.ts`の`createUser`ラッパー(GitHub/X/Google/LINE共通)と、ゲスト作成(`getOrCreateCurrentUser()`)の両方で、そのcookieを見て`User`に流入元を記録する(新規カラムが要る、マイグレーション必須)。
+3. `/admin/analytics`に「流入元別の新規登録数/Interested数/プロジェクト作成数」を表示するダッシュボードを追加。
+
+`auth.ts`(ログインの中心処理)とスキーマ変更を伴う独立した作業のため、まずシェア機能自体(文言のリッチ化・OGP開発カード・マイルストーンシェア)の効果を見てから着手する方が投資対効果が良いと判断し、後回しにしている。
+
 ## リンクプレビュー機能(SSRF対策)のドメイン変更時の注意
 
 `app/api/link-preview/route.ts`(投稿本文中のURLをXのリンクカードのように

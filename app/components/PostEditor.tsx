@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
-import { extractFirstUrl } from "@/app/lib/url-extract";
+import { extractFirstUrl, stripFirstOccurrence } from "@/app/lib/url-extract";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { LinkifiedText } from "./LinkifiedText";
 import { LinkPreviewCard } from "./LinkPreviewCard";
@@ -58,6 +58,7 @@ export function PostEditor({
   const [imageRemoved, setImageRemoved] = useState(false);
   const [youtubeValue, setYoutubeValue] = useState(youtubeUrl ?? "");
   const [selectedType, setSelectedType] = useState<PostType | undefined>(type);
+  const [previewLoaded, setPreviewLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -90,13 +91,22 @@ export function PostEditor({
   // どちらも無い場合だけ本文中の最初のURLをXのリンクカードのように表示する。
   const previewUrl = !imageUrl && !youtubeUrl && body ? extractFirstUrl(body) : null;
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- previewUrlが変わったら(編集で本文が変わった等)前回の成否を引きずらないようリセットする
+    setPreviewLoaded(false);
+  }, [previewUrl]);
+
+  // カードの取得に成功したときだけ、本文側の生URL表記を消して二重表示を
+  // 避ける(取得失敗時はURLだけが唯一のリンク手段なので必ず残す)。
+  const displayBody = previewLoaded && previewUrl ? stripFirstOccurrence(body, previewUrl) : body;
+
   if (!isOwner || !editing) {
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
-          {body && (
+          {displayBody && (
             <p className={`flex-1 whitespace-pre-line ${bodyClassName}`}>
-              <LinkifiedText text={body} />
+              <LinkifiedText text={displayBody} />
             </p>
           )}
           {isOwner && (
@@ -114,7 +124,7 @@ export function PostEditor({
           <img src={imageUrl} alt="" className={imageClassName} />
         )}
         {youtubeUrl && <YouTubeCard youtubeUrl={youtubeUrl} className={youtubeClassName} />}
-        {previewUrl && <LinkPreviewCard url={previewUrl} />}
+        {previewUrl && <LinkPreviewCard url={previewUrl} onResult={setPreviewLoaded} />}
       </div>
     );
   }

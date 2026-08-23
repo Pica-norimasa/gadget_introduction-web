@@ -18,7 +18,17 @@ type State = { status: "loading" } | { status: "error" } | { status: "ready"; da
 // 多いため、loading/error中は何も表示しない(壊れた見た目のカードで
 // 投稿を汚さないため。GitHubCard.tsxは明示的にリンクした結果なので
 // エラー時も枠を出すが、これは自動検出なので沈黙する)。
-export function LinkPreviewCard({ url }: { url: string }) {
+export function LinkPreviewCard({
+  url,
+  onResult,
+}: {
+  url: string;
+  // カード取得の成否を呼び出し元に伝えるコールバック(任意)。
+  // 呼び出し元(PostEditor.tsx)が「カードが出せたなら本文側の生URL表記は
+  // 消す」という判断をするために使う。二重fetchを避けるため、成否の
+  // 判定はこのコンポーネント内のfetch結果をそのまま流用する。
+  onResult?: (success: boolean) => void;
+}) {
   const [state, setState] = useState<State>({ status: "loading" });
 
   useEffect(() => {
@@ -27,15 +37,20 @@ export function LinkPreviewCard({ url }: { url: string }) {
     fetch(`/api/link-preview?url=${encodeURIComponent(url)}`)
       .then((res) => (res.ok ? (res.json() as Promise<PreviewData>) : Promise.reject(res)))
       .then((data) => {
-        if (!cancelled) setState({ status: "ready", data });
+        if (cancelled) return;
+        setState({ status: "ready", data });
+        onResult?.(true);
       })
       .catch(() => {
-        if (!cancelled) setState({ status: "error" });
+        if (cancelled) return;
+        setState({ status: "error" });
+        onResult?.(false);
       });
 
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onResultは呼び出し元でinline関数になりがちで、依存に含めると不要な再fetchを招くため意図的に外す
   }, [url]);
 
   if (state.status !== "ready") return null;

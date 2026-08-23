@@ -13,6 +13,7 @@ import { DeleteProjectButton } from "./DeleteProjectButton";
 import { FollowButton } from "./FollowButton";
 import { GitHubCard } from "./GitHubCard";
 import { LinkifiedText } from "./LinkifiedText";
+import { MilestoneShareCard } from "./MilestoneShareCard";
 import { MotionThumb } from "./MotionThumb";
 import { VerifiedBadge } from "./VerifiedBadge";
 import { PlatformBadges } from "./PlatformBadges";
@@ -82,6 +83,9 @@ export function WorkDetail({
   // この作品だけ見て離脱せず、Draftly内を回遊してもらうための導線。
   relatedWorks: Work[];
 }) {
+  // Xシェア文(ShareButtons.tsx)の「最新の進捗」に使う。タイムラインが
+  // 空(まだ最初の投稿しかない等)ならキャッチコピーにフォールバックする。
+  const latestUpdateText = timeline[timeline.length - 1]?.body || work.catch;
   const latestYouTubePost = [...timeline].reverse().find((post) => post.youtubeUrl);
   const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
   const commentCount = comments.reduce((sum, c) => sum + 1 + c.replies.length, 0);
@@ -342,7 +346,20 @@ export function WorkDetail({
 
           <div className="mt-5 border-t border-[var(--line)] pt-5">
             <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">共有する</p>
-            <ShareButtons title={work.title} />
+            <ShareButtons title={work.title} stage={work.stage} daysAgo={work.daysAgo} latestUpdate={latestUpdateText} />
+            {work.authorId === currentUserId && (
+              <MilestoneShareCard
+                workId={work.id}
+                title={work.title}
+                stage={work.stage}
+                views={work.views}
+                totalReactions={
+                  work.reactions.like + work.reactions.useful + work.reactions.idea + work.reactions.wantToTry
+                }
+                followers={work.followers}
+                daysAgo={work.daysAgo}
+              />
+            )}
           </div>
         </div>
 

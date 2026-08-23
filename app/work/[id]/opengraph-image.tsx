@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
+import { formatCount } from "@/app/lib/format";
 import { getWorkById } from "@/app/lib/queries";
+import { STAGE_PROGRESS_PERCENT } from "@/app/lib/stage-progress";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -68,6 +70,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   }
 
   const preview = work.catch.length > 78 ? `${work.catch.slice(0, 78)}…` : work.catch;
+  const dayNumber = work.daysAgo + 1;
+  const progressPercent = STAGE_PROGRESS_PERCENT[work.stage];
+  const totalReactions = work.reactions.like + work.reactions.useful + work.reactions.idea + work.reactions.wantToTry;
   // 表紙写真(coverImageUrl)が設定されている場合は、カード表示(WorkCard)と
   // 同じくそれを最優先で使う。写真の上に文字を乗せるため、下から暗くなる
   // スクリムを重ねて可読性を確保し、文字色も白系に切り替える(グラデーション
@@ -134,7 +139,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           }}
         >
           <BrandMarkBadge size={36} />
-          Draftly ・ {work.stage}
+          Draftly ・ {work.stage} ・ Day {dayNumber}
         </div>
         <div
           style={{
@@ -159,15 +164,67 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         >
           {preview}
         </div>
+
+        {/* 進捗バー。satoriはtext-overflow等のCSSトリックが使えないため、
+            文字での「████░░」表現ではなく背景バー+塗りつぶしバーの2枚で描く。 */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 28 }}>
+          <div
+            style={{
+              display: "flex",
+              width: 360,
+              height: 14,
+              borderRadius: 7,
+              background: hasCover ? "rgba(255,255,255,0.25)" : "rgba(20,18,14,0.15)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                width: `${progressPercent}%`,
+                height: "100%",
+                borderRadius: 7,
+                background: hasCover ? "#FFFFFF" : "#181410",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 24,
+              fontWeight: 700,
+              color: hasCover ? "#FFFFFF" : "#181410",
+            }}
+          >
+            {progressPercent}%
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 28,
+            fontSize: 26,
+            color: hasCover ? "rgba(255,255,255,0.85)" : "rgba(20,18,14,0.7)",
+            marginTop: 20,
+          }}
+        >
+          <div style={{ display: "flex" }}>❤️ {totalReactions}</div>
+          <div style={{ display: "flex" }}>💬 {work.comments}</div>
+          <div style={{ display: "flex" }}>👀 {formatCount(work.views)}</div>
+          <div style={{ display: "flex" }}>⭐ {work.followers}</div>
+          {work.tool && <div style={{ display: "flex" }}>🛠 {work.tool}</div>}
+        </div>
+
         <div
           style={{
             display: "flex",
             fontSize: 26,
             color: hasCover ? "rgba(255,255,255,0.7)" : "rgba(20,18,14,0.6)",
-            marginTop: 32,
+            marginTop: 24,
           }}
         >
-          by {work.author}
+          Built in public on Draftly ・ by {work.author}
         </div>
       </div>
     ),
