@@ -1228,11 +1228,21 @@ export type SuggestedAuthor = {
   topWork: { id: string; title: string; glyph: string | null; hue: number; coverImageUrl: string | null } | null;
 };
 
+function recencyScore(date: Date | null | undefined): number {
+  if (!date) return 0;
+  const daysAgo = Math.max(0, (Date.now() - date.getTime()) / DAY_MS);
+  if (daysAgo <= 1) return 35;
+  if (daysAgo <= 7) return 25;
+  if (daysAgo <= 30) return 14;
+  if (daysAgo <= 90) return 6;
+  return 0;
+}
+
 // サイドバー「おすすめの作者」向け。フォロー導線が無いと新規ユーザーは
 // フォロー0のまま孤立し、パーソナライズやリポスト拡散(あなたへタブ、
 // フォロー中の創作活動)が機能しないため、フォロー起点をここで作る。
-// 本物のレコメンドの代わりに、まだフォローしていない/自分以外で、
-// 作品を1つ以上投稿しているUserをフォロワー数順に並べるだけの簡易実装。
+// フォロワー数順だけだと古参/シードユーザーに偏るため、作品の反応量・
+// 最近の更新・フォロワーが少ない作者の露出を混ぜた軽量スコアにする。
 // Draftly AI(コメント専用でProjectを持たない)はprojects: { some: {} }
 // の条件だけで自然に除外される。
 export async function getSuggestedAuthors(limit = 5): Promise<SuggestedAuthor[]> {
@@ -1255,22 +1265,52 @@ export async function getSuggestedAuthors(limit = 5): Promise<SuggestedAuthor[]>
     include: {
       _count: { select: { followedBy: true } },
       projects: {
-        orderBy: { trendScore: "desc" },
-        take: 1,
-        select: { id: true, title: true, glyph: true, hue: true, coverImageUrl: true },
+        orderBy: [{ trendScore: "desc" }, { createdAt: "desc" }],
+        take: 3,
+        select: {
+          id: true,
+          title: true,
+          glyph: true,
+          hue: true,
+          coverImageUrl: true,
+          trendScore: true,
+          createdAt: true,
+          stageChangedAt: true,
+          _count: { select: { posts: true, comments: true, reactions: true, reposts: true } },
+          posts: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true } },
+        },
       },
     },
   });
 
   return users
-    .map((u) => ({
-      id: u.id,
-      name: u.name,
-      bio: u.bio,
-      followers: u.followersSeed + u._count.followedBy,
-      topWork: u.projects[0] ?? null,
-    }))
-    .sort((a, b) => b.followers - a.followers)
+    .map((u) => {
+      const followers = u.followersSeed + u._count.followedBy;
+      const scoredProjects = u.projects.map((project) => {
+        const latestActivityAt = project.posts[0]?.createdAt ?? project.stageChangedAt ?? project.createdAt;
+        const activityScore =
+          project.trendScore +
+          project._count.comments * 8 +
+          project._count.reactions * 4 +
+          project._count.reposts * 10 +
+          project._count.posts * 3 +
+          recencyScore(latestActivityAt);
+        return { project, activityScore };
+      });
+      const bestProject = scoredProjects.sort((a, b) => b.activityScore - a.activityScore)[0];
+      const freshAuthorBoost = followers <= 2 ? 10 : followers <= 10 ? 5 : 0;
+      const score = (bestProject?.activityScore ?? 0) + Math.min(followers, 50) * 0.4 + freshAuthorBoost;
+
+      return {
+        id: u.id,
+        name: u.name,
+        bio: u.bio,
+        followers,
+        topWork: bestProject?.project ?? null,
+        score,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }
 

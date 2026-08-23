@@ -54,7 +54,11 @@ export function TextVisualCard({
         className="absolute -bottom-8 -right-8 h-28 w-28 rounded-full opacity-25 blur-sm"
         style={{ background: `hsl(${hue + 86} 85% 55%)` }}
       />
-      <div className="relative flex h-full w-full flex-col justify-between rounded-lg border border-white/30 bg-white/18 p-3 pb-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[1px]">
+      <div
+        className={`relative flex w-full flex-col justify-between rounded-lg border border-white/30 bg-white/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[1px] ${
+          isLarge ? "h-full pb-10" : "h-[calc(100%-2.75rem)] pb-3"
+        }`}
+      >
         <div className="flex items-center justify-between gap-2">
           <span
             className="rounded-full bg-white/35 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em]"
