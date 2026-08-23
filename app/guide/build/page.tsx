@@ -17,10 +17,57 @@ const STEPS = [
     title: "AIツールを1つ選ぶ",
     body: "コードを1行も書けなくても大丈夫。「こんなアプリが欲しい」と日本語で伝えるだけで、AIが実際に動くコードを書いてくれます。まずは1つ触ってみるのがおすすめです。",
     tools: [
-      { name: "Claude Code", note: "会話しながらコードを書き進めるツール。ここDraftlyもこれで作られている" },
-      { name: "v0 / Bolt", note: "作りたい画面をブラウザ上ですぐ生成・公開できる" },
-      { name: "ChatGPT / Gemini", note: "コードの書き方や詰まった時の質問相手として" },
-      { name: "Cursor", note: "既存のコードを触りながら育てていきたくなったら" },
+      {
+        name: "Claude Code",
+        note: "会話しながらコードを書き進めるツール。ここDraftlyもこれで作られている",
+        links: [{ label: "公式サイト", href: "https://claude.com/claude-code" }],
+      },
+      {
+        name: "v0 / Bolt",
+        note: "作りたい画面をブラウザ上ですぐ生成・公開できる",
+        links: [
+          { label: "v0", href: "https://v0.app" },
+          { label: "Bolt", href: "https://bolt.new" },
+        ],
+      },
+      {
+        name: "ChatGPT / Gemini",
+        note: "コードの書き方や詰まった時の質問相手として",
+        links: [
+          { label: "ChatGPT", href: "https://chatgpt.com" },
+          { label: "Gemini", href: "https://gemini.google.com" },
+        ],
+      },
+      {
+        name: "Cursor",
+        note: "既存のコードを触りながら育てていきたくなったら",
+        links: [{ label: "公式サイト", href: "https://cursor.com" }],
+      },
+    ],
+  },
+  {
+    title: "GitHubでリポジトリを作り、AIツールにつなぐ",
+    body: "選んだAIツールから触れるように、コードの置き場所(リポジトリ)を用意します。言葉は難しく感じても、やることはシンプルです。",
+    subSteps: [
+      {
+        label: "リポジトリを作る",
+        note: "GitHubの「New」ボタンから、好きな名前で新規作成するだけ(Public/Privateどちらでも可)",
+        links: [
+          {
+            label: "作り方を見る",
+            href: "https://docs.github.com/ja/repositories/creating-and-managing-repositories/quickstart-for-repositories",
+          },
+        ],
+      },
+      {
+        label: "自分のパソコンにコピーする(クローン)",
+        note: "GitHub Desktopを使えば、コマンド操作なしでボタン1つでコピーできます",
+        links: [{ label: "GitHub Desktop", href: "https://desktop.github.com" }],
+      },
+      {
+        label: "AIツールでそのフォルダを開く",
+        note: "Claude Code / Cursor等でそのフォルダを開けば準備完了。あとは日本語で「〜を作って」と伝えるだけです",
+      },
     ],
   },
   {
@@ -71,9 +118,55 @@ export default function BuildGuidePage() {
                       >
                         <p className="font-mono text-[12.5px] font-medium text-[var(--ink)]">{tool.name}</p>
                         <p className="text-[12.5px] text-[var(--ink-faint)]">{tool.note}</p>
+                        {tool.links && (
+                          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                            {tool.links.map((link) => (
+                              <a
+                                key={link.href}
+                                href={link.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[12px] text-[var(--accent)] hover:underline"
+                              >
+                                {link.label} →
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
+                )}
+                {step.subSteps && (
+                  <ol className="relative ml-2 mt-3 flex flex-col gap-3 border-l-2 border-[var(--line)] pl-4">
+                    {step.subSteps.map((sub, si) => (
+                      <li key={sub.label} className="relative">
+                        <span
+                          aria-hidden
+                          className="absolute -left-[21px] top-0.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--accent-soft)] text-[9px] font-bold text-[var(--accent)]"
+                        >
+                          {si + 1}
+                        </span>
+                        <p className="text-[13px] font-medium text-[var(--ink)]">{sub.label}</p>
+                        <p className="text-[12.5px] text-[var(--ink-faint)]">{sub.note}</p>
+                        {sub.links && (
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                            {sub.links.map((link) => (
+                              <a
+                                key={link.href}
+                                href={link.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[12px] text-[var(--accent)] hover:underline"
+                              >
+                                {link.label} →
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
                 )}
                 {step.link && (
                   <a
