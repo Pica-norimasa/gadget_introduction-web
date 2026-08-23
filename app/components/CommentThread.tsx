@@ -13,6 +13,13 @@ import { MoreActionsMenu } from "./MoreActionsMenu";
 import { ShareCommentButton } from "./ShareCommentButton";
 import { VerifiedBadge } from "./VerifiedBadge";
 
+// コメントは最大500文字(post/postの280文字より長い)まで許容しているため、
+// 長文コメント1件でスレッド全体の見た目がかさばらないよう、Xのように
+// 一定文字数で折りたたみ、「続きを読む」で全文展開する。ExpandableText.tsx
+// (WorkCardの説明文用、60文字・ハッシュタグのみ対応)とは用途が違うため
+// 使い回さず、URLリンクにも対応した専用の実装にしている。
+const COMMENT_PREVIEW_LENGTH = 220;
+
 function CommentRow({
   comment,
   currentUserId,
@@ -32,6 +39,9 @@ function CommentRow({
   // 「⋯」メニュー自体を出さない。
   const isBot = comment.authorHandle === AI_BOT_NAME;
   const isContentAuthor = comment.authorId === contentAuthorId;
+  const [expanded, setExpanded] = useState(false);
+  const isLong = comment.body.length > COMMENT_PREVIEW_LENGTH;
+  const shownBody = expanded || !isLong ? comment.body : `${comment.body.slice(0, COMMENT_PREVIEW_LENGTH).trimEnd()}…`;
 
   return (
     <div className="rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] p-3.5">
@@ -71,8 +81,17 @@ function CommentRow({
             )}
           </div>
           {comment.body && (
-            <p className="text-[14px] leading-relaxed text-[var(--ink)]">
-              <LinkifiedText text={comment.body} />
+            <p className="whitespace-pre-line text-[14px] leading-relaxed text-[var(--ink)]">
+              <LinkifiedText text={shownBody} />
+              {isLong && !expanded && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded(true)}
+                  className="ml-1 font-medium text-[var(--teal)] hover:underline"
+                >
+                  続きを読む
+                </button>
+              )}
             </p>
           )}
           {comment.imageUrl && (

@@ -3,6 +3,7 @@ import type { StandalonePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { LikeButton } from "./LikeButton";
+import { MurmurBody } from "./MurmurBody";
 import { OpenComposerButton } from "./OpenComposerButton";
 import { PostRepostButton } from "./PostRepostButton";
 import { VerifiedBadge } from "./VerifiedBadge";
@@ -70,9 +71,7 @@ export function MurmurStrip({
                     {formatRelativeHours(post.hoursAgo)}
                   </span>
                 </div>
-                {post.body && (
-                  <p className="line-clamp-4 text-[13.5px] leading-7 text-[var(--ink)]">{post.body}</p>
-                )}
+                {post.body && <MurmurBody body={post.body} />}
                 {post.inspiredByProjectId && post.inspiredByProjectTitle && (
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-[var(--teal)] bg-[var(--teal-soft)] px-2 py-0.5 text-[11px] text-[var(--teal)]">

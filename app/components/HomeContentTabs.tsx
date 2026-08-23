@@ -37,6 +37,19 @@ export function HomeContentTabs({
   const [tab, setTab] = useState<HomeTab>("products");
   const [pendingMurmurPostId, setPendingMurmurPostId] = useState<string | null>(null);
 
+  // /post/[id]の「← ホームに戻る」が`/#murmur-xxx`形式のURLで来た場合、
+  // つぶやきタブはデフォルトでは未マウントなのでネイティブのハッシュ
+  // スクロールだけでは効かない。マウント時に一度だけハッシュを見て、
+  // PostForm.tsx投稿後のジャンプ(下のdraftly:show-murmursリスナー)と
+  // 同じ仕組みでタブ切り替え+スクロールを行う。
+  useEffect(() => {
+    const match = window.location.hash.match(/^#murmur-(.+)$/);
+    if (match) {
+      setTab("murmurs");
+      setPendingMurmurPostId(decodeURIComponent(match[1]));
+    }
+  }, []);
+
   useEffect(() => {
     function handleShowProducts() {
       setTab("products");

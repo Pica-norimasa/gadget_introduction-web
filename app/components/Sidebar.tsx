@@ -59,7 +59,9 @@ function PostRow({ post, work }: { post: Post; work: Work }) {
         <p className="text-[13.5px] text-[var(--ink)]">
           <span className="text-[var(--teal)]">{work.title}</span>
         </p>
-        <p className="line-clamp-2 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{post.body}</p>
+        <p className="line-clamp-2 whitespace-pre-line text-[12.5px] leading-relaxed text-[var(--ink-soft)]">
+          {post.body}
+        </p>
       </Link>
     </div>
   );

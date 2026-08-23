@@ -48,7 +48,7 @@ export function StandalonePostCard({
           {formatRelativeHours(post.hoursAgo)}
         </p>
         {post.body && (
-          <p className="relative z-20 text-[13px] leading-relaxed text-[var(--ink)]">
+          <p className="relative z-20 whitespace-pre-line text-[13px] leading-relaxed text-[var(--ink)]">
             <LinkifiedText text={post.body} />
           </p>
         )}
