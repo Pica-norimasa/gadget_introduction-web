@@ -46,7 +46,7 @@ function RankedGrid({
           気になる作品を投稿したり、リアクションするとランキングが育っていきます。
         </p>
         <Link
-          href="/#composer"
+          href="/?composer=1#composer"
           className="mt-4 inline-flex rounded-full border border-[var(--line)] px-3 py-1.5 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
         >
           投稿してみる

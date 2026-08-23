@@ -28,6 +28,13 @@ export default function GuidePage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[640px] flex-1 px-4 py-8 sm:px-6">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
+        >
+          ← ホームに戻る
+        </Link>
+
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">
           Draftlyの使い方
         </h1>
@@ -50,7 +57,7 @@ export default function GuidePage() {
         </ol>
 
         <Link
-          href="/#composer"
+          href="/?composer=1#composer"
           className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-5 py-2.5 text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
         >
           さっそく投稿してみる →

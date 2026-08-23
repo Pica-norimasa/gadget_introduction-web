@@ -56,7 +56,7 @@ export function TextVisualCard({
       />
       <div
         className={`relative flex w-full flex-col rounded-lg border border-white/30 bg-white/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[1px] ${
-          isLarge ? "h-full justify-between pb-11 overflow-hidden" : "h-[62%] justify-start gap-4"
+          isLarge ? "min-h-[58%] justify-start gap-4 overflow-hidden pb-7" : "h-[62%] justify-start gap-4"
         }`}
       >
         <div className="flex items-center justify-between gap-2">

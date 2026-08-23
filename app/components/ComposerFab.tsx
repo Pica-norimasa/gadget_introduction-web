@@ -11,8 +11,8 @@ const CLASS_NAME =
 // 位置を引き継いだ、X/Gmail的な右下固定ボタン)。ホームにいる間は
 // composer-store.tsを直接叩いて投稿フォームを開く(同一ページ内の
 // ハッシュ遷移はnext/linkのscrollIntoView頼みでhashchangeが発火せず、
-// ハッシュ監視だけでは開けないため)。他のページでは/#composerへ遷移し、
-// PostComposerToggle.tsxのマウント時ハッシュ判定に任せる。
+// ハッシュ監視だけでは開けないため)。他のページでは/?composer=1#composerへ遷移し、
+// PostComposerToggle.tsxのマウント時クエリ/ハッシュ判定に任せる。
 export function ComposerFab() {
   const pathname = usePathname();
 
@@ -38,7 +38,7 @@ export function ComposerFab() {
   }
 
   return (
-    <Link href="/#composer" aria-label="投稿する" title="投稿する" className={CLASS_NAME}>
+    <Link href="/?composer=1#composer" aria-label="投稿する" title="投稿する" className={CLASS_NAME}>
       ✏️
     </Link>
   );

@@ -82,7 +82,7 @@ export function WelcomeModal() {
             </button>
           ) : (
             <Link
-              href="/#composer"
+              href="/?composer=1#composer"
               onClick={close}
               className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
             >

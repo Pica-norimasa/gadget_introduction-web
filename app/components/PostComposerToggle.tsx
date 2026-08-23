@@ -14,8 +14,8 @@ import { PostForm } from "./PostForm";
 // UIは用意していない。
 //
 // 「開いているか」はcomposer-store.tsが単一の状態源。他ページから
-// ヘッダーの「投稿する」(href="/#composer")で来た場合は、マウント時に
-// ハッシュを見て開く。既にホームにいる場合はComposerButton.tsxが
+// ヘッダーの「投稿する」(href="/?composer=1#composer")で来た場合は、
+// マウント時にクエリ/ハッシュを見て開く。既にホームにいる場合はComposerButton.tsxが
 // このストアを直接呼ぶ(同一ページ内のハッシュ遷移はnext/linkが
 // hashchangeを発火しないため、ハッシュ監視だけには頼れない)。
 export function PostComposerToggle({
@@ -35,20 +35,33 @@ export function PostComposerToggle({
   const guestRemaining = GUEST_POST_LIMIT - guestPostCount;
 
   useEffect(() => {
-    if (window.location.hash === "#composer") openComposer();
+    const params = new URLSearchParams(window.location.search);
+    const shouldOpenComposer = window.location.hash === "#composer" || params.get("composer") === "1";
+    if (shouldOpenComposer) {
+      openComposer();
+      requestAnimationFrame(() => {
+        document.getElementById("composer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
 
     // 作品詳細ページの「これにインスパイアされて投稿する」から
     // ?inspiredById=&inspiredByTitle=付きで遷移してきた場合、その
     // インスパイア元を保持したままコンポーザーを開く。ハッシュと同じ
     // 理由(next/linkの同一ページ内遷移はhashchangeを発火しない)で
     // マウント時に直接window.location.searchを見て判定する。
-    const params = new URLSearchParams(window.location.search);
     const inspiredById = params.get("inspiredById");
     const inspiredByTitle = params.get("inspiredByTitle");
     if (inspiredById && inspiredByTitle) {
       openComposerWithInspiration({ id: inspiredById, title: inspiredByTitle });
       params.delete("inspiredById");
       params.delete("inspiredByTitle");
+    }
+
+    if (params.get("composer") === "1") {
+      params.delete("composer");
+    }
+
+    if ((inspiredById && inspiredByTitle) || shouldOpenComposer) {
       const query = params.toString();
       window.history.replaceState(
         null,
