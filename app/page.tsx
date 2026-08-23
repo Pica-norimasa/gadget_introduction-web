@@ -24,7 +24,6 @@ import { HeroRail } from "@/app/components/HeroRail";
 import { MurmurStrip } from "@/app/components/MurmurStrip";
 import { FeedSection } from "@/app/components/FeedSection";
 import { Sidebar } from "@/app/components/Sidebar";
-import { MobileSidebarDrawer } from "@/app/components/MobileSidebarDrawer";
 import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 import { HomePrimaryActions } from "@/app/components/HomePrimaryActions";
@@ -105,28 +104,6 @@ export default async function Home() {
           myReactions={myReactions}
           currentUserId={currentUser?.id ?? null}
         />
-
-        {/* サイドバー(ランキング・おすすめの作者等)はlg未満だとフィードの下に
-            回り込む。フィードが無限スクロールで際限なく伸びるため、下まで
-            スクロールさせて見せるのは事実上たどり着けず、アンカーリンクで
-            ジャンプさせても着地点がずれる(ジャンプの最中に無限スクロールの
-            IntersectionObserverが発火し、上にコンテンツが追加されて位置が
-            狂う)。そのため、lg未満では右からスライドインするドロワーに
-            同じSidebarをもう1つ描画して回避する(lg以上ではこちらを隠し、
-            2カラム側だけを表示する)。 */}
-        <MobileSidebarDrawer>
-          <Sidebar
-            ranking={rankingWorks}
-            posts={posts}
-            works={works}
-            activity={activity}
-            myProjects={myProjects}
-            currentUserName={currentUser?.name ?? null}
-            reposts={reposts}
-            suggestedAuthors={suggestedAuthors}
-            showRankingAnchor={false}
-          />
-        </MobileSidebarDrawer>
 
         <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_300px]">
           <FeedSection

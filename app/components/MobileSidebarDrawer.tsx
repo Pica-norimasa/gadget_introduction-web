@@ -26,11 +26,11 @@ export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="ランキング・おすすめを見る"
-        title="ランキング・おすすめ"
+        aria-label="サイドメニューを開く"
+        title="メニュー"
         className="fixed bottom-24 right-6 z-40 grid h-12 w-12 place-items-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] text-xl shadow-lg shadow-[var(--shadow)] transition-transform hover:scale-105 active:scale-95 lg:hidden"
       >
-        🏆
+        ☰
       </button>
 
       {/* 背景の暗幕。open=falseの間もDOMには残し(トランジションのため)、
@@ -46,7 +46,7 @@ export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="ランキング・おすすめ"
+        aria-label="サイドメニュー"
         onClick={(e) => {
           // ランキング等のリンクをタップして遷移・ジャンプする際は、
           // 選んだ後もドロワーが開いたままだと結果が見えないため閉じる。
@@ -60,7 +60,7 @@ export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">
-            ランキング・おすすめ
+            メニュー
           </h2>
           <button
             type="button"

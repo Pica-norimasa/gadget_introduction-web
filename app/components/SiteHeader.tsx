@@ -1,22 +1,38 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { getNotificationData } from "@/app/lib/queries";
+import {
+  getNotificationData,
+  getPosts,
+  getRecentActivity,
+  getRecentReposts,
+  getSuggestedAuthors,
+  getWorks,
+} from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { BrandMark } from "./BrandMark";
 import { ComposerFab } from "./ComposerFab";
 import { FeedNavLink } from "./FeedNavLink";
 import { IdentityBadge } from "./IdentityBadge";
+import { MobileSidebarDrawer } from "./MobileSidebarDrawer";
 import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
-import { RankingFab } from "./RankingFab";
+import { Sidebar } from "./Sidebar";
 
 export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
-  const [user, { notifications, unreadCount }, session] = await Promise.all([
-    getCurrentUser(),
-    getNotificationData(),
-    auth(),
-  ]);
+  const [user, { notifications, unreadCount }, session, works, posts, activity, reposts, suggestedAuthors] =
+    await Promise.all([
+      getCurrentUser(),
+      getNotificationData(),
+      auth(),
+      getWorks(),
+      getPosts(),
+      getRecentActivity(),
+      getRecentReposts(),
+      getSuggestedAuthors(),
+    ]);
   const authed = !!session?.user;
+  const rankingWorks = [...works].sort((a, b) => b.trendScore - a.trendScore).slice(0, 5);
+  const myProjects = user ? works.filter((w) => w.authorId === user.id) : [];
 
   return (
     <>
@@ -65,7 +81,19 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           </nav>
         </div>
       </header>
-      <RankingFab />
+      <MobileSidebarDrawer>
+        <Sidebar
+          ranking={rankingWorks}
+          posts={posts}
+          works={works}
+          activity={activity}
+          myProjects={myProjects}
+          currentUserName={user?.name ?? null}
+          reposts={reposts}
+          suggestedAuthors={suggestedAuthors}
+          showRankingAnchor={false}
+        />
+      </MobileSidebarDrawer>
       <ComposerFab />
     </>
   );
