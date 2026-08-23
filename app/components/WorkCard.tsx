@@ -1,6 +1,7 @@
 import { type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor, latestYouTubePostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
+import { GitHubMark } from "./BrandIcons";
 import { AndroidMark, AppleMark } from "./PlatformIcons";
 import { AuthorAvatar } from "./AuthorAvatar";
 import { BookmarkButton } from "./BookmarkButton";
@@ -80,6 +81,11 @@ export function WorkCard({
     </div>
   );
 
+  // GitHubCard自体がサムネイルとして出ているときは、下のバッジで
+  // 二重にGitHubを案内する必要が無い(coverImage/YouTube/glyphのいずれか
+  // が優先されているときだけ、githubUrlの存在を小さいバッジで示す)。
+  const showsGitHubBadge = Boolean(work.githubUrl) && Boolean(work.coverImageUrl || mediaYouTubeUrl || work.glyph);
+
   const media = (
     <div className="relative">
       {work.coverImageUrl ? (
@@ -157,9 +163,23 @@ export function WorkCard({
         )}
       </div>
       {/* 右下はMotionThumbの「再生中/プレビュー」表示と被るため左下に置く */}
-      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
-        👁️{formatCount(work.views)} 💬{work.comments}
-      </span>
+      <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2 py-0.5 font-mono text-[11px] text-white">
+          👁️{formatCount(work.views)} 💬{work.comments}
+        </span>
+        {showsGitHubBadge && (
+          <a
+            href={work.githubUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="GitHubリポジトリ"
+            aria-label="GitHubリポジトリ"
+            className="grid h-6 w-6 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+          >
+            <GitHubMark className="h-3.5 w-3.5" />
+          </a>
+        )}
+      </div>
     </div>
   );
 
