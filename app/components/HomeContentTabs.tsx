@@ -9,7 +9,7 @@ import { MurmurStrip } from "./MurmurStrip";
 type HomeTab = "products" | "murmurs";
 
 const TABS: { id: HomeTab; label: string; description: string }[] = [
-  { id: "products", label: "プロダクト", description: "作品・サービス・アプリを探す" },
+  { id: "products", label: "作品一覧", description: "作品・サービス・アプリを探す" },
   { id: "murmurs", label: "つぶやきタイムライン", description: "作品に紐づかない気軽な投稿を見る" },
 ];
 
