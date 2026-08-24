@@ -3,28 +3,28 @@
 :root {
   /* OGPのアイボリー・ミント・淡いオレンジへ自然につながる、
      黒を避けた温かいチャコール。カードと背景の明度差も少し広げる。 */
-  --bg: #1c1915;
-  --bg-raised: #29231d;
-  --bg-sunken: #15120f;
+  --bg: #211d18;
+  --bg-raised: #31291f;
+  --bg-sunken: #1a1612;
   --ink: #f7f2e8;
   --ink-soft: #cec2b2;
-  --ink-faint: #978b7c;
-  --line: #453a30;
+  --ink-faint: #a09384;
+  --line: #514436;
 
   --accent: #ff7a4d;
   --accent-ink: #1a1108;
-  --accent-soft: #462719;
+  --accent-soft: #56301f;
 
   --teal: #4fc0a8;
-  --teal-soft: #1c433c;
+  --teal-soft: #23524a;
 
   --violet: #a797f0;
-  --violet-soft: #241e3e;
+  --violet-soft: #2d264b;
 
   --amber: #e3a93d;
-  --amber-soft: #362508;
+  --amber-soft: #40300f;
 
-  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow: rgba(0, 0, 0, 0.32);
 }
 
 @theme inline {

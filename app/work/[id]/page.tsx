@@ -17,6 +17,7 @@ import {
 import { getCurrentUser } from "@/app/lib/session";
 import { SITE_URL } from "@/app/lib/email";
 import { postsForProject } from "@/app/lib/post-helpers";
+import { ScrollToTopOnMount } from "@/app/components/ScrollToTopOnMount";
 import { WorkDetail } from "@/app/components/WorkDetail";
 import type { Work } from "@/app/lib/mock-data";
 
@@ -136,6 +137,7 @@ export default async function WorkPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(workJsonLd(work)) }}
       />
+      <ScrollToTopOnMount />
       <WorkDetail
         work={{ ...work, views: work.views + 1 }}
         timeline={timeline}
