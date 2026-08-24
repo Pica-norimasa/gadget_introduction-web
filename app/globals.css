@@ -167,10 +167,13 @@ html {
     }
 
     .mobile-floating-action-right {
+      left: auto;
+      right: max(1.5rem, calc((100vw - 1180px) / 2 + 1.5rem));
       bottom: 1.5rem;
     }
 
     .mobile-floating-action-left {
+      left: max(1.5rem, calc((100vw - 1180px) / 2 + 1.5rem));
       bottom: 1.5rem;
     }
 
