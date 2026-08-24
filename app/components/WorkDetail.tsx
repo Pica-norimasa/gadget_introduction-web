@@ -5,6 +5,7 @@ import type { CommentThread as CommentThreadType, InspiredItem } from "@/app/lib
 import { formatCount, formatPostedAgo } from "@/app/lib/format";
 import { AiCommentsToggle } from "./AiCommentsToggle";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { BackButton } from "./BackButton";
 import { BookmarkButton } from "./BookmarkButton";
 import { CommentForm } from "./CommentForm";
 import { CommentList } from "./CommentList";
@@ -178,12 +179,10 @@ export function WorkDetail({
 
       <main className="mx-auto w-full max-w-[760px] flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-7 flex items-center justify-between">
-          <Link
-            href={`/home#work-${work.id}`}
+          <BackButton
+            fallbackHref={`/home#work-${work.id}`}
             className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
-          >
-            ← ホームに戻る
-          </Link>
+          />
           {isOwner ? (
             <div className="flex items-center gap-2">
               <Link
