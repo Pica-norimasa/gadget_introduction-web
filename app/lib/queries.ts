@@ -196,7 +196,10 @@ function toWork(
     createdAtIso: project.createdAt.toISOString(),
     aiCommentsEnabled: project.aiCommentsEnabled,
     retrospective: project.retrospective ?? undefined,
-    trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
+    // 新しさボーナスは「いつ作られたか」ではなく「最後に動きがあったか」で
+    // 測る(継続して進捗を積んでいる作品が、作成日が古いというだけで
+    // おすすめ/急上昇/ランキングで不利にならないようにするため)。
+    trendScore: computeTrendScore(totalReactions, comments, reposts, lastActivityDaysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
     bookmarked: bookmarkedProjectIds?.has(project.id) ?? false,
   };
