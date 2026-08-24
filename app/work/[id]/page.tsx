@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import {
   getCommentsForProject,
+  getHelpfulCounts,
   getInspiredByProject,
   getMyCommentCount,
+  getMyHelpfulPostIds,
   getMyPostCount,
   getMyReactions,
   getMyReactionsForProject,
   getPosts,
+  getProjectExperienceStats,
   getRelatedWorks,
   getWorkById,
   incrementViews,
@@ -108,6 +111,18 @@ export default async function WorkPage({
   ]);
   const timeline = postsForProject(work.id, posts);
 
+  // 「参考になった」件数・自分が押済みか・学び集計(学び/失敗/成功)は、
+  // timeline(=postsから絞り込んだこのProjectの投稿)が確定してから
+  // でないと対象の投稿IDが分からないため、上のPromise.allとは別に取得する。
+  const timelinePostIds = timeline.map((p) => p.id);
+  const [helpfulCountsMap, myHelpfulPostIdSet, experienceStats] = await Promise.all([
+    getHelpfulCounts(timelinePostIds),
+    getMyHelpfulPostIds(timelinePostIds),
+    getProjectExperienceStats(work.id),
+  ]);
+  const helpfulCounts = Object.fromEntries(helpfulCountsMap);
+  const myHelpfulPostIds = [...myHelpfulPostIdSet];
+
   // 今の訪問分をその場で足す(再取得はしない)。実際のDB値は次の読み込みから反映される。
   return (
     <>
@@ -127,6 +142,9 @@ export default async function WorkPage({
         blockedByAuthor={blockedByAuthor}
         initialTab={tab}
         relatedWorks={relatedWorks}
+        helpfulCounts={helpfulCounts}
+        myHelpfulPostIds={myHelpfulPostIds}
+        experienceStats={experienceStats}
       />
     </>
   );

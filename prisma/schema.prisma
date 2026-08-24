@@ -152,6 +152,11 @@ model Project {
   // AI(Draftly AI)による自動応援コメントのON/OFF。作者がプロダクト詳細
   // ページのトグルで切り替える(ai-comment.ts参照)。
   aiCommentsEnabled Boolean   @default(true)
+  // stageが「開発中止」のときだけ、任意で書ける振り返り。「なぜ中止したか/
+  // 何がうまくいかなかったか/次にやるなら/学んだこと」の4観点は別カラムに
+  // 分けず、入力ヒント(ProjectEditForm.tsx側のplaceholder)として見せる
+  // だけの1つの自由記述欄にする(不要な新規カラムを増やさないため)。
+  retrospective     String?   @db.Text
 
   // 表示用の起点カウント。実際のリアクションはReaction行として積み上がる想定だが、
   // 種類ごとに数百件のダミー行を作る必要が出るため、シード時点ではこの起点カウント
@@ -203,6 +208,10 @@ model Post {
   imageUrl   String?
   youtubeUrl String?
   createdAt  DateTime @default(now())
+  // trying | success | failure | learning。上のtype(投稿の種類)とは別概念で、
+  // 「他人の成功も失敗も、自分の経験値に。」を伝えるための任意タグ
+  // (mock-data.tsのExperienceType参照)。未設定(null)がデフォルト。
+  experienceType String?
 
   authorId String
   author   User   @relation(fields: [authorId], references: [id])

@@ -3,7 +3,7 @@ import { AI_BOT_NAME } from "@/app/lib/ai-bot-name";
 import { extractHashtags } from "@/app/lib/hashtag";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/session";
-import type { AiTool, Category, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
+import type { AiTool, Category, ExperienceType, Platform, Post, PostType, ReactionKey, Stage, Work } from "@/app/lib/mock-data";
 
 export type NotificationType = "reaction" | "comment" | "follow" | "repost" | "inspired" | "reply";
 
@@ -64,6 +64,7 @@ type ProjectWithAuthor = {
   trendScore: number;
   createdAt: Date;
   aiCommentsEnabled: boolean;
+  retrospective: string | null;
   authorId: string;
   commentsSeed: number;
   reactionLikeSeed: number;
@@ -194,6 +195,7 @@ function toWork(
     lastActivityDaysAgo,
     createdAtIso: project.createdAt.toISOString(),
     aiCommentsEnabled: project.aiCommentsEnabled,
+    retrospective: project.retrospective ?? undefined,
     trendScore: computeTrendScore(totalReactions, comments, reposts, daysAgo),
     followers: project.author.followersSeed + project.author._count.followedBy,
     bookmarked: bookmarkedProjectIds?.has(project.id) ?? false,
@@ -575,6 +577,7 @@ export async function getPosts(): Promise<Post[]> {
     imageUrl: r.imageUrl ?? undefined,
     youtubeUrl: r.youtubeUrl ?? undefined,
     hoursAgo: hoursAgoOf(r.createdAt),
+    experienceType: (r.experienceType as ExperienceType | null) ?? undefined,
   }));
 }
 
@@ -1024,6 +1027,49 @@ export async function getMyLikeForPost(postId: string): Promise<boolean> {
     where: { postId_userId_type: { postId, userId: user.id, type: "like" } },
   });
   return row !== null;
+}
+
+// 制作タイムライン向け。複数投稿分の「参考になった」件数をまとめて取得する
+// (投稿ごとにcountを個別クエリすると件数分の往復が発生するため)。
+export async function getHelpfulCounts(postIds: string[]): Promise<Map<string, number>> {
+  if (postIds.length === 0) return new Map();
+  const rows = await prisma.reaction.groupBy({
+    by: ["postId"],
+    where: { postId: { in: postIds }, type: "helpful" },
+    _count: { _all: true },
+  });
+  return new Map(rows.filter((r) => r.postId !== null).map((r) => [r.postId as string, r._count._all]));
+}
+
+// 同じくタイムライン向け。自分が既に「参考になった」を押した投稿IDの集合
+// (ボタンの押下済み表示用、getMyLikeForPost()の複数件版)。
+export async function getMyHelpfulPostIds(postIds: string[]): Promise<Set<string>> {
+  const user = await getCurrentUser();
+  if (!user || postIds.length === 0) return new Set();
+  const rows = await prisma.reaction.findMany({
+    where: { postId: { in: postIds }, userId: user.id, type: "helpful" },
+    select: { postId: true },
+  });
+  return new Set(rows.filter((r) => r.postId !== null).map((r) => r.postId as string));
+}
+
+// プロジェクト単位の「学び」集計(学び/失敗/成功の件数)。ユーザー例示に
+// 合わせ、"trying"(試行錯誤中)は選択肢としては残すが集計表示の対象外にする。
+export async function getProjectExperienceStats(
+  projectId: string,
+): Promise<Record<"failure" | "success" | "learning", number>> {
+  const rows = await prisma.post.groupBy({
+    by: ["experienceType"],
+    where: { projectId, experienceType: { not: null } },
+    _count: { _all: true },
+  });
+  const stats = { failure: 0, success: 0, learning: 0 };
+  for (const row of rows) {
+    if (row.experienceType === "failure" || row.experienceType === "success" || row.experienceType === "learning") {
+      stats[row.experienceType] = row._count._all;
+    }
+  }
+  return stats;
 }
 
 export type CommentView = {

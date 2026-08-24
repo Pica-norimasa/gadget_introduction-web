@@ -1,4 +1,7 @@
-export type Stage = "アイデア" | "プロトタイプ" | "ベータ" | "公開中";
+// 「開発中止」は失敗の烙印ではなく、そこまでの試行錯誤・振り返り
+// (Project.retrospective)にも価値を持たせるための状態(project-actions.ts
+// のupdateProject()参照。ステージ前進判定から明示的に除外している)。
+export type Stage = "アイデア" | "プロトタイプ" | "ベータ" | "公開中" | "開発中止";
 // "self" = AIツールを使わず自作。"multiple" = 単一のツール名では言い表せない
 // 複数ツール併用。null = アイデア段階でまだ何も作っていない(ツール未定)。
 export type AiTool = "Claude" | "ChatGPT" | "Gemini" | "Bolt" | "v0" | "Cursor" | "self" | "multiple" | null;
@@ -99,6 +102,9 @@ export type Work = {
   // 続けるため、通常のUIロジックはこのフィールドを見に行かない。
   // mock-data.ts由来のシードWorkは省略可(queries.tsのtoWork()が実データを埋める)。
   createdAtIso?: string;
+  // stageが「開発中止」のときだけ意味を持つ、任意の振り返り文
+  // (project-actions.tsのupdateProject()参照)。
+  retrospective?: string;
 };
 
 export type ReactionKey = keyof Work["reactions"];
@@ -494,6 +500,20 @@ export const POST_TYPE_META: Record<PostType, { icon: string; label: string }> =
   question: { icon: "💬", label: "つぶやき" },
 };
 
+// 「他人の成功も失敗も、自分の経験値に。」を伝えるための任意タグ。上の
+// PostType(投稿の種類: アイデア/制作中/リリース等)とは別概念で、
+// 「この投稿は試行錯誤の記録として何だったか」を示す。未設定がデフォルト。
+export type ExperienceType = "trying" | "success" | "failure" | "learning";
+
+// failureのラベルは、失敗そのものを評価するのではなく「何が分かったか」に
+// 意識が向くよう意図的に「失敗から分かったこと」という表現にしている。
+export const EXPERIENCE_TYPE_META: Record<ExperienceType, { icon: string; label: string }> = {
+  trying: { icon: "🔄", label: "試行錯誤中" },
+  success: { icon: "✅", label: "うまくいった" },
+  failure: { icon: "💡", label: "失敗から分かったこと" },
+  learning: { icon: "📘", label: "学びがあった" },
+};
+
 export type Post = {
   id: string;
   projectId: string;
@@ -502,6 +522,7 @@ export type Post = {
   imageUrl?: string;
   youtubeUrl?: string;
   hoursAgo: number;
+  experienceType?: ExperienceType;
 };
 
 export const posts: Post[] = [

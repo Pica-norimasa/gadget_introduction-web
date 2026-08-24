@@ -2,6 +2,37 @@
 
 実装は後回しにするが、忘れないように残しておくメモ。
 
+## 「みんなの経験値」一覧ページ
+
+経験値機能(Post.experienceType・「参考になった」リアクション・Project.stage="開発中止"+retrospective)を追加した際、将来的に「参考になった投稿」「よく見られている失敗」「成功した施策」「開発中止から得た学び」等をまとめて見せる一覧ページを作る構想があった。今回はページ本体は作らず、必要なデータだけ取得できる状態にしてある:
+
+- 参考になった投稿: `Reaction.type = "helpful"` が多い`Post`(`app/lib/queries.ts`の`getHelpfulCounts()`と同じ`groupBy`パターンを、プロジェクト単位ではなくサイト全体に広げれば取れる)。
+- よく見られている失敗 / 成功した施策: `Post.experienceType = "failure" | "success"`で絞り込み、`Project.views`等でソート。
+- 開発中止から得た学び: `Project.stage = "開発中止"` かつ `Project.retrospective`が非null。
+- 技術選定の学び / 方針転換した事例: 上記のように構造化されたフィールドは無く、本文(`Post.body`)のフリーテキストに頼る形になる。専用フィールド化するかは需要を見てから判断する。
+
+新規の集計クエリ・ページとも未実装(不要なコードを増やさないため)。着手する際は、まず`getHelpfulCounts()`をプロジェクト単位からサイト全体向けに一般化するところから始めるとよい。
+
+## ハッシュタグ検索の高速化(専用テーブル化)
+
+`app/lib/queries.ts`の`searchByHashtag()`(`/tag/[tag]`ページが使う)は、
+`Project.catchText`・`Post.body`に対する`LIKE '%#タグ%'`(`contains`)の
+力技全文検索で、タグを集約する専用テーブルは無い。MySQLは先頭が`%`の
+`LIKE`にB-treeインデックスを使えないため、投稿・作品数が増えるほど
+全表スキャンで遅くなる。`/tag/[tag]`をsitemapに載せていないのも同じ
+理由(一覧取得が高コストなため、Phase 1で意図的に除外済み)。
+
+今の投稿数(数十〜数百件)では体感できる遅さにはなっていないため、
+急ぎの対応ではない。将来アクセス数・投稿数が増えて実際に遅さが
+問題になったら、以下のような専用テーブル化を検討する:
+
+- `Hashtag`(タグ文字列を正規化して保持)・`ProjectHashtag`/`PostHashtag`
+  (中間テーブル)を新設し、投稿・作品の作成/編集時(`post-actions.ts`・
+  `project-actions.ts`)に`extractHashtags()`の結果を書き出しておく。
+- `searchByHashtag()`はこの中間テーブルをインデックス付きで引くだけに
+  変わり、検索が高速化するだけでなく「人気タグ一覧」やsitemapへの
+  タグページ追加もやりやすくなる。
+
 ## X経由の流入をユーザー登録まで紐付けるアトリビューション
 
 Xシェア機能(`ShareButtons.tsx`・`PostXShareButton.tsx`・`MilestoneShareCard.tsx`)のリンクには`app/lib/share-tracking.ts`の`withShareTracking()`で`utm_source=x&utm_medium=social&utm_campaign=...`を既に付与済み。「Xからの流入数」自体は`app/lib/cloudflare-analytics.ts`の`classifyReferer()`(x.com/t.co/twitter.comを"X"として集計)で`/admin/analytics`から既に見える。

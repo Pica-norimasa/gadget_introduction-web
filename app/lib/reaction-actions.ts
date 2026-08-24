@@ -78,3 +78,39 @@ export async function toggleLike(postId: string) {
   revalidatePath("/home");
   revalidatePath(`/post/${postId}`);
 }
+
+// 「参考になった」。一般的な「いいね」(共感・応援)とは分け、「この投稿
+// から学びがあった」ことを投稿者に伝える専用のリアクション。toggleLike()
+// と同じ構造で、type だけ"helpful"にしている(Reaction.typeはただの
+// String列なので、新しい値を使うだけでスキーマ変更なしに実現できる)。
+export async function toggleHelpfulReaction(postId: string) {
+  const user = await getOrCreateCurrentUser();
+
+  // 主にプロジェクトの制作タイムライン(進捗投稿)向けの機能なので、
+  // toggleLike()と違い/work/[projectId]側も再検証する。
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true, projectId: true } });
+  if (!post) return;
+
+  const existing = await prisma.reaction.findUnique({
+    where: { postId_userId_type: { postId, userId: user.id, type: "helpful" } },
+  });
+
+  if (existing) {
+    await prisma.reaction.delete({ where: { id: existing.id } });
+  } else {
+    if (await isBlockedBy(post.authorId, user.id)) return;
+    if (await isReactionRateLimited(user.id)) return;
+
+    await prisma.reaction.create({ data: { postId, userId: user.id, type: "helpful" } });
+
+    if (post.authorId !== user.id) {
+      await prisma.notification.create({
+        data: { type: "reaction", recipientId: post.authorId, actorId: user.id, postId, reactionType: "helpful" },
+      });
+    }
+  }
+
+  revalidatePath("/home");
+  revalidatePath(`/post/${postId}`);
+  if (post.projectId) revalidatePath(`/work/${post.projectId}`);
+}

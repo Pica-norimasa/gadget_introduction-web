@@ -5,6 +5,9 @@ const STAGE_STYLE: Record<Stage, { bg: string; fg: string }> = {
   プロトタイプ: { bg: "var(--amber-soft)", fg: "var(--amber)" },
   ベータ: { bg: "var(--teal-soft)", fg: "var(--teal)" },
   公開中: { bg: "var(--accent-soft)", fg: "var(--accent)" },
+  // 「失敗」を否定的に見せないよう赤系は使わず、他の4色とも違う
+  // 控えめなグレーにする(ink系トークンのみ、新しい色は増やさない)。
+  開発中止: { bg: "var(--bg-sunken)", fg: "var(--ink-faint)" },
 };
 
 export function StageBadge({ stage }: { stage: Stage }) {

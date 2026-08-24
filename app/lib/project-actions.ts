@@ -23,7 +23,7 @@ const CATEGORIES: Category[] = [
   "プロトタイプ",
   "その他",
 ];
-const STAGES: Stage[] = ["アイデア", "プロトタイプ", "ベータ", "公開中"];
+const STAGES: Stage[] = ["アイデア", "プロトタイプ", "ベータ", "公開中", "開発中止"];
 const TOOLS: Exclude<AiTool, null>[] = [
   "Claude",
   "ChatGPT",
@@ -100,6 +100,7 @@ export async function updateProject(
   const platforms = formData.getAll("platforms").map(String);
   const coverImageFile = extractImageFile(formData, "image");
   const removeCoverImage = formData.get("removeCoverImage") === "1";
+  const retrospective = String(formData.get("retrospective") ?? "").trim();
 
   if (!projectId) return { error: "作品が見つかりません" };
   if (!title) return { error: "タイトルを入力してください" };
@@ -124,6 +125,7 @@ export async function updateProject(
   }
   if (platforms.length === 0) return { error: "対応環境を1つ以上選んでください" };
   if (!platforms.every((p) => PLATFORMS.includes(p as Platform))) return { error: "対応環境が不正です" };
+  if (retrospective.length > 1000) return { error: "振り返りは1000文字以内で入力してください" };
 
   const user = await getCurrentUser();
   if (!user) return { error: "権限がありません" };
@@ -137,8 +139,11 @@ export async function updateProject(
   // ステージが前進した(アイデア→プロトタイプ→ベータ→公開中)ときだけ
   // stageChangedAtを更新する。ホームの「昇格おめでとう」ポップアップは
   // これを見て直近の前進を検出するので、後退・据え置きの保存では
-  // 反応させない。
-  const stageAdvanced = STAGES.indexOf(stage as Stage) > STAGES.indexOf(project.stage as Stage);
+  // 反応させない。「開発中止」はSTAGES配列の末尾にあり単純比較だと
+  // indexが常に最大になってしまうため、明示的に対象から除外する
+  // (中止するたびに誤って「おめでとう」ポップアップが出るのを防ぐ)。
+  const stageAdvanced =
+    stage !== "開発中止" && STAGES.indexOf(stage as Stage) > STAGES.indexOf(project.stage as Stage);
 
   // undefinedのままなら既存のcoverImageUrlに触れない。新規アップロードが
   // あれば差し替え、明示的な削除(removeCoverImage)ならnullにする。
@@ -167,6 +172,10 @@ export async function updateProject(
       appStoreUrl: appStoreUrl || null,
       googlePlayUrl: googlePlayUrl || null,
       platforms,
+      // 開発中止以外に戻した場合、古い振り返り文が残っていても表示上は
+      // 問題ない(次に中止したときにまた書き直せる)ため、ここでは
+      // 明示的にクリアしない。
+      retrospective: stage === "開発中止" ? retrospective || null : undefined,
       ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
       ...(stageAdvanced ? { stageChangedAt: new Date() } : {}),
     },

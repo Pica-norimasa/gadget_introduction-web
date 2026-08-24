@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { POST_TYPE_META, type PostType, type Work } from "@/app/lib/mock-data";
+import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostType, type Work } from "@/app/lib/mock-data";
 import { autoGrow } from "@/app/lib/autogrow";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
@@ -139,6 +139,9 @@ export function PostForm(props: PostFormProps) {
   const [body, setBody] = useState("");
   const promptOptions = variant === "compose" ? COMPOSE_PROMPTS : TIMELINE_PROMPTS;
   const [selectedType, setSelectedType] = useState<PostType | "">(promptOptions[0].type);
+  // 「経験タイプ」はtimeline(進捗投稿)限定の任意項目。必須にはしない
+  // (未設定=""が既定)。
+  const [selectedExperienceType, setSelectedExperienceType] = useState<ExperienceType | "">("");
   // 投稿のたびに「新しいプロジェクトとして」を選び直す必要があると、
   // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
   // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
@@ -189,6 +192,7 @@ export function PostForm(props: PostFormProps) {
     setBody("");
     setProjectTarget(defaultProjectTarget);
     setSelectedType(promptOptions[0].type);
+    setSelectedExperienceType("");
     formRef.current?.reset();
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     clearImage();
@@ -352,6 +356,24 @@ export function PostForm(props: PostFormProps) {
             {promptOptions.map((option) => (
               <option key={option.type} value={option.type}>
                 {POST_TYPE_META[option.type].icon} {option.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {variant === "timeline" && (
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-[11px] text-[var(--ink-faint)]">経験タイプ(任意)</span>
+          <select
+            name="experienceType"
+            value={selectedExperienceType}
+            onChange={(e) => setSelectedExperienceType(e.target.value as ExperienceType | "")}
+            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+          >
+            <option value="">未設定</option>
+            {(Object.keys(EXPERIENCE_TYPE_META) as ExperienceType[]).map((t) => (
+              <option key={t} value={t}>
+                {EXPERIENCE_TYPE_META[t].icon} {EXPERIENCE_TYPE_META[t].label}
               </option>
             ))}
           </select>

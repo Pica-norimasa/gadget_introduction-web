@@ -51,6 +51,9 @@ export function WorkDetail({
   blockedByAuthor,
   initialTab,
   relatedWorks,
+  helpfulCounts,
+  myHelpfulPostIds,
+  experienceStats,
 }: {
   work: Work;
   timeline: Post[];
@@ -82,6 +85,12 @@ export function WorkDetail({
   // 同じtool/対応環境の他作品(getRelatedWorks()参照)。検索流入者が
   // この作品だけ見て離脱せず、Draftly内を回遊してもらうための導線。
   relatedWorks: Work[];
+  // 「参考になった」リアクション(HelpfulButton.tsx)の表示用。postId→件数
+  // /自分が押済みの投稿ID一覧、どちらもtimelineに含まれる投稿分のみ。
+  helpfulCounts: Record<string, number>;
+  myHelpfulPostIds: string[];
+  // 「学び/失敗/成功」の集計(getProjectExperienceStats()参照)。
+  experienceStats: Record<"failure" | "success" | "learning", number>;
 }) {
   // Xシェア文(ShareButtons.tsx)の「最新の進捗」に使う。タイムラインが
   // 空(まだ最初の投稿しかない等)ならキャッチコピーにフォールバックする。
@@ -90,6 +99,7 @@ export function WorkDetail({
   const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
   const commentCount = comments.reduce((sum, c) => sum + 1 + c.replies.length, 0);
   const isOwner = work.authorId === currentUserId;
+  const totalHelpfulCount = Object.values(helpfulCounts).reduce((sum, n) => sum + n, 0);
   const canPostTimeline = isOwner || Boolean(currentUserId && work.members?.some((member) => member.id === currentUserId));
   const primaryExternalLink = work.appStoreUrl
     ? { href: work.appStoreUrl, label: "App Storeで見る", type: "external_link_appstore" as const }
@@ -362,8 +372,22 @@ export function WorkDetail({
                 daysAgo={work.daysAgo}
               />
             )}
+            {isOwner && totalHelpfulCount > 0 && (
+              <p className="mt-3 text-[12px] text-[var(--ink-faint)]">
+                💡 あなたの投稿が合計{totalHelpfulCount}人の経験値になりました
+              </p>
+            )}
           </div>
         </div>
+
+        {work.stage === "開発中止" && work.retrospective && (
+          <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/40 p-4">
+            <p className="mb-2 text-[13px] font-semibold text-[var(--ink-soft)]">📕 振り返り</p>
+            <p className="whitespace-pre-line text-[13.5px] leading-relaxed text-[var(--ink-soft)]">
+              {work.retrospective}
+            </p>
+          </div>
+        )}
 
         {/* 制作タイムライン・コメント・「この作品からインスパイアされた投稿」を
             縦積みのままにすると、上のものが伸びるほど下のものが埋もれて
@@ -404,6 +428,9 @@ export function WorkDetail({
                     timeline={timeline}
                     isOwner={isOwner}
                     githubUrl={work.githubUrl}
+                    helpfulCounts={helpfulCounts}
+                    myHelpfulPostIds={myHelpfulPostIds}
+                    experienceStats={experienceStats}
                   />
                   {canPostTimeline && (
                     <div className="mt-4">

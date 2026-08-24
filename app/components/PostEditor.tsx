@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { autoGrow } from "@/app/lib/autogrow";
-import { POST_TYPE_META, type PostType } from "@/app/lib/mock-data";
+import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
 import { extractFirstUrl, stripFirstOccurrence } from "@/app/lib/url-extract";
 import { ImagePickerButton } from "./ImagePickerButton";
@@ -22,6 +22,8 @@ const EDITABLE_POST_TYPES: PostType[] = [
   "question",
 ];
 
+const EDITABLE_EXPERIENCE_TYPES: ExperienceType[] = ["trying", "success", "failure", "learning"];
+
 const initialState: UpdatePostState = {};
 
 // 投稿(つぶやき・制作タイムライン投稿共通)の本文・画像・YouTubeリンクを
@@ -38,6 +40,7 @@ export function PostEditor({
   imageUrl,
   youtubeUrl,
   type,
+  experienceType,
   isOwner,
   bodyClassName = "text-[15px] leading-relaxed text-[var(--ink)]",
   imageClassName = "mt-2 max-h-80 max-w-full rounded-xl border border-[var(--line)] object-contain",
@@ -48,6 +51,7 @@ export function PostEditor({
   imageUrl?: string;
   youtubeUrl?: string;
   type?: PostType;
+  experienceType?: ExperienceType;
   isOwner: boolean;
   bodyClassName?: string;
   imageClassName?: string;
@@ -59,6 +63,7 @@ export function PostEditor({
   const [imageRemoved, setImageRemoved] = useState(false);
   const [youtubeValue, setYoutubeValue] = useState(youtubeUrl ?? "");
   const [selectedType, setSelectedType] = useState<PostType | undefined>(type);
+  const [selectedExperienceType, setSelectedExperienceType] = useState<ExperienceType | "">(experienceType ?? "");
   const [previewLoaded, setPreviewLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -146,6 +151,24 @@ export function PostEditor({
             {EDITABLE_POST_TYPES.map((t) => (
               <option key={t} value={t}>
                 {POST_TYPE_META[t].icon} {POST_TYPE_META[t].label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {type && (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-[var(--ink-faint)]">経験タイプ(任意)</span>
+          <select
+            name="experienceType"
+            value={selectedExperienceType}
+            onChange={(e) => setSelectedExperienceType(e.target.value as ExperienceType | "")}
+            className="h-8 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none"
+          >
+            <option value="">未設定</option>
+            {EDITABLE_EXPERIENCE_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {EXPERIENCE_TYPE_META[t].icon} {EXPERIENCE_TYPE_META[t].label}
               </option>
             ))}
           </select>

@@ -17,7 +17,7 @@ const CATEGORIES = [
   "プロトタイプ",
   "その他",
 ] as const;
-const STAGES = ["アイデア", "プロトタイプ", "ベータ", "公開中"] as const;
+const STAGES = ["アイデア", "プロトタイプ", "ベータ", "公開中", "開発中止"] as const;
 const TOOL_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "ツール未定" },
   { value: "self", label: "AIを使わず自作" },
@@ -40,6 +40,7 @@ export function ProjectEditForm({ work }: { work: Work }) {
   const [state, formAction, pending] = useActionState(updateProject, initialState);
   const [imagePreview, setImagePreview] = useState<string | null>(work.coverImageUrl ?? null);
   const [imageRemoved, setImageRemoved] = useState(false);
+  const [stage, setStage] = useState(work.stage);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
@@ -101,7 +102,12 @@ export function ProjectEditForm({ work }: { work: Work }) {
 
         <label className="flex flex-col gap-1">
           <span className={labelClass}>ステージ</span>
-          <select name="stage" defaultValue={work.stage} className={inputClass}>
+          <select
+            name="stage"
+            value={stage}
+            onChange={(e) => setStage(e.target.value as typeof stage)}
+            className={inputClass}
+          >
             {STAGES.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -110,6 +116,24 @@ export function ProjectEditForm({ work }: { work: Work }) {
           </select>
         </label>
       </div>
+
+      {stage === "開発中止" && (
+        <label className="flex flex-col gap-1 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/40 p-3">
+          <span className={labelClass}>振り返り(任意)</span>
+          <p className="text-[11.5px] leading-relaxed text-[var(--ink-faint)]">
+            完成しなかったことより、そこで得た気づきに価値があります。書ける範囲で構いません。
+            例: なぜ中止したのか / 何がうまくいかなかったのか / 次にやるならどうするか / この開発で学んだこと
+          </p>
+          <textarea
+            name="retrospective"
+            defaultValue={work.retrospective ?? ""}
+            maxLength={1000}
+            rows={4}
+            placeholder="例: 想定より運用コストがかかりすぎることが分かった。次は最初に採算ラインを試算してから作り始めたい。"
+            className={`resize-none ${inputClass}`}
+          />
+        </label>
+      )}
 
       <label className="flex flex-col gap-1">
         <span className={labelClass}>使ったツール</span>

@@ -11,7 +11,7 @@ import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
 import { isRateLimited } from "@/app/lib/rate-limit";
-import type { PostType, Stage } from "@/app/lib/mock-data";
+import type { ExperienceType, PostType, Stage } from "@/app/lib/mock-data";
 import { prisma } from "@/app/lib/prisma";
 
 export type CreatePostState = { error?: string; success?: boolean; projectId?: string; postId?: string };
@@ -20,6 +20,12 @@ const POST_TYPES = ["idea", "making", "screenshot", "demo", "prototype", "releas
 
 function isPostType(value: string): value is PostType {
   return POST_TYPES.includes(value as PostType);
+}
+
+const EXPERIENCE_TYPES = ["trying", "success", "failure", "learning"] as const;
+
+function isExperienceType(value: string): value is ExperienceType {
+  return (EXPERIENCE_TYPES as readonly string[]).includes(value);
 }
 
 // 新規Project作成時の初期stage。投稿から継続的にstageを追従させるのは
@@ -54,6 +60,7 @@ export async function createPost(
   const inspiredByProjectIdRaw = String(formData.get("inspiredByProjectId") ?? "").trim();
   const youtubeUrl = String(formData.get("youtubeUrl") ?? "").trim();
   const postTypeRaw = String(formData.get("postType") ?? "").trim();
+  const experienceTypeRaw = String(formData.get("experienceType") ?? "").trim();
   const imageFile = extractImageFile(formData, "image");
 
   if (!body && !imageFile && !youtubeUrl) {
@@ -161,6 +168,7 @@ export async function createPost(
       authorId: author.id,
       projectId,
       inspiredByProjectId: inspiredByProject?.id ?? null,
+      experienceType: isExperienceType(experienceTypeRaw) ? experienceTypeRaw : null,
     },
   });
 
@@ -230,6 +238,15 @@ export async function updatePost(
   const imageFile = extractImageFile(formData, "image");
   const typeRaw = formData.get("type");
   const type = typeof typeRaw === "string" && isPostType(typeRaw) ? typeRaw : null;
+  // experienceTypeはtypeと違って必須項目ではないため、フォームに欄自体が
+  // 無かった(=PostEditorにtype propが渡っていないpost/[id]の文脈)場合は
+  // 何もしないが、欄はあって空(=「未設定」を選んだ)場合は明示的にnullへ
+  // クリアする。「送られてきたかどうか」と「値が入っているか」を区別する
+  // 必要があるため、typeのような単純な三項演算だけでは書けない。
+  const experienceTypeRaw = formData.get("experienceType");
+  const experienceTypeProvided = experienceTypeRaw !== null;
+  const experienceType =
+    typeof experienceTypeRaw === "string" && isExperienceType(experienceTypeRaw) ? experienceTypeRaw : null;
 
   if (!postId) return { error: "投稿が見つかりません" };
   if (body.length > 280) return { error: "280文字以内で入力してください" };
@@ -264,7 +281,13 @@ export async function updatePost(
 
   await prisma.post.update({
     where: { id: postId },
-    data: { body, imageUrl, youtubeUrl, ...(type ? { type } : {}) },
+    data: {
+      body,
+      imageUrl,
+      youtubeUrl,
+      ...(type ? { type } : {}),
+      ...(experienceTypeProvided ? { experienceType } : {}),
+    },
   });
 
   if (post.projectId) revalidatePath(`/work/${post.projectId}`);

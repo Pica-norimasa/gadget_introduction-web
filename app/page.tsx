@@ -82,6 +82,9 @@ export default async function LandingPage() {
               「今日はログインを直した」「初期プロトタイプを公開した」「まだアイデアだけ」みたいな小さな更新も、
               そのまま作品のストーリーになります。
             </p>
+            <p className="mt-2 max-w-2xl text-[13px] text-[var(--ink-faint)]">
+              誰かの成功も失敗も、自分の経験値に。
+            </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
