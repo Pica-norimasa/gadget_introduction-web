@@ -62,7 +62,23 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   ]);
 
   return (
-    <html lang="ja" className="h-full antialiased">
+    <html lang="ja" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+try {
+  const stored = window.localStorage.getItem("draftly-theme");
+  const theme = stored === "light" || stored === "dark"
+    ? stored
+    : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+} catch (_) {}
+})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthHydrator isLoggedIn={!!session?.user} />
         <FollowHydrator initial={followedAuthors} />

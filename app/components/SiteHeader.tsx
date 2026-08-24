@@ -9,7 +9,7 @@ import {
   getWorks,
 } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
-import { BrandMark } from "./BrandMark";
+import { BrandMenuDrawer } from "./BrandMenuDrawer";
 import { ComposerFab } from "./ComposerFab";
 import { FeedNavLink } from "./FeedNavLink";
 import { IdentityBadge } from "./IdentityBadge";
@@ -38,14 +38,11 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
     <>
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
         <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/home" className="flex items-center gap-2 shrink-0">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--teal)] text-[var(--teal-soft)]">
-              <BrandMark className="h-[19px] w-[19px]" />
-            </span>
-            <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
-              Draftly
-            </span>
-          </Link>
+          <BrandMenuDrawer
+            userName={user ? (user.displayName ?? user.name) : null}
+            userHandle={user?.name ?? null}
+            userImage={user?.image}
+          />
 
           <IdentityBadge
             name={user ? (user.displayName ?? user.name) : null}

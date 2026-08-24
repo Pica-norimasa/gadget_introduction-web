@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { BrandMenuDrawer } from "@/app/components/BrandMenuDrawer";
 import { BrandMark } from "@/app/components/BrandMark";
 import { IdentityBadge } from "@/app/components/IdentityBadge";
 import { getCurrentUser } from "@/app/lib/session";
@@ -41,12 +42,11 @@ export default async function LandingPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
       <header className="border-b border-[var(--line)] bg-[var(--bg)]/88 backdrop-blur">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--teal)] text-[var(--teal-soft)]">
-              <BrandMark className="h-5 w-5" />
-            </span>
-            <span className="font-[family-name:var(--font-display)] text-xl font-bold tracking-tight">Draftly</span>
-          </Link>
+          <BrandMenuDrawer
+            userName={currentUser ? (currentUser.displayName ?? currentUser.name) : (session?.user?.name ?? null)}
+            userHandle={currentUser?.name ?? null}
+            userImage={currentUser?.image ?? session?.user?.image}
+          />
 
           <nav className="flex items-center gap-2 text-sm">
             {isLoggedIn ? (

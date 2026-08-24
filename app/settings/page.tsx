@@ -7,6 +7,7 @@ import { EmailAddressForm } from "@/app/components/EmailAddressForm";
 import { EmailNotificationToggle } from "@/app/components/EmailNotificationToggle";
 import { ResendVerificationButton } from "@/app/components/ResendVerificationButton";
 import { DeleteAccountButton } from "@/app/components/DeleteAccountButton";
+import { ThemeToggle } from "@/app/components/ThemeToggle";
 
 export const metadata: Metadata = { title: "設定 | Draftly" };
 
@@ -56,6 +57,16 @@ export default async function SettingsPage({
             {verifyMessage.text}
           </p>
         )}
+
+        <section className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] p-4">
+          <div className="mb-4">
+            <p className="text-[14px] font-medium text-[var(--ink)]">表示設定</p>
+            <p className="mt-1 text-[12px] leading-6 text-[var(--ink-faint)]">
+              この端末で使うサイト全体の見た目を切り替えます。選んだテーマはブラウザに保存されます。
+            </p>
+          </div>
+          <ThemeToggle />
+        </section>
 
         {!session?.user || !user ? (
           <p className="text-[13px] text-[var(--ink-faint)]">
