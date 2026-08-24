@@ -90,7 +90,7 @@ export default function BuildGuidePage() {
           href="/home"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
-          ← ホームに戻る
+          ← Draftlyを見る
         </Link>
 
         <h1 className="mb-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">

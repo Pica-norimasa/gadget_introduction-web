@@ -129,7 +129,8 @@ html {
   /* モバイルブラウザの下部URLバーに固定ボタンや最下部コンテンツが
      食われにくいよう、Xのような暗い逃げ場を画面下に敷く。 */
   :root {
-    --mobile-browser-reserve: clamp(3.5rem, 8svh, 5.5rem);
+    --mobile-browser-reserve: clamp(2.1rem, 5.2svh, 3.35rem);
+    --mobile-scrim-height: clamp(12rem, 24svh, 16rem);
     --mobile-floating-gap: clamp(0.75rem, 1.8svh, 1.25rem);
     --mobile-action-size: 3.5rem;
     --mobile-menu-size: 3rem;
@@ -140,14 +141,14 @@ html {
     inset-inline: 0;
     bottom: 0;
     z-index: 30;
-    height: calc(var(--mobile-browser-reserve) + var(--mobile-action-size) + 3rem + env(safe-area-inset-bottom));
+    height: calc(var(--mobile-scrim-height) + env(safe-area-inset-bottom));
     pointer-events: none;
-    background: linear-gradient(to top, var(--bg) 0%, var(--bg) 62%, transparent 100%);
+    background: linear-gradient(to top, #11100e 0%, #11100e 50%, rgba(17, 16, 14, 0.9) 74%, transparent 100%);
   }
 
   .mobile-floating-action-right {
     bottom: calc(var(--mobile-browser-reserve) + env(safe-area-inset-bottom));
-    right: 1.5rem;
+    left: calc(1.5rem + var(--mobile-action-size) + 0.85rem);
   }
 
   .mobile-floating-action-left {
@@ -156,7 +157,7 @@ html {
   }
 
   .mobile-floating-menu {
-    bottom: calc(var(--mobile-browser-reserve) + var(--mobile-action-size) + var(--mobile-floating-gap) + env(safe-area-inset-bottom));
+    bottom: calc(var(--mobile-browser-reserve) + 0.35rem + env(safe-area-inset-bottom));
     right: 1.5rem;
   }
 

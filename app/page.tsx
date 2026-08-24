@@ -93,6 +93,12 @@ export default async function LandingPage() {
               >
                 {isLoggedIn ? "投稿する" : "ログイン"}
               </Link>
+              <Link
+                href="/guide/build"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-6 text-sm font-bold text-[var(--ink)] transition-colors hover:border-[var(--violet)]"
+              >
+                作り方を見る
+              </Link>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-2 text-[12px] text-[var(--ink-faint)]">
