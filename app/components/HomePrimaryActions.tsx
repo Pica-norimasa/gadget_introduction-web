@@ -34,7 +34,7 @@ export function HomePrimaryActions() {
           openComposer();
           requestAnimationFrame(() => scrollTo("composer"));
         }}
-        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--accent)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
+        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--teal)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
       >
         <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--teal-soft)] text-[12px] font-bold text-[var(--teal)] sm:h-9 sm:w-9 sm:text-[13px]">
           投
@@ -48,7 +48,7 @@ export function HomePrimaryActions() {
 
       <Link
         href="/guide/build"
-        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--accent)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
+        className="flex min-h-[86px] flex-col items-center justify-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-raised)] px-2.5 py-3 text-center text-[var(--ink)] transition-colors hover:border-[var(--violet)] sm:min-h-16 sm:flex-row sm:justify-start sm:gap-3 sm:px-4 sm:py-3 sm:text-left"
       >
         <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--violet-soft)] text-[12px] font-bold text-[var(--violet)] sm:h-9 sm:w-9 sm:text-[13px]">
           学
