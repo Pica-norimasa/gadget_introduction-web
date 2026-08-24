@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+import Script from "next/script";
 import "./globals.css";
 import { auth } from "@/auth";
 import { SITE_URL } from "@/app/lib/email";
@@ -14,6 +16,7 @@ import { BlockHydrator } from "@/app/components/BlockHydrator";
 import { FollowHydrator } from "@/app/components/FollowHydrator";
 import { MuteHydrator } from "@/app/components/MuteHydrator";
 import { RepostHydrator } from "@/app/components/RepostHydrator";
+import { ThemeHydrator } from "@/app/components/ThemeHydrator";
 import { WelcomeModal } from "@/app/components/WelcomeModal";
 
 export const metadata: Metadata = {
@@ -52,25 +55,58 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [followedAuthors, repostedProjectIds, repostedPostIds, mutedUserIds, blockedUserIds, session] = await Promise.all([
+  const [
+    followedAuthors,
+    repostedProjectIds,
+    repostedPostIds,
+    mutedUserIds,
+    blockedUserIds,
+    session,
+    cookieStore,
+  ] = await Promise.all([
     getFollowedAuthors(),
     getRepostedProjectIds(),
     getRepostedPostIds(),
     getMutedUserIds(),
     getBlockedUserIds(),
     auth(),
+    cookies(),
   ]);
+  const storedTheme = cookieStore.get("draftly-theme")?.value;
+  const initialTheme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
 
   return (
-    <html lang="ja" className="h-full antialiased" data-theme="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
+    <html
+      lang="ja"
+      className="h-full antialiased"
+      data-theme={initialTheme}
+      style={{ colorScheme: initialTheme }}
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col">
         <AuthHydrator isLoggedIn={!!session?.user} />
         <FollowHydrator initial={followedAuthors} />
         <RepostHydrator initial={repostedProjectIds} initialPosts={repostedPostIds} />
         <MuteHydrator initial={mutedUserIds} />
         <BlockHydrator initial={blockedUserIds} />
+        <ThemeHydrator />
         <WelcomeModal />
         {children}
+        <Script
+          id="draftly-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = document.cookie.match(/(?:^|; )draftly-theme=(light|dark)(?:;|$)/)?.[1]
+                  || localStorage.getItem("draftly-theme");
+                if (theme !== "light" && theme !== "dark") theme = "dark";
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+              } catch (_) {}
+            `,
+          }}
+        />
       </body>
     </html>
   );

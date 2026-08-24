@@ -28,28 +28,30 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #f7f1e8;
-  --bg-raised: #fffaf2;
-  --bg-sunken: #eee3d4;
-  --ink: #211d18;
-  --ink-soft: #5c5145;
-  --ink-faint: #827365;
-  --line: #d8c8b7;
+  /* ライトモードは、ベージュの柔らかさは残しつつ境界と文字を少し強める。
+     以前は背景・カード・線の明度差が小さく、モバイルで全体が眠く見えた。 */
+  --bg: #f3eadf;
+  --bg-raised: #fffdf8;
+  --bg-sunken: #eadcca;
+  --ink: #15120f;
+  --ink-soft: #45392f;
+  --ink-faint: #6f5d4e;
+  --line: #c8ad96;
 
-  --accent: #f26a3f;
+  --accent: #e85f35;
   --accent-ink: #fff8ef;
-  --accent-soft: #ffe0d2;
+  --accent-soft: #ffd8c7;
 
-  --teal: #178f7b;
-  --teal-soft: #d7f0ea;
+  --teal: #0f7f70;
+  --teal-soft: #c8ebe4;
 
-  --violet: #6f5ed7;
-  --violet-soft: #e6e0ff;
+  --violet: #5f4dd0;
+  --violet-soft: #ddd5ff;
 
-  --amber: #c98513;
-  --amber-soft: #f6e6bd;
+  --amber: #a86d0d;
+  --amber-soft: #f1d99d;
 
-  --shadow: rgba(82, 55, 25, 0.16);
+  --shadow: rgba(82, 55, 25, 0.22);
 }
 
 @theme inline {

@@ -44,6 +44,15 @@ function CommentRow({
   const isBot = comment.authorHandle === AI_BOT_NAME;
   const isContentAuthor = comment.authorId === contentAuthorId;
   const isContentMember = !isContentAuthor && contentMemberIds.includes(comment.authorId);
+  const roleBadge = isContentAuthor ? (
+    <span className="ml-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
+      オーナー
+    </span>
+  ) : isContentMember ? (
+    <span className="ml-1 rounded-full bg-[var(--teal-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--teal)]">
+      メンバー
+    </span>
+  ) : null;
   const [expanded, setExpanded] = useState(false);
   const isLong = comment.body.length > COMMENT_PREVIEW_LENGTH;
   const shownBody = expanded || !isLong ? comment.body : `${comment.body.slice(0, COMMENT_PREVIEW_LENGTH).trimEnd()}…`;
@@ -64,19 +73,10 @@ function CommentRow({
                 {comment.authorName}
               </Link>
               {comment.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
-              {isContentAuthor && (
-                <span className="ml-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
-                  オーナー
-                </span>
-              )}
-              {isContentMember && (
-                <span className="ml-1 rounded-full bg-[var(--teal-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--teal)]">
-                  メンバー
-                </span>
-              )}
               {comment.authorSocialHandle && (
                 <span className="text-[var(--ink-faint)]"> @{comment.authorSocialHandle}</span>
-              )}{" "}
+              )}
+              {roleBadge}{" "}
               ・ {formatRelativeHours(comment.hoursAgo)}
             </p>
             {comment.authorId === currentUserId ? (

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type Theme = "dark" | "light";
 
 const STORAGE_KEY = "draftly-theme";
+const COOKIE_KEY = "draftly-theme";
 
 function getStoredTheme(): Theme | null {
   if (typeof window === "undefined") return null;
@@ -15,6 +16,11 @@ function getStoredTheme(): Theme | null {
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
+}
+
+function persistTheme(theme: Theme) {
+  window.localStorage.setItem(STORAGE_KEY, theme);
+  document.cookie = `${COOKIE_KEY}=${theme}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
 export function ThemeToggle() {
@@ -40,7 +46,7 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const nextTheme: Theme = theme === "light" ? "dark" : "light";
     setTheme(nextTheme);
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    persistTheme(nextTheme);
     applyTheme(nextTheme);
   };
 
