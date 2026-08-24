@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #17140f;
-  --bg-raised: #211c15;
-  --bg-sunken: #0f0d09;
-  --ink: #f3eee3;
-  --ink-soft: #b7ac9a;
-  --ink-faint: #857b6c;
-  --line: #332920;
+  /* OGPのアイボリー・ミント・淡いオレンジへ自然につながる、
+     黒を避けた温かいチャコール。カードと背景の明度差も少し広げる。 */
+  --bg: #1c1915;
+  --bg-raised: #29231d;
+  --bg-sunken: #15120f;
+  --ink: #f7f2e8;
+  --ink-soft: #cec2b2;
+  --ink-faint: #978b7c;
+  --line: #453a30;
 
   --accent: #ff7a4d;
   --accent-ink: #1a1108;
-  --accent-soft: #3a2013;
+  --accent-soft: #462719;
 
   --teal: #4fc0a8;
-  --teal-soft: #163530;
+  --teal-soft: #1c433c;
 
   --violet: #a797f0;
   --violet-soft: #241e3e;
@@ -67,7 +69,10 @@ html {
    常に勝ってしまい、例えば<a>にtext-whiteを付けても効かなくなる。 */
 @layer base {
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 8% 0%, rgba(79, 192, 168, 0.055), transparent 28rem),
+      radial-gradient(circle at 92% 4%, rgba(255, 122, 77, 0.055), transparent 30rem),
+      var(--bg);
     color: var(--ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
