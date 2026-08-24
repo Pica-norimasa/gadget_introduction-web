@@ -286,22 +286,22 @@ export function WorkDetail({
                 type={primaryExternalLink.type}
                 className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-left text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
               >
-                <span className="min-w-0 flex-1">
+                <span className="block min-w-0 flex-1 text-left">
                   <span className="block font-semibold text-[var(--ink)]">作品を見る</span>
                   <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">{primaryExternalLink.label}</span>
                 </span>
-                <span aria-hidden>↗</span>
+                <span className="shrink-0" aria-hidden>↗</span>
               </TrackedExternalLink>
             ) : (
               <WorkSectionJumpButton
                 tabId="timeline"
                 className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-left text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
               >
-                <span className="min-w-0 flex-1">
+                <span className="block min-w-0 flex-1 text-left">
                   <span className="block font-semibold text-[var(--ink)]">制作を見る</span>
                   <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">タイムラインを読む</span>
                 </span>
-                <span aria-hidden>↓</span>
+                <span className="shrink-0" aria-hidden>↓</span>
               </WorkSectionJumpButton>
             )}
 
@@ -309,11 +309,11 @@ export function WorkDetail({
               tabId="comments"
               className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-4 py-3 text-left text-[13px] text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
             >
-              <span className="min-w-0 flex-1">
+              <span className="block min-w-0 flex-1 text-left">
                 <span className="block font-semibold text-[var(--ink)]">コメントする</span>
                 <span className="mt-0.5 block text-[11.5px] text-[var(--ink-faint)]">{commentCount}件のコメント</span>
               </span>
-              <span aria-hidden>💬</span>
+              <span className="shrink-0" aria-hidden>💬</span>
             </WorkSectionJumpButton>
           </div>
 
