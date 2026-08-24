@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import type { Work } from "@/app/lib/mock-data";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { openComposer, openComposerWithInspiration, useComposerOpen } from "@/app/lib/composer-store";
 import { PostForm } from "./PostForm";
@@ -19,11 +18,9 @@ import { PostForm } from "./PostForm";
 // このストアを直接呼ぶ(同一ページ内のハッシュ遷移はnext/linkが
 // hashchangeを発火しないため、ハッシュ監視だけには頼れない)。
 export function PostComposerToggle({
-  myProjects,
   isLoggedIn,
   guestPostCount,
 }: {
-  myProjects: Work[];
   // 投稿は荒らし・スパム対策として原則ログイン必須にしているが、
   // 「試しに使ってみたい」訪問者の摩擦を減らすため、未ログインでも
   // GUEST_POST_LIMIT件までは投稿できる(post-actions.ts参照)。
@@ -96,7 +93,7 @@ export function PostComposerToggle({
   if (expanded) {
     return (
       <>
-        <PostForm variant="compose" myProjects={myProjects} />
+        <PostForm variant="compose" />
         {guestNotice}
       </>
     );

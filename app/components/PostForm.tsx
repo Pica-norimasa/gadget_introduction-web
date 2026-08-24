@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostType, type Work } from "@/app/lib/mock-data";
+import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostType } from "@/app/lib/mock-data";
 import { autoGrow } from "@/app/lib/autogrow";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
@@ -91,7 +91,6 @@ const TIMELINE_PROMPTS: { type: PostType; title: string; hint: string; placehold
 type PostFormProps =
   | {
       variant: "compose";
-      myProjects: Work[];
     }
   | {
       variant: "timeline";
@@ -110,16 +109,6 @@ export function PostForm(props: PostFormProps) {
   // 「経験タイプ」はtimeline(進捗投稿)限定の任意項目。必須にはしない
   // (未設定=""が既定)。
   const [selectedExperienceType, setSelectedExperienceType] = useState<ExperienceType | "">("");
-  // 投稿のたびに「新しいプロジェクトとして」を選び直す必要があると、
-  // 一番よくある使い方(今取り組んでいるプロジェクトに続きを積む)の
-  // たびに毎回ドロップダウン操作が要る。既存プロジェクトがあれば
-  // 直近のものを既定にして、「書くだけで投稿できる」を最短動線にする。
-  // つぶやきは「投稿先」を持たない独立投稿。アイデア/制作メモ/公開は
-  // 作品に紐づく投稿なので、投稿先は既存Projectか新規Projectに限る。
-  // まだProjectが無い人がつぶやき以外を選んだ時は、新規Projectを既定にする。
-  // timelineは常にこのProjectへの投稿固定。
-  const defaultProjectTarget = variant === "compose" ? (props.myProjects[0]?.id ?? "new") : props.projectId;
-  const [projectTarget, setProjectTarget] = useState(defaultProjectTarget);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   // 画像/YouTubeは全投稿で常に必要な項目ではないため、普段は畳んで
@@ -158,7 +147,6 @@ export function PostForm(props: PostFormProps) {
     if (!state.success) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Server Actionの結果を受けてフォームをクリアする必要がある
     setBody("");
-    setProjectTarget(defaultProjectTarget);
     setSelectedType(promptOptions[0].type);
     setSelectedExperienceType("");
     formRef.current?.reset();
@@ -190,7 +178,7 @@ export function PostForm(props: PostFormProps) {
       window.dispatchEvent(new CustomEvent("draftly:show-murmurs", { detail: { postId: state.postId } }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- variant/propsは呼び出し中に変わらない前提
-  }, [state.success, state.projectId, defaultProjectTarget]);
+  }, [state.success, state.projectId]);
 
   useEffect(() => {
     if (variant !== "compose" || !postTypeRequest.postType) return;
@@ -198,9 +186,6 @@ export function PostForm(props: PostFormProps) {
     const frame = requestAnimationFrame(() => {
       setSelectedType(requestedPostType);
       setAttachmentOpen(false);
-      if (requestedPostType !== "question" && !projectTarget) {
-        setProjectTarget(defaultProjectTarget);
-      }
       textareaRef.current?.focus();
     });
     return () => cancelAnimationFrame(frame);
@@ -218,10 +203,6 @@ export function PostForm(props: PostFormProps) {
       : selectedType === "question"
         ? "必要なら画像やYouTubeも添付できます"
         : "画像やYouTubeは必要なときだけ追加できます";
-  const selectedProjectName =
-    variant === "compose" && projectTarget && projectTarget !== "new"
-      ? props.myProjects.find((project) => project.id === projectTarget)?.title
-      : null;
   const guestRemaining = variant === "timeline" ? GUEST_POST_LIMIT - props.guestPostCount : Infinity;
   const createdHref = state.projectId ? `/work/${state.projectId}` : state.postId ? `/post/${state.postId}` : null;
   const successTitle = state.projectId ? "作品ページに投稿しました" : "つぶやきタイムラインに投稿しました";
@@ -290,7 +271,6 @@ export function PostForm(props: PostFormProps) {
                   onClick={() => {
                     setSelectedType(option.type);
                     setAttachmentOpen(false);
-                    if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
                   className={`min-h-10 rounded-full border px-3.5 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
@@ -374,37 +354,16 @@ export function PostForm(props: PostFormProps) {
       )}
       {showProjectTarget && (
         <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--bg-sunken)]/20 px-3 py-3">
-          <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
-            <span className="text-[11px] text-[var(--ink-faint)]">作品</span>
-            <select
-              name="projectTarget"
-              value={projectTarget}
-              onChange={(e) => setProjectTarget(e.target.value)}
-              className="h-8 min-w-0 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)] px-2.5 text-[13px] text-[var(--ink-soft)] focus:outline-none sm:min-w-fit"
-            >
-              <option value="new">🆕 新しい作品として投稿</option>
-              {props.myProjects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  📁 {p.title} に追加
-                </option>
-              ))}
-            </select>
-            {projectTarget === "new" && (
-              <input
-                type="text"
-                name="newProjectTitle"
-                placeholder="作品名(空欄なら投稿内容から自動生成)"
-                maxLength={40}
-                className="h-8 min-w-0 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)] sm:min-w-[180px] sm:flex-1"
-              />
-            )}
-          </div>
+          <input type="hidden" name="projectTarget" value="new" />
+          <input
+            type="text"
+            name="newProjectTitle"
+            placeholder="作品名(空欄なら投稿内容から自動生成)"
+            maxLength={40}
+            className="h-8 w-full min-w-0 rounded-full border border-[var(--line)] bg-transparent px-2.5 text-[13px] text-[var(--ink)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]"
+          />
           <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--ink-faint)]">
-            {projectTarget === "new"
-              ? "新しい作品ページを作り、最初の投稿として表示します。"
-              : selectedProjectName
-                ? `「${selectedProjectName}」の制作タイムラインに追加します。`
-                : "選んだ作品の制作タイムラインに追加します。"}
+            新しい作品ページを作り、最初の投稿として表示します。
           </p>
         </div>
       )}

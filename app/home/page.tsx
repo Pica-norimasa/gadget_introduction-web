@@ -89,11 +89,7 @@ export default async function Home() {
           <HomePrimaryActions />
         </div>
 
-        <PostComposerToggle
-          myProjects={myProjects}
-          isLoggedIn={!!session?.user}
-          guestPostCount={myPostCount}
-        />
+        <PostComposerToggle isLoggedIn={!!session?.user} guestPostCount={myPostCount} />
 
         <ImmersiveEntry works={works} posts={posts} myReactions={myReactions} currentUserId={currentUser?.id ?? null} />
         <StoriesStrip posts={posts} works={works} />
