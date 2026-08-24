@@ -57,7 +57,7 @@ export default function GuidePage() {
         </ol>
 
         <Link
-          href="/?composer=1#composer"
+          href="/home?composer=1#composer"
           className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-5 py-2.5 text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
         >
           さっそく投稿してみる →

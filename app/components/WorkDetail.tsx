@@ -167,7 +167,7 @@ export function WorkDetail({
       <main className="mx-auto w-full max-w-[760px] flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <div className="mb-7 flex items-center justify-between">
           <Link
-            href={`/#work-${work.id}`}
+            href={`/home#work-${work.id}`}
             className="inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
           >
             ← ホームに戻る
@@ -336,7 +336,7 @@ export function WorkDetail({
               size="md"
             />
             <Link
-              href={`/?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
+              href={`/home?inspiredById=${work.id}&inspiredByTitle=${encodeURIComponent(work.title)}#composer`}
               className="inline-flex w-fit items-center gap-1 rounded-full border border-[var(--line)] px-3 py-1.5 text-[13px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
             >
               これにインスパイアされて投稿

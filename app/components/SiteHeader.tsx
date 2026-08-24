@@ -94,6 +94,7 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
           showRankingAnchor={false}
         />
       </MobileSidebarDrawer>
+      <div aria-hidden className="mobile-browser-footer-scrim" />
       <ComposerFab />
     </>
   );

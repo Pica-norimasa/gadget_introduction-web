@@ -66,7 +66,7 @@ export function WelcomeModal() {
               PostComposerToggle.tsxのマウント時ハッシュ判定が効かないため、
               composer-store.tsを直接叩く。他ページからならリンクの遷移先の
               マウント時ハッシュ判定に任せられる。 */}
-          {pathname === "/" ? (
+          {pathname === "/home" ? (
             <button
               type="button"
               onClick={() => {
@@ -82,7 +82,7 @@ export function WelcomeModal() {
             </button>
           ) : (
             <Link
-              href="/?composer=1#composer"
+              href="/home?composer=1#composer"
               onClick={close}
               className="w-full rounded-full bg-[var(--accent)] px-4 py-2.5 text-center text-[14px] font-medium text-[var(--accent-ink)] hover:opacity-90"
             >

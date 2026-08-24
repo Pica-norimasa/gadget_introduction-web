@@ -124,3 +124,50 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+@layer components {
+  /* モバイルブラウザの下部URLバーに固定ボタンや最下部コンテンツが
+     食われにくいよう、Xのような暗い逃げ場を画面下に敷く。 */
+  .mobile-browser-footer-scrim {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 30;
+    height: calc(5.75rem + env(safe-area-inset-bottom));
+    pointer-events: none;
+    background: linear-gradient(to top, var(--bg) 0%, var(--bg) 72%, transparent 100%);
+  }
+
+  .mobile-floating-action-right {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    right: 1.5rem;
+  }
+
+  .mobile-floating-action-left {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    left: 1.5rem;
+  }
+
+  .mobile-floating-menu {
+    bottom: calc(9.75rem + env(safe-area-inset-bottom));
+    right: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-browser-footer-scrim {
+      display: none;
+    }
+
+    .mobile-floating-action-right {
+      bottom: 1.5rem;
+    }
+
+    .mobile-floating-action-left {
+      bottom: 1.5rem;
+    }
+
+    .mobile-floating-menu {
+      bottom: 6rem;
+    }
+  }
+}

@@ -14,7 +14,7 @@ import { PostForm } from "./PostForm";
 // UIは用意していない。
 //
 // 「開いているか」はcomposer-store.tsが単一の状態源。他ページから
-// ヘッダーの「投稿する」(href="/?composer=1#composer")で来た場合は、
+// ヘッダーの「投稿する」(href="/home?composer=1#composer")で来た場合は、
 // マウント時にクエリ/ハッシュを見て開く。既にホームにいる場合はComposerButton.tsxが
 // このストアを直接呼ぶ(同一ページ内のハッシュ遷移はnext/linkが
 // hashchangeを発火しないため、ハッシュ監視だけには頼れない)。

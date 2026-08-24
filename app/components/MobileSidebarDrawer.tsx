@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 // アンカーリンクでジャンプさせても実質たどり着けない(前はdetailsで
 // その場開閉にしていたが、Xの右メニューのようなスライドインの方が
 // 見た目・操作感として分かりやすいという要望を受けて置き換えた)。
-// トリガーボタンはComposerFab(✏️、bottom-6 right-6)の真上に固定表示する。
+// トリガーボタンはComposerFab(✏️)の真上に固定表示する。
 export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
 
@@ -28,7 +28,7 @@ export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
         onClick={() => setOpen(true)}
         aria-label="サイドメニューを開く"
         title="メニュー"
-        className="fixed bottom-24 right-6 z-40 grid h-12 w-12 place-items-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] text-xl shadow-lg shadow-[var(--shadow)] transition-transform hover:scale-105 active:scale-95 lg:hidden"
+        className="mobile-floating-menu fixed z-40 grid h-12 w-12 place-items-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] text-xl shadow-lg shadow-[var(--shadow)] transition-transform hover:scale-105 active:scale-95 lg:hidden"
       >
         ☰
       </button>
