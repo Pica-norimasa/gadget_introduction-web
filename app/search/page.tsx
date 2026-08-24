@@ -70,7 +70,7 @@ export default async function SearchPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
-      <SiteHeader defaultQuery={query} />
+      <SiteHeader />
 
       <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">
         <Link

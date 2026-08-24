@@ -14,11 +14,10 @@ import { ComposerFab } from "./ComposerFab";
 import { FeedNavLink } from "./FeedNavLink";
 import { IdentityBadge } from "./IdentityBadge";
 import { MobileSidebarDrawer } from "./MobileSidebarDrawer";
-import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
 import { Sidebar } from "./Sidebar";
 
-export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {}) {
+export async function SiteHeader() {
   const [user, { notifications, unreadCount }, session, works, posts, activity, reposts, suggestedAuthors] =
     await Promise.all([
       getCurrentUser(),
@@ -63,7 +62,6 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
 
           <nav className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
             <FeedNavLink />
-            <MobileSearch defaultQuery={defaultQuery} />
             <NotificationBell notifications={notifications} unreadCount={unreadCount} />
           </nav>
         </div>
