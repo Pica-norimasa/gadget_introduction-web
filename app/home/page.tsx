@@ -25,6 +25,7 @@ import { Sidebar } from "@/app/components/Sidebar";
 import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 import { HomePrimaryActions } from "@/app/components/HomePrimaryActions";
+import { HomeSearchBox } from "@/app/components/HomeSearchBox";
 
 export default async function Home() {
   const [
@@ -84,6 +85,7 @@ export default async function Home() {
           <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[var(--ink-soft)] sm:text-sm sm:leading-6">
             見るだけでも、作りかけを残すだけでも大丈夫。気になる作品を探すところから始められます。
           </p>
+          <HomeSearchBox />
           <HomePrimaryActions />
         </div>
 

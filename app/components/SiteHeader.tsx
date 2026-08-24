@@ -61,16 +61,6 @@ export async function SiteHeader({ defaultQuery }: { defaultQuery?: string } = {
             </Link>
           )}
 
-          <form action="/search" method="GET" className="relative hidden flex-1 max-w-md sm:block">
-            <input
-              type="text"
-              name="q"
-              defaultValue={defaultQuery}
-              placeholder="「〜みたいなツールない?」で探す"
-              className="w-full rounded-full border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-faint)] outline-none focus:border-[var(--accent)]"
-            />
-          </form>
-
           <nav className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
             <FeedNavLink />
             <MobileSearch defaultQuery={defaultQuery} />
