@@ -13,6 +13,10 @@ import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
 const initialState: CreatePostState = {};
 
+// ホームの投稿欄は「気軽なつぶやき」か「新しいプロダクトを始める」かの
+// 二択に絞る。制作中/スクショ/デモ等の細かい種類は、実際に作品が
+// 始まった後の制作タイムライン(TIMELINE_PROMPTS)で選ぶ方が文脈に合う
+// (何も無い状態でいきなり8択は選ぶハードルが高いというフィードバックを受けて簡略化)。
 const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholder: string }[] = [
   {
     type: "question",
@@ -22,45 +26,9 @@ const COMPOSE_PROMPTS: { type: PostType; title: string; hint: string; placeholde
   },
   {
     type: "idea",
-    title: POST_TYPE_META.idea.label,
-    hint: "思いつきだけ",
+    title: "新規プロダクト",
+    hint: "新しく始める",
     placeholder: "例: 〇〇できるアプリがあったら便利そう。まずは小さく試したい",
-  },
-  {
-    type: "making",
-    title: POST_TYPE_META.making.label,
-    hint: "途中経過",
-    placeholder: "例: 今日ここまで作った。次は〇〇を直す予定",
-  },
-  {
-    type: "screenshot",
-    title: POST_TYPE_META.screenshot.label,
-    hint: "画面共有",
-    placeholder: "例: 新しい一覧画面です。カードの余白を少し広げました",
-  },
-  {
-    type: "demo",
-    title: POST_TYPE_META.demo.label,
-    hint: "動作紹介",
-    placeholder: "例: 動くところを短く撮りました。ここから触り心地を詰めます",
-  },
-  {
-    type: "prototype",
-    title: POST_TYPE_META.prototype.label,
-    hint: "試作品",
-    placeholder: "例: プロトタイプを公開しました。まずは主要な流れだけ触れます",
-  },
-  {
-    type: "update",
-    title: POST_TYPE_META.update.label,
-    hint: "改善報告",
-    placeholder: "例: 検索条件を保存できるようにしました",
-  },
-  {
-    type: "release",
-    title: POST_TYPE_META.release.label,
-    hint: "できた報告",
-    placeholder: "例: β版を公開しました。触ってみて気づいた点があれば教えてください",
   },
 ];
 
@@ -311,7 +279,7 @@ export function PostForm(props: PostFormProps) {
       {variant === "compose" ? (
         <div className="mb-4">
           <p className="mb-2 text-[11.5px] font-medium text-[var(--ink-faint)] sm:text-[12px]">何を投稿しますか?</p>
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0">
+          <div className="grid grid-cols-2 gap-2">
             {promptOptions.map((option) => {
               const active = selectedType === option.type;
               return (
@@ -325,7 +293,7 @@ export function PostForm(props: PostFormProps) {
                     if (option.type !== "question" && !projectTarget) setProjectTarget(defaultProjectTarget);
                     textareaRef.current?.focus();
                   }}
-                  className={`min-h-10 shrink-0 rounded-full border px-3.5 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
+                  className={`min-h-10 rounded-full border px-3.5 py-2 text-left transition-colors sm:min-h-14 sm:rounded-xl ${
                     active
                       ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
                       : "border-[var(--line)] bg-[var(--bg-sunken)]/25 text-[var(--ink-soft)] hover:border-[var(--ink-faint)]"
