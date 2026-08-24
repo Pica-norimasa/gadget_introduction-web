@@ -25,20 +25,25 @@ function CommentRow({
   currentUserId,
   target,
   contentAuthorId,
+  contentMemberIds,
 }: {
   comment: CommentView;
   currentUserId: string | null;
   target: { type: "project" | "post"; id: string };
   // このコメントが付いている作品/投稿そのものの作者ID。作者本人のコメントを
-  // 「作者」バッジで目立たせる(Product Huntの「Maker」表示に相当。作者の
+  // 「オーナー」バッジで目立たせる(Product Huntの「Maker」表示に相当。作者の
   // 反応が埋もれていて気付きにくいという指摘を受けて追加)。
   contentAuthorId: string;
+  // プロダクト詳細では、共同制作に参加しているユーザーのコメントも
+  // 「メンバー」として見分けられるようにする。投稿詳細では未指定。
+  contentMemberIds: string[];
 }) {
   // bot(応援コメント)はミュート・ブロック・通報のいずれも対象として
   // 意味を持たない(個人ではなく共有のシステムアカウントのため)ので、
   // 「⋯」メニュー自体を出さない。
   const isBot = comment.authorHandle === AI_BOT_NAME;
   const isContentAuthor = comment.authorId === contentAuthorId;
+  const isContentMember = !isContentAuthor && contentMemberIds.includes(comment.authorId);
   const [expanded, setExpanded] = useState(false);
   const isLong = comment.body.length > COMMENT_PREVIEW_LENGTH;
   const shownBody = expanded || !isLong ? comment.body : `${comment.body.slice(0, COMMENT_PREVIEW_LENGTH).trimEnd()}…`;
@@ -61,7 +66,12 @@ function CommentRow({
               {comment.authorVerified && <VerifiedBadge className="ml-1 inline-block align-[-1px]" />}
               {isContentAuthor && (
                 <span className="ml-1 rounded-full bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent)]">
-                  作者
+                  オーナー
+                </span>
+              )}
+              {isContentMember && (
+                <span className="ml-1 rounded-full bg-[var(--teal-soft)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--teal)]">
+                  メンバー
                 </span>
               )}
               {comment.authorSocialHandle && (
@@ -125,6 +135,7 @@ export function CommentThread({
   isLoggedIn,
   guestCommentCount,
   contentAuthorId,
+  contentMemberIds = [],
 }: {
   thread: CommentThreadType;
   target: { type: "project" | "post"; id: string };
@@ -132,6 +143,7 @@ export function CommentThread({
   isLoggedIn: boolean;
   guestCommentCount: number;
   contentAuthorId: string;
+  contentMemberIds?: string[];
 }) {
   const [replying, setReplying] = useState(false);
   // bot(応援コメント)には返信しても反応が返らないため、返信する導線
@@ -150,7 +162,13 @@ export function CommentThread({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <CommentRow comment={thread} currentUserId={currentUserId} target={target} contentAuthorId={contentAuthorId} />
+      <CommentRow
+        comment={thread}
+        currentUserId={currentUserId}
+        target={target}
+        contentAuthorId={contentAuthorId}
+        contentMemberIds={contentMemberIds}
+      />
 
       {!isBot && (
         <button
@@ -172,6 +190,7 @@ export function CommentThread({
                 currentUserId={currentUserId}
                 target={target}
                 contentAuthorId={contentAuthorId}
+                contentMemberIds={contentMemberIds}
               />
             ))}
           </div>

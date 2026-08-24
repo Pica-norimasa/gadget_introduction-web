@@ -85,7 +85,10 @@ html {
      ページ全体が横スクロールしてしまう不具合対策。各所の横スクロール
      帯(HorizontalScroller等)は自身のoverflow-x-autoで独立して機能する
      ため、ここで親をhiddenにしても影響しない。 */
-  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 html[data-theme="light"] {
@@ -105,11 +108,22 @@ html[data-theme="light"] {
     color: var(--ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
   }
 
   a {
     color: inherit;
+  }
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
   }
 }
 

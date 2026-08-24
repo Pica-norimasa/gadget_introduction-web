@@ -66,7 +66,7 @@ export default async function Home() {
   const myProjects = currentUser ? works.filter((w) => w.authorId === currentUser.id) : [];
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg)]">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-[var(--bg)]">
       <SiteHeader />
       <UpdatesTicker activity={tickerActivity} />
       <StageUpCelebration items={stageUps} />

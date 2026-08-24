@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 // lg未満でのサイドバー(ランキング・おすすめの作者等)へのアクセス手段。
 // フィードが無限スクロールで際限なく伸びるため、下にそのまま置いても
@@ -9,17 +10,23 @@ import { useEffect, useState, type ReactNode } from "react";
 // 見た目・操作感として分かりやすいという要望を受けて置き換えた)。
 // トリガーボタンはComposerFab(✏️)の真上に固定表示する。
 export function MobileSidebarDrawer({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const showOnThisPage = pathname === "/home";
 
   // 開いている間は背後のページ本体がスクロールしないようにする。
   useEffect(() => {
-    if (!open) return;
+    if (!open || !showOnThisPage) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [open]);
+  }, [open, showOnThisPage]);
+
+  // モバイル下部ボタンのルールを単純に保つため、右下のサイドメニューは
+  // フィード/ランキング/おすすめ導線が必要なホームだけに出す。
+  if (!showOnThisPage) return null;
 
   return (
     <>

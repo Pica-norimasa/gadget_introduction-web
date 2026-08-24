@@ -431,6 +431,7 @@ export function WorkDetail({
                     isLoggedIn={isLoggedIn}
                     guestCommentCount={guestCommentCount}
                     contentAuthorId={work.authorId ?? ""}
+                    contentMemberIds={work.members?.map((member) => member.id) ?? []}
                   />
                   {blockedByAuthor ? (
                     <p className="text-[13px] text-[var(--ink-faint)]">

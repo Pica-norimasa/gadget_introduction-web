@@ -63,7 +63,7 @@ export function HorizontalScroller({
           がtrueの用途(タブバー)だけに限定して付ける。 */}
       <div
         ref={ref}
-        className={`${restrictToHorizontal ? "touch-pan-x overscroll-x-contain" : ""} ${className ?? ""}`}
+        className={`overscroll-x-contain ${restrictToHorizontal ? "touch-pan-x" : ""} ${className ?? ""}`}
       >
         {children}
       </div>

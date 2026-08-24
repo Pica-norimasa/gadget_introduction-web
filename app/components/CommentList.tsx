@@ -15,6 +15,7 @@ export function CommentList({
   isLoggedIn,
   guestCommentCount,
   contentAuthorId,
+  contentMemberIds = [],
 }: {
   comments: CommentThreadType[];
   target: { type: "project" | "post"; id: string };
@@ -22,6 +23,7 @@ export function CommentList({
   isLoggedIn: boolean;
   guestCommentCount: number;
   contentAuthorId: string;
+  contentMemberIds?: string[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +48,7 @@ export function CommentList({
             isLoggedIn={isLoggedIn}
             guestCommentCount={guestCommentCount}
             contentAuthorId={contentAuthorId}
+            contentMemberIds={contentMemberIds}
           />
         ))}
       </div>
