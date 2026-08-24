@@ -167,5 +167,5 @@ export async function deleteAccount(_prevState: DeleteAccountState, _formData: F
   await anonymizeUser(session.user.id);
 
   await signOut({ redirect: false });
-  redirect("/");
+  redirect("/home");
 }

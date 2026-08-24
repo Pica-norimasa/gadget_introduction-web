@@ -41,5 +41,5 @@ export async function toggleBookmark(target: { type: "project" | "post"; id: str
   }
 
   revalidatePath(target.type === "project" ? `/work/${target.id}` : `/post/${target.id}`);
-  revalidatePath("/");
+  revalidatePath("/home");
 }

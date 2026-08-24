@@ -44,7 +44,7 @@ export async function toggleRepost(projectId: string) {
     await notifyRepost(projectId, user.id);
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/work/${projectId}`);
 }
 
@@ -69,7 +69,7 @@ export async function togglePostRepost(postId: string) {
     await notifyPostRepost(postId, user.id);
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/post/${postId}`);
 }
 
@@ -111,7 +111,7 @@ export async function quoteRepost(
   // という事実は最初の1回だけ知らせれば十分なため。
   if (!existing) await notifyRepost(projectId, user.id);
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/work/${projectId}`);
   return { success: true };
 }

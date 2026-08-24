@@ -178,7 +178,7 @@ export async function updateProject(
   }
 
   revalidatePath(`/work/${projectId}`);
-  revalidatePath("/");
+  revalidatePath("/home");
   redirect(`/work/${projectId}`);
 }
 
@@ -234,6 +234,6 @@ export async function deleteProject(
     prisma.project.delete({ where: { id: projectId } }),
   ]);
 
-  revalidatePath("/");
-  redirect("/");
+  revalidatePath("/home");
+  redirect("/home");
 }

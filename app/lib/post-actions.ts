@@ -192,7 +192,7 @@ export async function createPost(
     });
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   if (projectId) revalidatePath(`/work/${projectId}`);
   if (inspiredByProject) revalidatePath(`/work/${inspiredByProject.id}`);
   return { success: true, projectId: projectId ?? undefined, postId: post.id };
@@ -255,6 +255,6 @@ export async function updatePost(
 
   if (post.projectId) revalidatePath(`/work/${post.projectId}`);
   revalidatePath(`/post/${postId}`);
-  revalidatePath("/");
+  revalidatePath("/home");
   return { success: true };
 }

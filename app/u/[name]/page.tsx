@@ -120,7 +120,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
 
       <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">
         <Link
-          href="/"
+          href="/home"
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
           ← ホームに戻る

@@ -45,7 +45,7 @@ export async function toggleReaction(projectId: string, type: ReactionKey) {
     }
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/work/${projectId}`);
 }
 
@@ -75,6 +75,6 @@ export async function toggleLike(postId: string) {
     }
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/post/${postId}`);
 }

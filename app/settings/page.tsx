@@ -37,7 +37,7 @@ export default async function SettingsPage({
           </Link>
         ) : (
           <Link
-            href="/"
+            href="/home"
             className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
           >
             ← ホームに戻る

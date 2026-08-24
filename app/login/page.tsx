@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 // ヘッダー側は「ログイン」1つに集約し、実際の選択はこの専用ページで行う。
 export default async function LoginPage() {
   const session = await auth();
-  if (session?.user) redirect("/");
+  if (session?.user) redirect("/home");
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -21,7 +21,7 @@ export default async function LoginPage() {
 
       <main className="mx-auto flex w-full max-w-[400px] flex-1 flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
         <Link
-          href="/"
+          href="/home"
           className="mb-8 self-start inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
           ← ホームに戻る

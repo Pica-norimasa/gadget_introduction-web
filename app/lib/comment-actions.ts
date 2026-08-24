@@ -173,7 +173,7 @@ export async function createComment(
   if (projectId) revalidatePath(`/work/${projectId}`);
   if (postId) revalidatePath(`/post/${postId}`);
   // カード側の💬件数表示もこの投稿数を含むため、フィードも合わせて無効化する。
-  revalidatePath("/");
+  revalidatePath("/home");
   return { success: true };
 }
 
@@ -192,7 +192,7 @@ export async function deleteComment(commentId: string): Promise<void> {
 
   if (comment.projectId) revalidatePath(`/work/${comment.projectId}`);
   if (comment.postId) revalidatePath(`/post/${comment.postId}`);
-  revalidatePath("/");
+  revalidatePath("/home");
 }
 
 export type ShareCommentState = { error?: string; success?: boolean; postId?: string };
@@ -257,7 +257,7 @@ export async function shareCommentAsPost(commentId: string): Promise<ShareCommen
     });
   }
 
-  revalidatePath("/");
+  revalidatePath("/home");
   revalidatePath(`/work/${comment.projectId}`);
   return { success: true, postId: post.id };
 }
