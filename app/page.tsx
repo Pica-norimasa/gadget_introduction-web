@@ -31,6 +31,8 @@ const samplePosts = [
   { type: "アップデート", title: "メンテが自動で文章化され、節目達成でシェア導線も表示", accent: "bg-[var(--violet)]" },
 ];
 
+const NOTE_URL = "https://note.com/draftly";
+
 export default async function LandingPage() {
   const [session, currentUser] = await Promise.all([auth(), getCurrentUser()]);
   const isLoggedIn = !!session?.user;
@@ -77,7 +79,8 @@ export default async function LandingPage() {
             </h1>
             <p className="mt-6 max-w-2xl text-[15px] leading-8 text-[var(--ink-soft)] sm:text-base">
               Draftlyは、作りかけのサービス・アプリ・ゲーム・小さなアイデアを共有するコミュニティです。
-              完成品だけでなく、途中の試行錯誤や今日の進捗も、そのまま作品のストーリーになります。
+              「今日はログインを直した」「初期プロトタイプを公開した」「まだアイデアだけ」みたいな小さな更新も、
+              そのまま作品のストーリーになります。
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -169,6 +172,9 @@ export default async function LandingPage() {
             <h2 className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-[var(--ink)]">
               まずは、気になる作品を眺めるところから。
             </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--ink-soft)]">
+              完成したサービスだけでなく、制作中のメモやスクリーンショット、リリース前の試作も並んでいます。
+            </p>
           </div>
           <Link
             href="/home"
@@ -176,6 +182,21 @@ export default async function LandingPage() {
           >
             Draftlyを開く
           </Link>
+        </section>
+
+        <section className="border-t border-[var(--line)]">
+          <div className="mx-auto max-w-[1180px] px-4 py-6 text-center text-[12px] leading-6 text-[var(--ink-faint)] sm:px-6">
+            <span>開発の背景や考えたことは </span>
+            <a
+              href={NOTE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-dotted underline-offset-4 transition-colors hover:text-[var(--ink-soft)]"
+            >
+              note
+            </a>
+            <span> にも少しずつ残しています。</span>
+          </div>
         </section>
       </main>
     </div>

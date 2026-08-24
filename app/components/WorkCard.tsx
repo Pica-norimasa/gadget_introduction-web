@@ -1,4 +1,4 @@
-import { type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
+import { POST_TYPE_META, type Post, type ReactionKey, type Work } from "@/app/lib/mock-data";
 import { latestPostFor, latestYouTubePostFor } from "@/app/lib/post-helpers";
 import { formatCount, formatPostedAgo, formatRelativeHours } from "@/app/lib/format";
 import { GitHubMark } from "./BrandIcons";
@@ -199,16 +199,21 @@ export function WorkCard({
       </div>
 
       {latestPost && (
-        <p className="w-fit max-w-full rounded-full border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-1.5 text-[11.5px] leading-snug">
-          <span
-            className={`mr-1.5 font-mono font-medium ${
-              latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
-            }`}
-          >
-            {formatRelativeHours(latestPost.hoursAgo)}
-          </span>
-          <span className="text-[var(--ink-faint)]">制作タイムライン最終更新</span>
-        </p>
+        <div className="w-full max-w-[22rem] rounded-2xl border border-[var(--line)] bg-[var(--bg-sunken)]/45 px-3 py-2 text-[11.5px] leading-snug">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-[var(--teal-soft)] px-2 py-0.5 font-medium text-[var(--teal)]">
+              {POST_TYPE_META[latestPost.type].icon} {POST_TYPE_META[latestPost.type].label}
+            </span>
+            <span
+              className={`shrink-0 font-mono font-medium ${
+                latestPost.hoursAgo < 24 ? "text-[var(--teal)]" : "text-[var(--ink-faint)]"
+              }`}
+            >
+              {formatRelativeHours(latestPost.hoursAgo)}
+            </span>
+          </div>
+          <p className="mt-1 truncate text-[var(--ink-faint)]">制作タイムライン 最終更新</p>
+        </div>
       )}
 
       <div className={horizontal ? "mt-auto flex flex-col gap-2 pt-2" : "flex flex-col gap-2 pt-3"}>
