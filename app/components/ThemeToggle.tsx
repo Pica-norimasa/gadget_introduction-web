@@ -12,11 +12,6 @@ function getStoredTheme(): Theme | null {
   return value === "light" || value === "dark" ? value : null;
 }
 
-function getPreferredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-}
-
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
@@ -28,7 +23,7 @@ export function ThemeToggle() {
       const current = document.documentElement.dataset.theme;
       if (current === "light" || current === "dark") return current;
     }
-    return getStoredTheme() ?? getPreferredTheme();
+    return getStoredTheme() ?? "dark";
   });
   const light = theme === "light";
 

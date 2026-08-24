@@ -71,7 +71,7 @@ try {
   const stored = window.localStorage.getItem("draftly-theme");
   const theme = stored === "light" || stored === "dark"
     ? stored
-    : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    : "dark";
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
 } catch (_) {}
