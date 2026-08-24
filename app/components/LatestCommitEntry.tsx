@@ -34,10 +34,14 @@ export function LatestCommitEntry({ githubUrl }: { githubUrl: string }) {
   useEffect(() => {
     // ProjectTimelineList側のマウント時オートスクロール(最下部へ)は、この
     // エントリが非同期で追加される前に一度だけ走ってしまう。追加分だけ
-    // 見切れないよう、自分の読み込み完了時に自分自身をスクロール領域内へ
-    // 収める。
+    // 見切れないようスクロール領域だけを最下部へ寄せる。
+    // scrollIntoView()を使うとページ全体まで巻き込み、作品詳細を開いた
+    // 直後に制作タイムライン付近へジャンプしてしまう。
     if (state.status === "ready" && state.commit) {
-      liRef.current?.scrollIntoView({ block: "end" });
+      const scrollContainer = liRef.current?.closest<HTMLElement>("[data-timeline-scroll-container]");
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [state]);
 

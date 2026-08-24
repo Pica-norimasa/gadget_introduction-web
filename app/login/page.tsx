@@ -14,6 +14,12 @@ export const metadata: Metadata = {
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) redirect("/home");
+  const enabledProviders = {
+    github: Boolean(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET),
+    twitter: Boolean(process.env.AUTH_TWITTER_ID && process.env.AUTH_TWITTER_SECRET),
+    google: Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET),
+    line: Boolean(process.env.AUTH_LINE_ID && process.env.AUTH_LINE_SECRET),
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
@@ -35,62 +41,70 @@ export default async function LoginPage() {
         </p>
 
         <div className="mt-8 flex w-full flex-col gap-3">
-          <form
-            action={async () => {
-              "use server";
-              await signIn("github", { redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+          {enabledProviders.github && (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("github", { redirectTo: "/" });
+              }}
             >
-              <GitHubMark />
-              GitHubでログイン
-            </button>
-          </form>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("twitter", { redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              >
+                <GitHubMark />
+                GitHubでログイン
+              </button>
+            </form>
+          )}
+          {enabledProviders.twitter && (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("twitter", { redirectTo: "/" });
+              }}
             >
-              <XMark />
-              Xでログイン
-            </button>
-          </form>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("google", { redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              >
+                <XMark />
+                Xでログイン
+              </button>
+            </form>
+          )}
+          {enabledProviders.google && (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google", { redirectTo: "/" });
+              }}
             >
-              <GoogleMark />
-              Googleでログイン
-            </button>
-          </form>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("line", { redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              >
+                <GoogleMark />
+                Googleでログイン
+              </button>
+            </form>
+          )}
+          {enabledProviders.line && (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("line", { redirectTo: "/" });
+              }}
             >
-              <LineMark />
-              LINEでログイン
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-4 py-3 text-[14px] font-medium text-[var(--ink)] hover:border-[var(--ink-faint)]"
+              >
+                <LineMark />
+                LINEでログイン
+              </button>
+            </form>
+          )}
         </div>
       </main>
     </div>

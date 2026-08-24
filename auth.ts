@@ -25,6 +25,19 @@ declare module "next-auth" {
 // が匿名ゲスト作成時にやっている「衝突したら別名にフォールバック」と
 // 同じ考え方)。
 const baseAdapter = PrismaAdapter(prisma);
+const providers = [
+  process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET ? GitHub : null,
+  process.env.AUTH_TWITTER_ID && process.env.AUTH_TWITTER_SECRET ? Twitter : null,
+  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET ? Google : null,
+  // LINEはデフォルトだとメールアドレスを返さない(LINE Developers
+  // コンソールでチャンネルごとに「メールアドレス許可」の申請・承認が
+  // 必要)。承認された場合に取得できるよう scope に email を含めておくが、
+  // 未承認のうちは他の項目同様に無視され、Xログインと同じくメールは
+  // /settingsで別途登録してもらう扱いになる。
+  process.env.AUTH_LINE_ID && process.env.AUTH_LINE_SECRET
+    ? Line({ authorization: { params: { scope: "profile openid email" } } })
+    : null,
+].filter((provider): provider is NonNullable<typeof provider> => provider !== null);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: {
@@ -44,17 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return baseAdapter.createUser!({ ...user, name, emailVerified: user.email ? new Date() : null });
     },
   },
-  providers: [
-    GitHub,
-    Twitter,
-    Google,
-    // LINEはデフォルトだとメールアドレスを返さない(LINE Developers
-    // コンソールでチャンネルごとに「メールアドレス許可」の申請・承認が
-    // 必要)。承認された場合に取得できるよう scope に email を含めておくが、
-    // 未承認のうちは他の項目同様に無視され、Xログインと同じくメールは
-    // /settingsで別途登録してもらう扱いになる。
-    Line({ authorization: { params: { scope: "profile openid email" } } }),
-  ],
+  providers,
   // Vercel以外の環境(App Runner等)では、Auth.jsはデフォルトでリクエストの
   // Hostヘッダーを信用しない(ホストヘッダーインジェクション対策)。デプロイ先の
   // ドメインはビルド時点では決まらないため、信用するホストを個別指定する

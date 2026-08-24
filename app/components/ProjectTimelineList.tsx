@@ -29,7 +29,7 @@ export function ProjectTimelineList({
   }, [timeline.length]);
 
   return (
-    <div ref={scrollRef} className="max-h-[520px] overflow-y-auto pr-5">
+    <div ref={scrollRef} data-timeline-scroll-container className="max-h-[520px] overflow-y-auto pr-5 [overflow-anchor:none]">
       <ol className="relative ml-2 border-l-2 border-[var(--line)] pl-5">
         {timeline.map((post, index) => (
           <li key={post.id} className="relative mb-7 last:mb-0">

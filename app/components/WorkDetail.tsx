@@ -229,26 +229,6 @@ export function WorkDetail({
           )}
         </div>
 
-        {work.members && work.members.length > 0 && (
-          <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3">
-            <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">参加メンバー</p>
-            <div className="flex flex-wrap gap-2">
-              {work.members.map((member) => (
-                <TrackedLink
-                  key={member.id}
-                  href={`/u/${encodeURIComponent(member.name)}`}
-                  trackType="profile_click"
-                  trackTarget={member.name}
-                  className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-2.5 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
-                >
-                  <AuthorAvatar name={member.displayName} image={member.image} size={20} />
-                  <span>{member.displayName}</span>
-                </TrackedLink>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div id="work-media" className="mb-6 scroll-mt-24">
           {mediaTabs.length === 0 ? (
             <div className="relative">
@@ -391,7 +371,27 @@ export function WorkDetail({
             経緯)ため、タブで別ペインに切り出した(WorkMediaTabs.tsxを
             画像/GitHub/YouTube切り替えと同じ用途で流用)。 */}
         <div id="work-sections" className="scroll-mt-24">
-        <WorkMediaTabs
+          {work.members && work.members.length > 0 && (
+            <div className="mb-5 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3">
+              <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">参加メンバー</p>
+              <div className="flex flex-wrap gap-2">
+                {work.members.map((member) => (
+                  <TrackedLink
+                    key={member.id}
+                    href={`/u/${encodeURIComponent(member.name)}`}
+                    trackType="profile_click"
+                    trackTarget={member.name}
+                    className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-2.5 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
+                  >
+                    <AuthorAvatar name={member.displayName} image={member.image} size={20} />
+                    <span>{member.displayName}</span>
+                  </TrackedLink>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <WorkMediaTabs
           initialTabId={initialTab}
           switchEventName="draftly:work-section-tab"
           tabs={[
@@ -497,7 +497,7 @@ export function WorkDetail({
                 ]
               : []),
           ]}
-        />
+          />
         </div>
       </main>
     </div>
