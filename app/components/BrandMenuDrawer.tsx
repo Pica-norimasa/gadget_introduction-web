@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BrandMark } from "./BrandMark";
 
 const menuItems = [
@@ -24,6 +25,8 @@ export function BrandMenuDrawer({
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
@@ -48,6 +51,7 @@ export function BrandMenuDrawer({
   }, [open]);
 
   const profileHref = userHandle ? `/u/${encodeURIComponent(userHandle)}` : "/login";
+  const currentPath = `${pathname}${searchParams.size > 0 ? `?${searchParams.toString()}` : ""}`;
 
   const drawer = (
     mounted
@@ -114,10 +118,16 @@ export function BrandMenuDrawer({
                 </Link>
 
                 <nav className="flex flex-col gap-1.5">
-                  {menuItems.map((item) => (
+                  {menuItems.map((item) => {
+                    const href =
+                      item.href === "/settings"
+                        ? `/settings?returnTo=${encodeURIComponent(currentPath)}`
+                        : item.href;
+
+                    return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={href}
                       className="flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-[var(--bg-sunken)]"
                     >
                       <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--bg-raised)]">
@@ -128,7 +138,8 @@ export function BrandMenuDrawer({
                         <span className="block text-[12px] text-[var(--ink-faint)]">{item.description}</span>
                       </span>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </nav>
 
                 <div className="mt-auto border-t border-[var(--line)] pt-4 text-[12px] leading-6 text-[var(--ink-faint)]">
