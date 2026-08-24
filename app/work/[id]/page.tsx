@@ -19,7 +19,6 @@ import { SITE_URL } from "@/app/lib/email";
 import { postsForProject } from "@/app/lib/post-helpers";
 import { ScrollToTopOnMount } from "@/app/components/ScrollToTopOnMount";
 import { WorkDetail } from "@/app/components/WorkDetail";
-import type { Work } from "@/app/lib/mock-data";
 
 // ビルド時点でDBに到達できない環境(CIなど)でも `next build` を通すため、
 // あえて何も返さない。
@@ -69,27 +68,6 @@ export async function generateMetadata({
   };
 }
 
-// 検索エンジン向けの構造化データ(schema.org/CreativeWork)。ユーザー投稿の
-// アイデア・プロトタイプ・公開済みサービスまで幅広く扱うため、
-// SoftwareApplication等の狭い型ではなく汎用的なCreativeWorkを使う。
-function workJsonLd(work: Work) {
-  const url = `${SITE_URL}/work/${work.id}`;
-  return {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: work.title,
-    description: work.catch,
-    url,
-    ...(work.coverImageUrl ? { image: work.coverImageUrl } : {}),
-    ...(work.createdAtIso ? { datePublished: work.createdAtIso } : {}),
-    author: {
-      "@type": "Person",
-      name: work.author,
-      url: `${SITE_URL}/u/${encodeURIComponent(work.authorHandle ?? work.author)}`,
-    },
-  };
-}
-
 export default async function WorkPage({
   params,
   searchParams,
@@ -133,10 +111,6 @@ export default async function WorkPage({
   // 今の訪問分をその場で足す(再取得はしない)。実際のDB値は次の読み込みから反映される。
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(workJsonLd(work)) }}
-      />
       <ScrollToTopOnMount />
       <WorkDetail
         work={{ ...work, views: work.views + 1 }}

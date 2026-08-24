@@ -132,12 +132,23 @@ export async function createPost(
     });
     projectId = project.id;
   } else if (projectTarget) {
-    // フォームの値は自分のProject一覧からしか選べない想定だが、改ざん対策として
-    // 実際の所有者と一致する場合だけ紐付ける。一致しなければ孤立Postとして扱う。
-    const project = await prisma.project.findUnique({ where: { id: projectTarget } });
-    if (project && project.authorId === author.id) {
+    // オーナー本人、またはオーナーに追加された参加メンバーだけが
+    // 既存Projectの制作タイムラインに投稿できる。改ざんされたprojectIdは
+    // 孤立Postに落とさず、権限エラーとして返して誤投稿を防ぐ。
+    const project = await prisma.project.findUnique({
+      where: { id: projectTarget },
+      select: {
+        id: true,
+        authorId: true,
+        aiCommentsEnabled: true,
+        members: { where: { userId: author.id }, select: { id: true } },
+      },
+    });
+    if (project && (project.authorId === author.id || project.members.length > 0)) {
       projectId = project.id;
       aiCommentsEnabled = project.aiCommentsEnabled;
+    } else {
+      return { error: "この作品の制作タイムラインには投稿できません" };
     }
   }
 
@@ -169,12 +180,15 @@ export async function createPost(
   }
 
   if (projectId && aiCommentsEnabled) {
-    // 制作タイムラインの投稿者は常にそのProjectの作者と同一(冒頭の
-    // コメント参照)なので、projectAuthorIdはauthor.idでよい。応援コメント
+    // 参加メンバーの投稿でも、AI応援コメントの宛先はProjectのオーナー。
     // 生成はレスポンスをブロックしたくない(将来LLM APIに差し替えたときの
     // レイテンシを考慮)ので、after()でレスポンス送信後に実行する。
     const targetProjectId = projectId;
-    const projectAuthorId = author.id;
+    const projectAuthorId =
+      projectTarget && projectTarget !== "new"
+        ? ((await prisma.project.findUnique({ where: { id: targetProjectId }, select: { authorId: true } }))?.authorId ??
+          author.id)
+        : author.id;
     after(async () => {
       try {
         await postAiEncouragementComment({

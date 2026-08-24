@@ -89,6 +89,8 @@ export function WorkDetail({
   const latestYouTubePost = [...timeline].reverse().find((post) => post.youtubeUrl);
   const mediaYouTubeUrl = work.youtubeUrl ?? latestYouTubePost?.youtubeUrl;
   const commentCount = comments.reduce((sum, c) => sum + 1 + c.replies.length, 0);
+  const isOwner = work.authorId === currentUserId;
+  const canPostTimeline = isOwner || Boolean(currentUserId && work.members?.some((member) => member.id === currentUserId));
   const primaryExternalLink = work.appStoreUrl
     ? { href: work.appStoreUrl, label: "App Storeで見る", type: "external_link_appstore" as const }
     : work.googlePlayUrl
@@ -172,7 +174,7 @@ export function WorkDetail({
           >
             ← ホームに戻る
           </Link>
-          {work.authorId === currentUserId ? (
+          {isOwner ? (
             <div className="flex items-center gap-2">
               <Link
                 href="/guide"
@@ -195,7 +197,7 @@ export function WorkDetail({
           )}
         </div>
 
-        {work.authorId === currentUserId && (
+        {isOwner && (
           <div className="mb-5 flex justify-end">
             <DeleteProjectButton projectId={work.id} />
           </div>
@@ -222,10 +224,30 @@ export function WorkDetail({
               </p>
             </div>
           </TrackedLink>
-          {work.authorId !== currentUserId && (
+          {!isOwner && (
             <FollowButton author={work.authorHandle ?? work.author} size="md" />
           )}
         </div>
+
+        {work.members && work.members.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-[var(--line)] bg-[var(--bg-raised)] px-4 py-3">
+            <p className="mb-2 text-[12px] font-medium text-[var(--ink-faint)]">参加メンバー</p>
+            <div className="flex flex-wrap gap-2">
+              {work.members.map((member) => (
+                <TrackedLink
+                  key={member.id}
+                  href={`/u/${encodeURIComponent(member.name)}`}
+                  trackType="profile_click"
+                  trackTarget={member.name}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--bg-sunken)]/35 px-2.5 py-1 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
+                >
+                  <AuthorAvatar name={member.displayName} image={member.image} size={20} />
+                  <span>{member.displayName}</span>
+                </TrackedLink>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div id="work-media" className="mb-6 scroll-mt-24">
           {mediaTabs.length === 0 ? (
@@ -347,7 +369,7 @@ export function WorkDetail({
           <div className="mt-5 border-t border-[var(--line)] pt-5">
             <p className="mb-3 text-[12px] font-medium text-[var(--ink-faint)]">共有する</p>
             <ShareButtons title={work.title} stage={work.stage} daysAgo={work.daysAgo} latestUpdate={latestUpdateText} />
-            {work.authorId === currentUserId && (
+            {isOwner && (
               <MilestoneShareCard
                 workId={work.id}
                 title={work.title}
@@ -380,16 +402,16 @@ export function WorkDetail({
                 <div className="mb-6">
                   <ProjectTimelineList
                     timeline={timeline}
-                    isOwner={work.authorId === currentUserId}
+                    isOwner={isOwner}
                     githubUrl={work.githubUrl}
                   />
-                  {work.authorId === currentUserId && (
+                  {canPostTimeline && (
                     <div className="mt-4">
                       <PostForm variant="timeline" projectId={work.id} isLoggedIn={isLoggedIn} guestPostCount={guestPostCount} />
                     </div>
                   )}
 
-                  {work.authorId === currentUserId && (
+                  {isOwner && (
                     <div className="mt-4">
                       <AiCommentsToggle projectId={work.id} initialEnabled={work.aiCommentsEnabled ?? true} />
                     </div>

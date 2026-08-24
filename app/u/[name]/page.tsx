@@ -52,25 +52,6 @@ export async function generateMetadata({
   };
 }
 
-// プロフィールを検索エンジン・SNS双方から辿れるようにする構造化データ
-// (schema.org/Person)。/work・/postと同じくSITE_URLで絶対URLを組み立てる。
-function profileJsonLd(profile: UserProfile) {
-  const sameAs = [
-    profile.githubUsername ? `https://github.com/${profile.githubUsername}` : null,
-    profile.xUsername ? `https://x.com/${profile.xUsername}` : null,
-  ].filter((url): url is string => !!url);
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: profile.displayName,
-    url: `${SITE_URL}/u/${encodeURIComponent(profile.name)}`,
-    ...(profile.image ? { image: profile.image } : {}),
-    ...(profile.bio ? { description: profile.bio } : {}),
-    ...(sameAs.length > 0 ? { sameAs } : {}),
-  };
-}
-
 // 訪問者に「何で作っている人か」を一目で伝える公開向けの集計
 // (AuthorStats.tsxは「自分にだけ表示」の非公開分析なので別物)。
 // 新規クエリ不要、既に取得済みのworksをその場で集計するだけ。
@@ -112,10 +93,6 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd(profile)) }}
-      />
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-[680px] flex-1 px-4 py-8 sm:px-6">

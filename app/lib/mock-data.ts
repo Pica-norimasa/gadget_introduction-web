@@ -51,6 +51,12 @@ export type Work = {
   // GitHubログインのアバター、またはアップロードした画像。未設定ならAuthorAvatarが
   // 生成イニシャルにフォールバックする。mock-data.ts由来のシードWorkには無意味。
   authorImage?: string;
+  members?: {
+    id: string;
+    name: string;
+    displayName: string;
+    image?: string;
+  }[];
   // 「自分のProject一覧」を絞り込むためのUser.id。mock-data.ts由来のシード
   // Workには無意味なので省略可(実データはqueries.tsのtoWork()が常に埋める)。
   authorId?: string;

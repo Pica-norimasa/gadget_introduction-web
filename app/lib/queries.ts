@@ -79,6 +79,14 @@ type ProjectWithAuthor = {
     followersSeed: number;
     _count: { followedBy: number; accounts: number };
   };
+  members?: {
+    user: {
+      id: string;
+      name: string;
+      displayName: string | null;
+      image: string | null;
+    };
+  }[];
   _count: { comments: number; reposts: number };
 };
 
@@ -163,6 +171,12 @@ function toWork(
     authorSocialHandle: socialHandleOf(project.author) ?? undefined,
     authorVerified: isVerifiedAuthor(project.author),
     authorImage: project.author.image ?? undefined,
+    members: project.members?.map((member) => ({
+      id: member.user.id,
+      name: member.user.name,
+      displayName: displayNameOf(member.user),
+      image: member.user.image ?? undefined,
+    })),
     authorId: project.authorId,
     hue: project.hue,
     glyph: project.glyph,
@@ -231,7 +245,11 @@ async function getWorksWhere(where?: Prisma.ProjectWhereInput): Promise<Work[]> 
   const [projects, reactionRows, lastActivityByProject, bookmarkedProjectIds] = await Promise.all([
     prisma.project.findMany({
       where,
-      include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
+      include: {
+        author: authorInclude,
+        members: { include: { user: { select: { id: true, name: true, displayName: true, image: true } } } },
+        _count: { select: { comments: true, reposts: true } },
+      },
       orderBy: { createdAt: "desc" },
     }),
     prisma.reaction.groupBy({ by: ["projectId", "type"], where: { projectId: { not: null } }, _count: { _all: true } }),
@@ -451,7 +469,11 @@ export async function getWorkById(id: string): Promise<Work | null> {
   const [project, reactionRows, originPost, bookmarked, lastActivityAt] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
-      include: { author: authorInclude, _count: { select: { comments: true, reposts: true } } },
+      include: {
+        author: authorInclude,
+        members: { include: { user: { select: { id: true, name: true, displayName: true, image: true } } } },
+        _count: { select: { comments: true, reposts: true } },
+      },
     }),
     prisma.reaction.groupBy({ where: { projectId: id }, by: ["type"], _count: { _all: true } }),
     // このProject自体が他の作品にインスパイアされて生まれたかどうかは

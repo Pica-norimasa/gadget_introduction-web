@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
 
@@ -26,6 +26,16 @@ export function ThemeToggle() {
     return getStoredTheme() ?? "dark";
   });
   const light = theme === "light";
+
+  useEffect(() => {
+    const stored = getStoredTheme();
+    if (!stored) {
+      applyTheme(theme);
+      return;
+    }
+    setTheme(stored);
+    applyTheme(stored);
+  }, [theme]);
 
   const toggleTheme = () => {
     const nextTheme: Theme = theme === "light" ? "dark" : "light";

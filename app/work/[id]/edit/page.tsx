@@ -4,6 +4,7 @@ import { getWorkById } from "@/app/lib/queries";
 import { getCurrentUser } from "@/app/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { ProjectEditForm } from "@/app/components/ProjectEditForm";
+import { ProjectMembersEditor } from "@/app/components/ProjectMembersEditor";
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,6 +27,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
           作品を編集
         </h1>
         <ProjectEditForm work={work} />
+        <ProjectMembersEditor projectId={work.id} members={work.members ?? []} />
       </main>
     </div>
   );
