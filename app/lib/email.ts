@@ -1,6 +1,9 @@
 const RESEND_API_ENDPOINT = "https://api.resend.com/emails";
 
-export const SITE_URL = process.env.AUTH_URL ?? "http://localhost:3000";
+export const SITE_URL =
+  process.env.AUTH_URL ??
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.NODE_ENV === "production" ? "https://draftly-web.com" : "http://localhost:3000");
 
 // Resend REST APIを直接fetchで叩くだけの薄いクライアント(cloudflare-analytics.ts
 // と同じ考え方)。専用SDKを追加するほどの複雑さが無いための判断。
