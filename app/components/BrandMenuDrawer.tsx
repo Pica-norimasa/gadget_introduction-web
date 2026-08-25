@@ -12,6 +12,7 @@ const menuItems = [
   { href: "/ranking", icon: "🔥", label: "ランキング", description: "人気の作品を見る" },
   { href: "/guide/build", icon: "🔧", label: "作り方ガイド", description: "プロダクト制作の始め方" },
   { href: "/settings", icon: "⚙️", label: "設定", description: "表示や通知を調整する" },
+  { href: "/support", icon: "💬", label: "サポート", description: "困ったことを相談する" },
 ];
 
 export function BrandMenuDrawer({
