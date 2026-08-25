@@ -7,6 +7,7 @@ import { PLATFORM_META, PLATFORM_ORDER } from "@/app/lib/platform-meta";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { StandalonePostCard } from "@/app/components/StandalonePostCard";
 import { WorkCard } from "@/app/components/WorkCard";
+import { SITE_URL } from "@/app/lib/email";
 
 const TOOL_OPTIONS: { value: AiTool; label: string }[] = [
   { value: "Claude", label: "Claude" },
@@ -46,7 +47,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
-  return { title: query ? `「${query}」の検索結果 | Draftly` : "検索 | Draftly" };
+  return {
+    title: query ? `「${query}」の検索結果 | Draftly` : "検索 | Draftly",
+    description: "Draftlyに投稿された作品やつぶやきを検索できます。",
+    alternates: { canonical: `${SITE_URL}/search` },
+  };
 }
 
 export default async function SearchPage({

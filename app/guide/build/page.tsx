@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { SITE_URL } from "@/app/lib/email";
 
 export const metadata: Metadata = {
   title: "プロダクト作りの始め方 | Draftly",
   description: "GitHubのセットアップからAIツールでの制作まで、はじめての一本を作るための最短ルートを紹介します。",
+  alternates: { canonical: `${SITE_URL}/guide/build` },
 };
 
 const STEPS = [

@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { BrandMenuDrawer } from "@/app/components/BrandMenuDrawer";
 import { BrandMark } from "@/app/components/BrandMark";
 import { IdentityBadge } from "@/app/components/IdentityBadge";
 import { getCurrentUser } from "@/app/lib/session";
+import { SITE_URL } from "@/app/lib/email";
+
+export const metadata: Metadata = {
+  alternates: { canonical: SITE_URL },
+};
 
 const featureCards = [
   {

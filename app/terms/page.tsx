@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { SITE_URL } from "@/app/lib/email";
 
 export const metadata: Metadata = {
   title: "利用規約 | Draftly",
   description: "Draftlyの利用規約です。",
+  alternates: { canonical: `${SITE_URL}/terms` },
 };
 
 const SECTIONS = [

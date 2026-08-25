@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { SITE_URL } from "@/app/lib/email";
 
 export const metadata: Metadata = {
   title: "サポート | Draftly",
   description: "Draftlyの使い方、不具合、アカウント、投稿内容に関するお問い合わせ先です。",
+  alternates: { canonical: `${SITE_URL}/support` },
 };
 
 const SUPPORT_EMAIL = "flytobrainwork1@gmail.com";

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   getDiscoveryPicks,
   getMyLikedPostIds,
@@ -26,6 +27,11 @@ import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 import { HomePrimaryActions } from "@/app/components/HomePrimaryActions";
 import { HomeSearchBox } from "@/app/components/HomeSearchBox";
+import { SITE_URL } from "@/app/lib/email";
+
+export const metadata: Metadata = {
+  alternates: { canonical: `${SITE_URL}/home` },
+};
 
 export default async function Home() {
   const [
