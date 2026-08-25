@@ -29,6 +29,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title, description },
 };
 
+// このページ自体は制作タイムラインに投稿された内容を集めて見せるだけの
+// 一覧なので、空の状態でも投稿導線は出さない(ホームの投稿欄には経験
+// タイプの選択肢が無く、実際に設定できるのは各作品の制作タイムライン
+// だけのため、ここから安易に「投稿してみる」に誘導すると迷わせる)。
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--bg-raised)] p-8 text-center">
@@ -36,12 +40,6 @@ function EmptyState({ message }: { message: string }) {
       <p className="mt-2 text-[12px] leading-relaxed text-[var(--ink-faint)]">
         制作タイムラインに経験タイプを添えて投稿すると、ここに集まっていきます。
       </p>
-      <Link
-        href="/home?composer=1#composer"
-        className="mt-4 inline-flex rounded-full border border-[var(--line)] px-3 py-1.5 text-[12px] text-[var(--ink-soft)] hover:border-[var(--accent)]"
-      >
-        投稿してみる
-      </Link>
     </div>
   );
 }
