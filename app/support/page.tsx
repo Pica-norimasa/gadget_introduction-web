@@ -28,7 +28,17 @@ const SUPPORT_TOPICS = [
   },
 ];
 
-export default function SupportPage() {
+export default async function SupportPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
+  const { returnTo } = await searchParams;
+  const safeReturnTo =
+    returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.startsWith("/support")
+      ? returnTo
+      : null;
+  const backHref = safeReturnTo ?? "/home";
   const mailHref = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Draftlyへのお問い合わせ")}`;
 
   return (
@@ -37,7 +47,7 @@ export default function SupportPage() {
 
       <main className="mx-auto w-full max-w-[720px] flex-1 px-4 py-8 sm:px-6">
         <Link
-          href="/home"
+          href={backHref}
           className="mb-4 inline-flex items-center gap-1 text-[13px] text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"
         >
           ← 戻る

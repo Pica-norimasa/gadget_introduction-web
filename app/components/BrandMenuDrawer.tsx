@@ -120,10 +120,9 @@ export function BrandMenuDrawer({
 
                 <nav className="flex flex-col gap-1.5">
                   {menuItems.map((item) => {
-                    const href =
-                      item.href === "/settings"
-                        ? `/settings?returnTo=${encodeURIComponent(currentPath)}`
-                        : item.href;
+                    const href = ["/settings", "/support"].includes(item.href)
+                      ? `${item.href}?returnTo=${encodeURIComponent(currentPath)}`
+                      : item.href;
 
                     return (
                     <Link
