@@ -10,9 +10,9 @@
 // とアカウントID(CLOUDFLARE_ACCOUNT_ID)を使う。
 const CLOUDFLARE_GRAPHQL_ENDPOINT = "https://api.cloudflare.com/client/v4/graphql";
 
-// このアカウント配下に複数サイトが増えても、draftly-web.dev以外の
+// このアカウント配下に複数サイトが増えても、draftly-web.com以外の
 // 数値を混ぜないようにホスト名で絞り込む。
-const SITE_HOST = "draftly-web.dev";
+const SITE_HOST = "draftly-web.com";
 
 export type DailyVisitStat = {
   date: string;

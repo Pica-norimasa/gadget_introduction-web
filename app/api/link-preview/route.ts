@@ -3,7 +3,7 @@ import { isIP } from "node:net";
 import { NextRequest, NextResponse } from "next/server";
 import { SITE_URL } from "@/app/lib/email";
 
-// 自分自身(本番ドメイン)へのプレビュー取得も塞ぐ。draftly-web.devは
+// 自分自身(本番ドメイン)へのプレビュー取得も塞ぐ。draftly-web.comは
 // プライベートIPではなく普通の公開ドメインなので、上のIPベースの判定
 // だけでは通ってしまう。SITE_URL(=AUTH_URL環境変数)から動的に判定して
 // いるため、将来ドメインを取り直しても(AUTH_URLを更新しさえすれば)
@@ -57,7 +57,7 @@ async function assertHostIsSafe(hostname: string): Promise<void> {
 const FETCH_TIMEOUT_MS = 5000;
 const MAX_REDIRECTS = 3;
 const MAX_BODY_BYTES = 300_000;
-const USER_AGENT = "Mozilla/5.0 (compatible; DraftlyBot/1.0; +https://draftly-web.dev)";
+const USER_AGENT = "Mozilla/5.0 (compatible; DraftlyBot/1.0; +https://draftly-web.com)";
 
 // リダイレクトも1回ずつ安全性を検証しながら手動で追う。fetch()標準の
 // 自動リダイレクトだと、最初のURLは安全でもリダイレクト先が内部IPという
