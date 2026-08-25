@@ -2,16 +2,20 @@
 
 実装は後回しにするが、忘れないように残しておくメモ。
 
-## 「みんなの経験値」一覧ページ
+## 「みんなの経験値」一覧ページ → 実装済み
 
-経験値機能(Post.experienceType・「参考になった」リアクション・Project.stage="開発中止"+retrospective)を追加した際、将来的に「参考になった投稿」「よく見られている失敗」「成功した施策」「開発中止から得た学び」等をまとめて見せる一覧ページを作る構想があった。今回はページ本体は作らず、必要なデータだけ取得できる状態にしてある:
+`/experience`ページを新設。「参考になった投稿」「失敗から学んだこと」
+「うまくいったこと」「開発中止から得た学び」の4タブ構成。
+`app/lib/queries.ts`に`getMostHelpfulPosts()`(`getHelpfulCounts()`と
+同じ`groupBy`パターンをサイト全体に拡張)・`getExperiencePostsByType()`・
+`getDiscontinuedWorksWithRetrospective()`を追加。`ExperiencePostCard.tsx`/
+`DiscontinuedWorkCard.tsx`を新規コンポーネントとして用意(既存の
+`StandalonePostCard`/`WorkCard`はリンク先・表示項目が合わず流用できな
+かったため)。`BrandMenuDrawer`のメニューと`sitemap.xml`にも導線を追加。
 
-- 参考になった投稿: `Reaction.type = "helpful"` が多い`Post`(`app/lib/queries.ts`の`getHelpfulCounts()`と同じ`groupBy`パターンを、プロジェクト単位ではなくサイト全体に広げれば取れる)。
-- よく見られている失敗 / 成功した施策: `Post.experienceType = "failure" | "success"`で絞り込み、`Project.views`等でソート。
-- 開発中止から得た学び: `Project.stage = "開発中止"` かつ `Project.retrospective`が非null。
-- 技術選定の学び / 方針転換した事例: 上記のように構造化されたフィールドは無く、本文(`Post.body`)のフリーテキストに頼る形になる。専用フィールド化するかは需要を見てから判断する。
-
-新規の集計クエリ・ページとも未実装(不要なコードを増やさないため)。着手する際は、まず`getHelpfulCounts()`をプロジェクト単位からサイト全体向けに一般化するところから始めるとよい。
+**やらなかったこと**: 「技術選定の学び」「方針転換した事例」は構造化
+フィールドが無く本文のフリーテキストに頼る形になるため、今回も見送り
+(専用フィールド化するかは需要を見てから判断)。
 
 ## ハッシュタグ検索の高速化(専用テーブル化)
 
