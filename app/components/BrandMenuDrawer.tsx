@@ -10,6 +10,7 @@ const menuItems = [
   { href: "/", icon: "🏠", label: "トップ", description: "Draftlyについて見る" },
   { href: "/home", icon: "🎬", label: "作品一覧", description: "作品・投稿を探す" },
   { href: "/ranking", icon: "🔥", label: "ランキング", description: "人気の作品を見る" },
+  { href: "/experience", icon: "💡", label: "みんなの経験値", description: "成功も失敗も、みんなの学び" },
   { href: "/guide/build", icon: "🔧", label: "作り方ガイド", description: "プロダクト制作の始め方" },
   { href: "/settings", icon: "⚙️", label: "設定", description: "表示や通知を調整する" },
   { href: "/support", icon: "💬", label: "サポート", description: "困ったことを相談する" },

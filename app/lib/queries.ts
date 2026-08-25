@@ -1075,6 +1075,126 @@ export async function getProjectExperienceStats(
   return stats;
 }
 
+export type ExperiencePostView = {
+  id: string;
+  body: string;
+  experienceType: ExperienceType | null;
+  projectId: string;
+  projectTitle: string;
+  authorId: string;
+  authorName: string;
+  authorHandle: string;
+  authorSocialHandle?: string;
+  authorVerified: boolean;
+  authorImage: string | null;
+  hoursAgo: number;
+};
+
+// 「みんなの経験値」ページ向け。サイト全体で「参考になった」が多い制作
+// タイムライン投稿を上位から返す(getHelpfulCounts()のプロジェクト単位
+// groupByパターンをサイト全体に広げたもの)。
+export async function getMostHelpfulPosts(limit = 10): Promise<(ExperiencePostView & { helpfulCount: number })[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const grouped = await prisma.reaction.groupBy({
+    by: ["postId"],
+    where: { type: "helpful", postId: { not: null } },
+    _count: { _all: true },
+  });
+  if (grouped.length === 0) return [];
+
+  // ミュート/ブロック除外で減る分の余裕を持たせて多めに候補を取る。
+  const topIds = [...grouped]
+    .sort((a, b) => b._count._all - a._count._all)
+    .slice(0, limit * 3)
+    .map((r) => r.postId as string);
+  const countByPostId = new Map(grouped.map((r) => [r.postId as string, r._count._all]));
+
+  const posts = await prisma.post.findMany({
+    where: {
+      id: { in: topIds },
+      projectId: { not: null },
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
+    include: {
+      author: { select: AUTHOR_SELECT },
+      project: { select: { id: true, title: true } },
+    },
+  });
+
+  return posts
+    .filter((p): p is typeof p & { project: NonNullable<(typeof p)["project"]> } => p.project !== null)
+    .map((p) => ({
+      id: p.id,
+      body: p.body,
+      experienceType: p.experienceType as ExperienceType | null,
+      projectId: p.project.id,
+      projectTitle: p.project.title,
+      authorId: p.authorId,
+      authorName: displayNameOf(p.author),
+      authorHandle: p.author.name,
+      authorSocialHandle: socialHandleOf(p.author) ?? undefined,
+      authorVerified: isVerifiedAuthor(p.author),
+      authorImage: p.author.image,
+      hoursAgo: hoursAgoOf(p.createdAt),
+      helpfulCount: countByPostId.get(p.id) ?? 0,
+    }))
+    .sort((a, b) => b.helpfulCount - a.helpfulCount)
+    .slice(0, limit);
+}
+
+// 「みんなの経験値」ページ向け。experienceTypeで絞り込んだ制作タイムライン
+// 投稿を、所属作品の閲覧数が多い順に返す(「よく見られている失敗」
+// 「成功した施策」用)。
+export async function getExperiencePostsByType(
+  experienceType: "failure" | "success" | "learning",
+  limit = 10,
+): Promise<ExperiencePostView[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const posts = await prisma.post.findMany({
+    where: {
+      experienceType,
+      projectId: { not: null },
+      ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+    },
+    include: {
+      author: { select: AUTHOR_SELECT },
+      project: { select: { id: true, title: true, views: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit * 3,
+  });
+
+  return posts
+    .filter((p): p is typeof p & { project: NonNullable<(typeof p)["project"]> } => p.project !== null)
+    .sort((a, b) => b.project.views - a.project.views)
+    .slice(0, limit)
+    .map((p) => ({
+      id: p.id,
+      body: p.body,
+      experienceType: p.experienceType as ExperienceType | null,
+      projectId: p.project.id,
+      projectTitle: p.project.title,
+      authorId: p.authorId,
+      authorName: displayNameOf(p.author),
+      authorHandle: p.author.name,
+      authorSocialHandle: socialHandleOf(p.author) ?? undefined,
+      authorVerified: isVerifiedAuthor(p.author),
+      authorImage: p.author.image,
+      hoursAgo: hoursAgoOf(p.createdAt),
+    }));
+}
+
+// 「みんなの経験値」ページ向け。「開発中止」に振り返りが書かれている作品。
+export async function getDiscontinuedWorksWithRetrospective(limit = 10): Promise<Work[]> {
+  const excludeAuthorIds = await getMutedOrBlockedAuthorIds();
+  const works = await getWorksWhere({
+    stage: "開発中止",
+    retrospective: { not: null },
+    ...(excludeAuthorIds.length > 0 ? { authorId: { notIn: excludeAuthorIds } } : {}),
+  });
+  return works.slice(0, limit);
+}
+
 export type CommentView = {
   id: string;
   body: string;
