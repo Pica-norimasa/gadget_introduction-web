@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { ExperiencePostView } from "@/app/lib/queries";
 import { formatRelativeHours } from "@/app/lib/format";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { ExpandablePostBody } from "./ExpandablePostBody";
 import { ExperienceTypeBadge } from "./ExperienceTypeBadge";
-import { LinkifiedText } from "./LinkifiedText";
 import { VerifiedBadge } from "./VerifiedBadge";
 
 // 「みんなの経験値」ページの各タブで共通して使う投稿カード。制作
@@ -28,11 +28,7 @@ export function ExperiencePostCard({
           {post.authorSocialHandle && <span>@{post.authorSocialHandle}</span>} ・ {formatRelativeHours(post.hoursAgo)}
         </p>
         <p className="mb-1.5 truncate text-[12px] text-[var(--ink-faint)]">📁 {post.projectTitle}</p>
-        {post.body && (
-          <p className="relative z-20 line-clamp-3 whitespace-pre-line text-[13px] leading-relaxed text-[var(--ink)]">
-            <LinkifiedText text={post.body} />
-          </p>
-        )}
+        {post.body && <ExpandablePostBody text={post.body} />}
         <div className="relative z-20 mt-2 flex flex-wrap items-center gap-1.5">
           {post.experienceType && <ExperienceTypeBadge type={post.experienceType} className="text-[11px]" />}
           {helpfulCount !== undefined && helpfulCount > 0 && (

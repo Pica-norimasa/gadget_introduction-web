@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Work } from "@/app/lib/mock-data";
 import { AuthorAvatar } from "./AuthorAvatar";
+import { ExpandablePostBody } from "./ExpandablePostBody";
 import { StageBadge } from "./StageBadge";
 
 // 「みんなの経験値」ページの「開発中止から得た学び」タブ専用。
@@ -17,11 +18,7 @@ export function DiscontinuedWorkCard({ work }: { work: Work }) {
           <span>・ {work.title}</span>
           <StageBadge stage={work.stage} />
         </p>
-        {work.retrospective && (
-          <p className="line-clamp-4 whitespace-pre-line text-[13px] leading-relaxed text-[var(--ink)]">
-            {work.retrospective}
-          </p>
-        )}
+        {work.retrospective && <ExpandablePostBody text={work.retrospective} clampClassName="line-clamp-4" />}
       </div>
     </div>
   );
