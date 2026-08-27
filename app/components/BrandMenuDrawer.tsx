@@ -172,12 +172,29 @@ export function BrandMenuDrawer({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="サイトメニューを開く"
-        className="flex shrink-0 items-center gap-2 rounded-full pr-1 text-left transition-opacity hover:opacity-85"
+        className="group flex shrink-0 items-center gap-2 rounded-full pr-1 text-left transition-opacity hover:opacity-85"
       >
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--teal)] text-[var(--teal-soft)]">
           <BrandMark className="h-[19px] w-[19px]" />
         </span>
-        <span className="font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">Draftly</span>
+        <span className="flex items-center gap-1 font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
+          Draftly
+          <span
+            aria-hidden
+            className="translate-y-[1px] text-[12px] text-[var(--ink-faint)] transition-colors group-hover:text-[var(--ink-soft)]"
+          >
+            ▾
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="サイトメニューを開く"
+        title="メニュー"
+        className="absolute right-4 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-[var(--line)] bg-[var(--bg-raised)] text-[18px] font-bold leading-none text-[var(--ink-soft)] shadow-sm shadow-[var(--shadow)] transition-colors hover:border-[var(--ink-faint)] hover:text-[var(--ink)] sm:hidden"
+      >
+        ☰
       </button>
       {drawer}
     </>

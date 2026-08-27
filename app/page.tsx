@@ -49,7 +49,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
       <header className="border-b border-[var(--line)] bg-[var(--bg)]/88 backdrop-blur">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-4 py-3 pl-4 pr-16 sm:px-6">
           <BrandMenuDrawer
             userName={currentUser ? (currentUser.displayName ?? currentUser.name) : (session?.user?.name ?? null)}
             userHandle={currentUser?.name ?? null}

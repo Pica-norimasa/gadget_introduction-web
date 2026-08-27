@@ -36,7 +36,7 @@ export async function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
-        <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 px-4 py-3 sm:px-6">
+        <div className="relative mx-auto flex max-w-[1180px] items-center gap-4 py-3 pl-4 pr-16 sm:px-6">
           <BrandMenuDrawer
             userName={user ? (user.displayName ?? user.name) : null}
             userHandle={user?.name ?? null}
