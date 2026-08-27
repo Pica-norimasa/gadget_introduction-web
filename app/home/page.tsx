@@ -27,7 +27,6 @@ import { StageUpCelebration } from "@/app/components/StageUpCelebration";
 import { UpdatesTicker } from "@/app/components/UpdatesTicker";
 import { HomePrimaryActions } from "@/app/components/HomePrimaryActions";
 import { HomeSearchBox } from "@/app/components/HomeSearchBox";
-import { SiteUpdatesPreview } from "@/app/components/SiteUpdatesPreview";
 import { SITE_URL } from "@/app/lib/email";
 
 export const metadata: Metadata = {
@@ -95,8 +94,6 @@ export default async function Home() {
           <HomeSearchBox />
           <HomePrimaryActions />
         </div>
-
-        <SiteUpdatesPreview />
 
         <PostComposerToggle isLoggedIn={!!session?.user} guestPostCount={myPostCount} />
 
