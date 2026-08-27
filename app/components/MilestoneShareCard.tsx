@@ -97,7 +97,6 @@ export function MilestoneShareCard(props: WorkStats & { workId: string }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 既読判定はlocalStorage(クライアント専用)でしか行えない
       setMilestone(found);
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- ShareButtons.tsxと同じ理由(SSRとの不整合回避)
     setUrl(window.location.href);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- statsはオブジェクトなので参照ではなくworkId+個々の値で見る
   }, [workId, stats.title, stats.stage, stats.views, stats.totalReactions, stats.followers, stats.daysAgo]);

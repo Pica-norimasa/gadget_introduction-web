@@ -54,8 +54,10 @@ export function HomeContentTabs({
   useEffect(() => {
     const match = window.location.hash.match(/^#murmur-(.+)$/);
     if (match) {
-      setTab("murmurs");
-      setPendingMurmurPostId(decodeURIComponent(match[1]));
+      window.setTimeout(() => {
+        setTab("murmurs");
+        setPendingMurmurPostId(decodeURIComponent(match[1]));
+      }, 0);
     }
   }, []);
 

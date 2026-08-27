@@ -12,6 +12,7 @@ const menuItems = [
   { href: "/ranking", icon: "🔥", label: "ランキング", description: "人気の作品を見る" },
   { href: "/experience", icon: "💡", label: "みんなの経験値", description: "成功も失敗も、みんなの学び" },
   { href: "/guide/build", icon: "🔧", label: "作り方ガイド", description: "プロダクト制作の始め方" },
+  { href: "/updates", icon: "📝", label: "更新履歴", description: "最近の改善を見る" },
   { href: "/settings", icon: "⚙️", label: "設定", description: "表示や通知を調整する" },
   { href: "/support", icon: "💬", label: "サポート", description: "困ったことを相談する" },
 ];
@@ -26,13 +27,8 @@ export function BrandMenuDrawer({
   userImage?: string | null;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -54,9 +50,10 @@ export function BrandMenuDrawer({
 
   const profileHref = userHandle ? `/u/${encodeURIComponent(userHandle)}` : "/login";
   const currentPath = `${pathname}${searchParams.size > 0 ? `?${searchParams.toString()}` : ""}`;
+  const canUseDom = typeof document !== "undefined";
 
   const drawer = (
-    mounted
+    canUseDom
       ? createPortal(
           <>
             <div

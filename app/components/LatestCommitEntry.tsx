@@ -5,7 +5,10 @@ import { formatRelativeHours } from "@/app/lib/format";
 import { GitHubMark } from "./BrandIcons";
 import type { LatestCommit } from "./GitHubCard";
 
-type State = { status: "loading" } | { status: "error" } | { status: "ready"; commit: LatestCommit | null };
+type State =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; commit: LatestCommit | null; hoursAgo: number | null };
 
 // 制作タイムライン末尾に「最新コミット」を1件だけ添える。取得失敗や
 // コミットが1件も無いリポジトリでは何も表示しない(せっかく整理した
@@ -20,7 +23,12 @@ export function LatestCommitEntry({ githubUrl }: { githubUrl: string }) {
     fetch(`/api/github-preview?url=${encodeURIComponent(githubUrl)}`)
       .then((res) => (res.ok ? (res.json() as Promise<{ latestCommit: LatestCommit | null }>) : Promise.reject(res)))
       .then((data) => {
-        if (!cancelled) setState({ status: "ready", commit: data.latestCommit });
+        if (!cancelled) {
+          const hoursAgo = data.latestCommit?.date
+            ? (Date.now() - new Date(data.latestCommit.date).getTime()) / (1000 * 60 * 60)
+            : null;
+          setState({ status: "ready", commit: data.latestCommit, hoursAgo });
+        }
       })
       .catch(() => {
         if (!cancelled) setState({ status: "error" });
@@ -47,7 +55,6 @@ export function LatestCommitEntry({ githubUrl }: { githubUrl: string }) {
 
   if (state.status !== "ready" || !state.commit) return null;
   const { commit } = state;
-  const hoursAgo = commit.date ? (Date.now() - new Date(commit.date).getTime()) / (1000 * 60 * 60) : null;
 
   return (
     <li ref={liRef} className="relative mb-0">
@@ -55,7 +62,7 @@ export function LatestCommitEntry({ githubUrl }: { githubUrl: string }) {
         <GitHubMark className="h-4 w-4" />
       </span>
       <p className="mb-1.5 text-[11px] text-[var(--ink-faint)]">
-        最新コミット{hoursAgo !== null && <> ・ {formatRelativeHours(hoursAgo)}</>}
+        最新コミット{state.hoursAgo !== null && <> ・ {formatRelativeHours(state.hoursAgo)}</>}
       </p>
       <a
         href={commit.htmlUrl}

@@ -34,13 +34,7 @@ export function ThemeToggle() {
   const light = theme === "light";
 
   useEffect(() => {
-    const stored = getStoredTheme();
-    if (!stored) {
-      applyTheme(theme);
-      return;
-    }
-    setTheme(stored);
-    applyTheme(stored);
+    applyTheme(theme);
   }, [theme]);
 
   const toggleTheme = () => {
