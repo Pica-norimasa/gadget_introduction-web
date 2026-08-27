@@ -6,6 +6,7 @@ import { BrandMark } from "@/app/components/BrandMark";
 import { IdentityBadge } from "@/app/components/IdentityBadge";
 import { getCurrentUser } from "@/app/lib/session";
 import { SITE_URL } from "@/app/lib/email";
+import { getLatestSiteUpdates } from "@/app/lib/site-updates";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
@@ -43,6 +44,7 @@ const NOTE_URL = "https://note.com/draftly";
 export default async function LandingPage() {
   const [session, currentUser] = await Promise.all([auth(), getCurrentUser()]);
   const isLoggedIn = !!session?.user;
+  const latestUpdate = getLatestSiteUpdates(1)[0];
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
@@ -154,10 +156,17 @@ export default async function LandingPage() {
               </div>
 
               <div className="border-t border-[var(--line)] p-4">
-                <div className="rounded-2xl border border-[var(--teal)]/70 bg-[var(--teal-soft)] px-4 py-3">
-                  <p className="text-sm font-bold text-[var(--teal)]">制作タイムラインに追加</p>
-                  <p className="mt-1 text-xs leading-5 text-[var(--ink-soft)]">小さな更新も、あとから作品の歩みとして見返せます。</p>
-                </div>
+                <Link
+                  href="/updates"
+                  className="block rounded-2xl border border-[var(--teal)]/70 bg-[var(--teal-soft)] px-4 py-3 transition-colors hover:border-[var(--teal)]"
+                >
+                  <div className="mb-1 flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-[var(--teal)]">サイト最新更新</p>
+                    <span className="font-mono text-[11px] text-[var(--teal)]/80">{latestUpdate.date}</span>
+                  </div>
+                  <p className="line-clamp-1 text-[13px] font-bold text-[var(--ink)]">{latestUpdate.title}</p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--ink-soft)]">{latestUpdate.summary}</p>
+                </Link>
               </div>
             </div>
           </div>
