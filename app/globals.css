@@ -29,16 +29,20 @@
 
 :root[data-theme="light"] {
   /* ライトモードは、ベージュの柔らかさは残しつつ境界と文字を少し強める。
-     以前は背景・カード・線の明度差が小さく、モバイルで全体が眠く見えた。 */
+     以前は背景・カード・線の明度差が小さく、モバイルで全体が眠く見えた。
+     accent/amber/lineは実測でWCAG AAの4.5:1(line/UIは3:1)を満たして
+     いなかった(--bgや自身の-soft背景に対して2〜3:1程度しか無く、
+     テキストとして75箇所以上で使われているaccentは特に見えにくかった)
+     ため、色味の方向性は変えずに明度だけ下げてコントラストを確保する。 */
   --bg: #f3eadf;
   --bg-raised: #fffdf8;
   --bg-sunken: #eadcca;
   --ink: #15120f;
   --ink-soft: #45392f;
   --ink-faint: #6f5d4e;
-  --line: #c8ad96;
+  --line: #9c7f61;
 
-  --accent: #e85f35;
+  --accent: #a83a1a;
   --accent-ink: #fff8ef;
   --accent-soft: #ffd8c7;
 
@@ -48,7 +52,7 @@
   --violet: #5f4dd0;
   --violet-soft: #ddd5ff;
 
-  --amber: #a86d0d;
+  --amber: #855410;
   --amber-soft: #f1d99d;
 
   --shadow: rgba(82, 55, 25, 0.22);
