@@ -9,6 +9,7 @@
   --ink: #f7f2e8;
   --ink-soft: #cec2b2;
   --ink-faint: #a09384;
+  --ink-muted: #7d7266;
   --line: #514436;
 
   --accent: #ff7a4d;
@@ -33,13 +34,20 @@
      accent/amber/lineは実測でWCAG AAの4.5:1(line/UIは3:1)を満たして
      いなかった(--bgや自身の-soft背景に対して2〜3:1程度しか無く、
      テキストとして75箇所以上で使われているaccentは特に見えにくかった)
-     ため、色味の方向性は変えずに明度だけ下げてコントラストを確保する。 */
+     ため、色味の方向性は変えずに明度だけ下げてコントラストを確保する。
+     ink-soft/ink-faintも「黒に寄せてほしい」というフィードバックを受け、
+     コントラスト自体は元々基準を満たしていたが階調を全体的に暗く
+     詰め直した。ink-mutedは元々どこにも定義されておらず(未定義の
+     CSS変数は透明にならず親の色を継承するため気づきにくいバグだった)、
+     HomeContentTabs.tsx/PostForm.tsxが参照していたので新規に追加する
+     (ink-faintより一段薄い、旧ink-faintの明度をそのまま踏襲)。 */
   --bg: #f3eadf;
   --bg-raised: #fffdf8;
   --bg-sunken: #eadcca;
   --ink: #15120f;
-  --ink-soft: #45392f;
-  --ink-faint: #6f5d4e;
+  --ink-soft: #2c241d;
+  --ink-faint: #4a3d33;
+  --ink-muted: #6f5d4e;
   --line: #9c7f61;
 
   --accent: #a83a1a;
@@ -65,6 +73,7 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
+  --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
