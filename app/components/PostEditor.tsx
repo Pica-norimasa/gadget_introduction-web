@@ -6,6 +6,7 @@ import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostTyp
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
 import { STANDALONE_BODY_MAX, TIMELINE_BODY_MAX } from "@/app/lib/post-limits";
 import { extractFirstUrl, stripFirstOccurrence } from "@/app/lib/url-extract";
+import { ImageLightbox } from "./ImageLightbox";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { LinkifiedText } from "./LinkifiedText";
 import { LinkPreviewCard } from "./LinkPreviewCard";
@@ -129,10 +130,7 @@ export function PostEditor({
             </button>
           )}
         </div>
-        {imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element -- ローカルアップロードのパスなのでnext/imageの最適化対象外
-          <img src={imageUrl} alt="" className={imageClassName} />
-        )}
+        {imageUrl && <ImageLightbox src={imageUrl} alt="" className={imageClassName} />}
         {youtubeUrl && <YouTubeCard youtubeUrl={youtubeUrl} className={youtubeClassName} />}
         {previewUrl && <LinkPreviewCard url={previewUrl} onResult={setPreviewLoaded} />}
       </div>
