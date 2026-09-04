@@ -8,6 +8,7 @@ import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { clearInspiredBy, useComposerPostTypeRequest, useInspiredBy } from "@/app/lib/composer-store";
 import { createPost, type CreatePostState } from "@/app/lib/post-actions";
+import { STANDALONE_BODY_MAX, TIMELINE_BODY_MAX } from "@/app/lib/post-limits";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { YouTubeUrlInput } from "./YouTubeUrlInput";
 
@@ -196,6 +197,9 @@ export function PostForm(props: PostFormProps) {
   const guessedType = selectedType || inferPostType(body);
   const selectedPrompt = promptOptions.find((option) => option.type === selectedType);
   const showProjectTarget = variant === "compose" && selectedType !== "question";
+  // 作品に紐づく投稿(制作タイムライン、新規プロダクトも含む)は500文字、
+  // つぶやきは280文字(post-actions.tsのサーバー側チェックと同じ基準)。
+  const maxBodyLength = variant === "timeline" || showProjectTarget ? TIMELINE_BODY_MAX : STANDALONE_BODY_MAX;
   const showAttachments = attachmentOpen || Boolean(imagePreview) || Boolean(youtubeUrl) || selectedType === "screenshot";
   const attachmentHint =
     selectedType === "screenshot"
@@ -342,7 +346,7 @@ export function PostForm(props: PostFormProps) {
             : "進捗を投稿する(未完成でもOK)")
         }
         rows={2}
-        maxLength={280}
+        maxLength={maxBodyLength}
         className={`w-full resize-none overflow-hidden border-none bg-transparent leading-7 text-[var(--ink-soft)] placeholder:text-[var(--ink-faint)] focus:outline-none ${
           variant === "compose" ? "text-[14px] sm:text-[15px]" : "text-[14px]"
         }`}
@@ -404,7 +408,7 @@ export function PostForm(props: PostFormProps) {
             {POST_TYPE_META[guessedType].icon} {POST_TYPE_META[guessedType].label}として投稿
           </span>
           <span className="inline-flex h-8 items-center font-mono text-[11px] text-[var(--ink-faint)]">
-            {body.length}/280
+            {body.length}/{maxBodyLength}
           </span>
           <button
             type="submit"

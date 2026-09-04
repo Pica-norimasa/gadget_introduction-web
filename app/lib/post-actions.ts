@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { postAiEncouragementComment } from "@/app/lib/ai-comment";
 import { inferPostType } from "@/app/lib/infer-post-type";
 import { GUEST_POST_LIMIT } from "@/app/lib/guest-limits";
+import { STANDALONE_BODY_MAX, TIMELINE_BODY_MAX } from "@/app/lib/post-limits";
 import { getCurrentUser, getOrCreateCurrentUser } from "@/app/lib/session";
 import { extractImageFile, saveUploadedImage, uploadImageErrorMessage } from "@/app/lib/upload";
 import { extractYouTubeVideoId } from "@/app/lib/youtube";
@@ -66,8 +67,11 @@ export async function createPost(
   if (!body && !imageFile && !youtubeUrl) {
     return { error: "本文・画像・YouTubeリンクのいずれかを入力してください" };
   }
-  if (body.length > 280) {
-    return { error: "280文字以内で入力してください" };
+  // projectTargetがある(新規/既存いずれかの作品に紐づく)投稿は制作
+  // タイムライン扱い。つぶやき(projectTarget無し)だけ280文字のまま。
+  const bodyMax = projectTarget ? TIMELINE_BODY_MAX : STANDALONE_BODY_MAX;
+  if (body.length > bodyMax) {
+    return { error: `${bodyMax}文字以内で入力してください` };
   }
   if (youtubeUrl && !extractYouTubeVideoId(youtubeUrl)) {
     return { error: "YouTube URLの形式が正しくありません" };
@@ -249,7 +253,6 @@ export async function updatePost(
     typeof experienceTypeRaw === "string" && isExperienceType(experienceTypeRaw) ? experienceTypeRaw : null;
 
   if (!postId) return { error: "投稿が見つかりません" };
-  if (body.length > 280) return { error: "280文字以内で入力してください" };
   if (youtubeUrlRaw && !extractYouTubeVideoId(youtubeUrlRaw)) {
     return { error: "YouTube URLの形式が正しくありません" };
   }
@@ -258,6 +261,11 @@ export async function updatePost(
     where: { id: postId },
     select: { authorId: true, imageUrl: true, projectId: true },
   });
+
+  // 作品に紐づく投稿(制作タイムライン)は500文字、つぶやきは280文字。
+  // createPost()と同じ基準(projectIdの有無)。
+  const bodyMax = post?.projectId ? TIMELINE_BODY_MAX : STANDALONE_BODY_MAX;
+  if (body.length > bodyMax) return { error: `${bodyMax}文字以内で入力してください` };
   if (!post) return { error: "投稿が見つかりません" };
 
   const user = await getCurrentUser();

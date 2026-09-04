@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "r
 import { autoGrow } from "@/app/lib/autogrow";
 import { EXPERIENCE_TYPE_META, POST_TYPE_META, type ExperienceType, type PostType } from "@/app/lib/mock-data";
 import { updatePost, type UpdatePostState } from "@/app/lib/post-actions";
+import { STANDALONE_BODY_MAX, TIMELINE_BODY_MAX } from "@/app/lib/post-limits";
 import { extractFirstUrl, stripFirstOccurrence } from "@/app/lib/url-extract";
 import { ImagePickerButton } from "./ImagePickerButton";
 import { LinkifiedText } from "./LinkifiedText";
@@ -66,6 +67,9 @@ export function PostEditor({
   const [selectedExperienceType, setSelectedExperienceType] = useState<ExperienceType | "">(experienceType ?? "");
   const [previewLoaded, setPreviewLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // typeが渡されるのは制作タイムライン文脈のときだけ(post/[id]では渡さない、
+  // ProjectTimelineList.tsxでは渡す、というPostEditor既存の使い分けを流用)。
+  const maxBodyLength = type ? TIMELINE_BODY_MAX : STANDALONE_BODY_MAX;
 
   useEffect(() => {
     if (state.success) {
@@ -182,7 +186,7 @@ export function PostEditor({
         }}
         name="body"
         defaultValue={body}
-        maxLength={280}
+        maxLength={maxBodyLength}
         rows={3}
         autoFocus
         onChange={(e) => autoGrow(e.target)}
